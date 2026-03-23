@@ -12,26 +12,27 @@
         .btn-primary { background-color: #0B2A4E; border: 1px solid #89CFF0; transition: all 0.3s ease; }
         .btn-primary:hover { background-color: #89CFF0; color: #0B2A4E; transform: translateY(-2px); box-shadow: 0 0 15px rgba(137, 207, 240, 0.4); }
         
+        /* IFRAME DO STREAMLIT */
         #streamlit-frame { width: 100%; height: 100vh; border: none; display: none; position: fixed; top: 0; left: 0; z-index: 10; }
         
-        /* BOTÃO FLUTUANTE DE VOLTAR */
-        #back-button {
+        /* BOTÃO FLUTUANTE DE SAIR (SÓ APARECE DENTRO DO COMERCIAL) */
+        #floating-exit {
             position: fixed;
-            bottom: 20px;
-            right: 20px;
+            bottom: 30px;
+            right: 30px;
             z-index: 9999;
             display: none; /* Escondido por padrão */
-            padding: 10px 20px;
+            padding: 12px 24px;
             border-radius: 50px;
-            background: rgba(11, 42, 78, 0.9);
-            border: 1px solid #89CFF0;
+            background: #0B2A4E;
+            border: 2px solid #89CFF0;
             color: #89CFF0;
             font-weight: bold;
             cursor: pointer;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-            transition: all 0.3s;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.6);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        #back-button:hover { background: #89CFF0; color: #0B2A4E; }
+        #floating-exit:hover { background: #89CFF0; color: #0B2A4E; transform: scale(1.05); }
 
         #portal-content { display: flex; flex-direction: column; align-items: center; padding-top: 60px; width: 100%; flex-grow: 1; }
         .logo-top { max-width: 250px; margin-bottom: 50px; }
@@ -40,10 +41,11 @@
 </head>
 <body>
 
-    <!-- BOTÃO FLUTUANTE (SÓ APARECE DENTRO DO COMERCIAL) -->
-    <button id="back-button" onclick="handleLogout()">🚪 Sair do Módulo</button>
+    <!-- BOTÃO FLUTUANTE MESTRE -->
+    <button id="floating-exit" onclick="handleLogout()">🚪 Sair do Módulo</button>
 
     <div id="portal-content">
+        <!-- LOGO NO TOPO ABSOLUTO -->
         <img src="https://raw.githubusercontent.com/gerenciador-ai/Relat-rios-Comercial/main/logo_acelerar_sidebar.png" class="logo-top" alt="Logo Acelerar">
 
         <!-- TELA DE LOGIN -->
@@ -59,6 +61,7 @@
         <div id="hub-section" class="hidden w-full max-w-4xl px-4 text-center">
             <h1 class="text-3xl font-bold mb-2">🚀 Bem-vindo ao Hub!</h1>
             <p class="text-[#89CFF0] mb-10">Escolha o módulo da Holding Acelerar para iniciar:</p>
+            
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div class="glass-card p-8 flex flex-col items-center">
                     <span class="text-5xl mb-4">📊</span>
@@ -71,10 +74,12 @@
                     <button class="bg-gray-700 cursor-not-allowed w-full py-3 rounded-lg font-bold" disabled>Em Desenvolvimento</button>
                 </div>
             </div>
+            
             <button onclick="handleLogout()" class="mt-12 text-[#89CFF0] hover:underline">🚪 Sair do Portal</button>
         </div>
     </div>
 
+    <!-- IFRAME DO STREAMLIT (LINK DIRETO DO COMERCIAL) -->
     <iframe id="streamlit-frame" src="https://gestao-holding-acelerar-cpkhfuqzzpnywb9uia4rqy.streamlit.app/?embed=true"></iframe>
 
     <script>
@@ -95,12 +100,13 @@
             if (module === 'comercial') {
                 document.getElementById('portal-content').classList.add('hidden');
                 document.getElementById('streamlit-frame').style.display = 'block';
-                // MOSTRA O BOTÃO DE SAIR FLUTUANTE
-                document.getElementById('back-button').style.display = 'block';
+                // MOSTRA O BOTÃO FLUTUANTE DE SAIR
+                document.getElementById('floating-exit').style.display = 'block';
             }
         }
 
         function handleLogout() {
+            // Limpa tudo e volta para a raiz do portal (Vercel)
             sessionStorage.clear();
             localStorage.clear();
             window.location.href = window.location.origin;
