@@ -85,7 +85,12 @@
         }
 
         function handleLogout() {
-            location.reload();
+            // 1. Limpa rastros de sessão no navegador
+            sessionStorage.clear();
+            localStorage.clear();
+            
+            // 2. Recarrega a página do zero, deletando o iframe da memória
+            window.location.href = window.location.origin;
         }
     </script>
 </body>
