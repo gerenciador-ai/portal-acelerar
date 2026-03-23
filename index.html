@@ -7,31 +7,32 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #0A1E2E; color: white; overflow-x: hidden; margin: 0; padding: 0; }
+        body { font-family: 'Inter', sans-serif; background-color: #0A1E2E; color: white; margin: 0; padding: 0; min-height: 100vh; }
         .glass-card { background: rgba(11, 42, 78, 0.8 ); border: 1px solid #89CFF0; border-radius: 20px; backdrop-filter: blur(10px); }
         .btn-primary { background-color: #0B2A4E; border: 1px solid #89CFF0; transition: all 0.3s ease; }
         .btn-primary:hover { background-color: #89CFF0; color: #0B2A4E; transform: translateY(-2px); box-shadow: 0 0 15px rgba(137, 207, 240, 0.4); }
         iframe { width: 100%; height: 100vh; border: none; display: none; }
-        #portal-ui { display: flex; flex-direction: column; align-items: center; min-height: 100vh; padding-top: 40px; }
-        .logo-top { max-width: 250px; margin-bottom: 40px; }
+        #portal-content { display: flex; flex-direction: column; align-items: center; padding-top: 60px; width: 100%; }
+        .logo-top { max-width: 250px; margin-bottom: 50px; }
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
-    <div id="portal-ui">
-        <!-- LOGO NO TOPO ABSOLUTO -->
+    <div id="portal-content">
+        <!-- LOGO ÚNICO NO TOPO -->
         <img src="https://raw.githubusercontent.com/gerenciador-ai/Relat-rios-Comercial/main/logo_acelerar_sidebar.png" class="logo-top" alt="Logo Acelerar">
 
-        <!-- TELA DE LOGIN -->
+        <!-- SEÇÃO 1: TELA DE LOGIN -->
         <div id="login-section" class="glass-card p-10 w-full max-w-md text-center shadow-2xl">
             <h2 class="text-2xl font-bold mb-6 text-[#89CFF0]">Portal da Holding</h2>
-            <input type="email" id="email" placeholder="E-mail corporativo" class="w-full p-3 mb-4 rounded bg-[#0A1E2E] border border-[#89CFF0] text-white outline-none">
-            <input type="password" id="password" placeholder="Senha mestra" class="w-full p-3 mb-6 rounded bg-[#0A1E2E] border border-[#89CFF0] text-white outline-none">
+            <input type="email" id="email" placeholder="E-mail corporativo" class="w-full p-3 mb-4 rounded bg-[#0A1E2E] border border-[#89CFF0] text-white outline-none focus:border-white transition-all">
+            <input type="password" id="password" placeholder="Senha mestra" class="w-full p-3 mb-6 rounded bg-[#0A1E2E] border border-[#89CFF0] text-white outline-none focus:border-white transition-all">
             <button onclick="handleLogin( )" class="btn-primary w-full py-3 rounded-lg font-bold">Acessar Portal</button>
             <p id="error-msg" class="text-red-400 mt-4 hidden">❌ Acesso negado.</p>
         </div>
 
-        <!-- HUB DE SELEÇÃO -->
+        <!-- SEÇÃO 2: HUB DE SELEÇÃO (SÓ APARECE APÓS LOGIN) -->
         <div id="hub-section" class="hidden w-full max-w-4xl px-4 text-center">
             <h1 class="text-3xl font-bold mb-2">🚀 Bem-vindo ao Hub!</h1>
             <p class="text-[#89CFF0] mb-10">Escolha o módulo da Holding Acelerar para iniciar:</p>
@@ -42,7 +43,7 @@
                     <h3 class="text-xl font-bold mb-4">Módulo Comercial</h3>
                     <button onclick="openModule('comercial')" class="btn-primary w-full py-3 rounded-lg font-bold">Acessar Comercial</button>
                 </div>
-                <div class="glass-card p-8 flex flex-col items-center opacity-75">
+                <div class="glass-card p-8 flex flex-col items-center opacity-60">
                     <span class="text-5xl mb-4">💰</span>
                     <h3 class="text-xl font-bold mb-4">Módulo Financeiro</h3>
                     <button class="bg-gray-700 cursor-not-allowed w-full py-3 rounded-lg font-bold" disabled>Em Desenvolvimento</button>
@@ -53,7 +54,7 @@
         </div>
     </div>
 
-    <!-- DASHBOARD STREAMLIT COM O LINK CORRETO -->
+    <!-- SEÇÃO 3: DASHBOARD STREAMLIT (SÓ APARECE APÓS CLICAR NO MÓDULO) -->
     <iframe id="streamlit-frame" src="https://gestao-holding-acelerar-rcpservicos.streamlit.app/?embed=true"></iframe>
 
     <script>
@@ -74,7 +75,7 @@
 
         function openModule(module) {
             if (module === 'comercial') {
-                document.getElementById('portal-ui').style.display = 'none';
+                document.getElementById('portal-content').classList.add('hidden');
                 document.getElementById('streamlit-frame').style.display = 'block';
             }
         }
