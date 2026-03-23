@@ -12,9 +12,27 @@
         .btn-primary { background-color: #0B2A4E; border: 1px solid #89CFF0; transition: all 0.3s ease; }
         .btn-primary:hover { background-color: #89CFF0; color: #0B2A4E; transform: translateY(-2px); box-shadow: 0 0 15px rgba(137, 207, 240, 0.4); }
         
-        /* GARANTE QUE O IFRAME FIQUE ESCONDIDO DE VERDADE */
-        #streamlit-frame { width: 100%; height: 100vh; border: none; display: none; position: fixed; top: 0; left: 0; z-index: 9999; }
+        #streamlit-frame { width: 100%; height: 100vh; border: none; display: none; position: fixed; top: 0; left: 0; z-index: 10; }
         
+        /* BOTÃO FLUTUANTE DE VOLTAR */
+        #back-button {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 9999;
+            display: none; /* Escondido por padrão */
+            padding: 10px 20px;
+            border-radius: 50px;
+            background: rgba(11, 42, 78, 0.9);
+            border: 1px solid #89CFF0;
+            color: #89CFF0;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            transition: all 0.3s;
+        }
+        #back-button:hover { background: #89CFF0; color: #0B2A4E; }
+
         #portal-content { display: flex; flex-direction: column; align-items: center; padding-top: 60px; width: 100%; flex-grow: 1; }
         .logo-top { max-width: 250px; margin-bottom: 50px; }
         .hidden { display: none !important; }
@@ -22,15 +40,17 @@
 </head>
 <body>
 
+    <!-- BOTÃO FLUTUANTE (SÓ APARECE DENTRO DO COMERCIAL) -->
+    <button id="back-button" onclick="handleLogout()">🚪 Sair do Módulo</button>
+
     <div id="portal-content">
-        <!-- LOGO ÚNICO -->
         <img src="https://raw.githubusercontent.com/gerenciador-ai/Relat-rios-Comercial/main/logo_acelerar_sidebar.png" class="logo-top" alt="Logo Acelerar">
 
         <!-- TELA DE LOGIN -->
         <div id="login-section" class="glass-card p-10 w-full max-w-md text-center shadow-2xl">
             <h2 class="text-2xl font-bold mb-6 text-[#89CFF0]">Portal da Holding</h2>
-            <input type="email" id="email" placeholder="E-mail corporativo" class="w-full p-3 mb-4 rounded bg-[#0A1E2E] border border-[#89CFF0] text-white outline-none focus:border-white transition-all">
-            <input type="password" id="password" placeholder="Senha mestra" class="w-full p-3 mb-6 rounded bg-[#0A1E2E] border border-[#89CFF0] text-white outline-none focus:border-white transition-all">
+            <input type="email" id="email" placeholder="E-mail corporativo" class="w-full p-3 mb-4 rounded bg-[#0A1E2E] border border-[#89CFF0] text-white outline-none">
+            <input type="password" id="password" placeholder="Senha mestra" class="w-full p-3 mb-6 rounded bg-[#0A1E2E] border border-[#89CFF0] text-white outline-none">
             <button onclick="handleLogin( )" class="btn-primary w-full py-3 rounded-lg font-bold">Acessar Portal</button>
             <p id="error-msg" class="text-red-400 mt-4 hidden">❌ Acesso negado.</p>
         </div>
@@ -39,7 +59,6 @@
         <div id="hub-section" class="hidden w-full max-w-4xl px-4 text-center">
             <h1 class="text-3xl font-bold mb-2">🚀 Bem-vindo ao Hub!</h1>
             <p class="text-[#89CFF0] mb-10">Escolha o módulo da Holding Acelerar para iniciar:</p>
-            
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div class="glass-card p-8 flex flex-col items-center">
                     <span class="text-5xl mb-4">📊</span>
@@ -52,13 +71,11 @@
                     <button class="bg-gray-700 cursor-not-allowed w-full py-3 rounded-lg font-bold" disabled>Em Desenvolvimento</button>
                 </div>
             </div>
-            
             <button onclick="handleLogout()" class="mt-12 text-[#89CFF0] hover:underline">🚪 Sair do Portal</button>
         </div>
     </div>
 
-    <!-- IFRAME DO STREAMLIT (TOTALMENTE ISOLADO) -->
-    <iframe id="streamlit-frame" src="https://gestao-holding-acelerar-rcpservicos.streamlit.app/?embed=true"></iframe>
+    <iframe id="streamlit-frame" src="https://gestao-holding-acelerar-cpkhfuqzzpnywb9uia4rqy.streamlit.app/?embed=true"></iframe>
 
     <script>
         const SENHA_MESTRA = 'Acelerar@2026';
@@ -66,30 +83,26 @@
         function handleLogin( ) {
             const email = document.getElementById('email').value.toLowerCase();
             const pass = document.getElementById('password').value;
-            const errorMsg = document.getElementById('error-msg');
-
             if (pass === SENHA_MESTRA && email.includes('@')) {
                 document.getElementById('login-section').classList.add('hidden');
                 document.getElementById('hub-section').classList.remove('hidden');
             } else {
-                errorMsg.classList.remove('hidden');
+                document.getElementById('error-msg').classList.remove('hidden');
             }
         }
 
         function openModule(module) {
             if (module === 'comercial') {
-                // Esconde todo o conteúdo do portal e mostra o iframe em tela cheia
                 document.getElementById('portal-content').classList.add('hidden');
                 document.getElementById('streamlit-frame').style.display = 'block';
+                // MOSTRA O BOTÃO DE SAIR FLUTUANTE
+                document.getElementById('back-button').style.display = 'block';
             }
         }
 
         function handleLogout() {
-            // 1. Limpa rastros de sessão no navegador
             sessionStorage.clear();
             localStorage.clear();
-            
-            // 2. Recarrega a página do zero, deletando o iframe da memória
             window.location.href = window.location.origin;
         }
     </script>
