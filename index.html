@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hub Holding Acelerar - Portal Estratégico (V6)</title>
+    <title>Hub Holding Acelerar - Portal Estratégico (V7)</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios@1.6.0/dist/axios.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -96,7 +96,7 @@
                 </select>
                 <div id="filtros-comercial">
                     <h3>📅 Ano</h3>
-                    <select id="ano-select" onchange="applyFilters()"></select>
+                    <select id="ano-select" onchange="updateMeses()"></select>
                     <h3>📅 Meses</h3>
                     <div id="meses-container" class="max-h-24 overflow-y-auto mb-3 bg-black/20 p-2 rounded text-[10px]"></div>
                     <h3>📦 Produto</h3>
@@ -184,7 +184,7 @@
             'VMC Tech': { vendas: 110064393, churn: 110065017, meta_mrr: 8000, logo: 'https://raw.githubusercontent.com/gerenciador-ai/Relat-rios-Comercial/main/logo_vmctech.png' },
             'Victec': { vendas: 110023047, churn: 110042202, meta_mrr: 10000, logo: 'https://raw.githubusercontent.com/gerenciador-ai/Relat-rios-Comercial/main/logo_victec.png' }
         };
-        const FIELDS = { SDR: 110777789, MRR: 110778108, PRODUTO: 111431860, UPSELL: 111433407, ADESAO_S: 110778106, ADESAO_R: 110778107 };
+        const FIELDS = { SDR: 110777789, MRR: 110778108, PRODUTO: 111431860, UPSELL: 111433407, ADESAO_S: 110778105, ADESAO_R: 111431861 };
         const MESES_PT = {1:'Jan',2:'Fev',3:'Mar',4:'Abr',5:'Mai',6:'Jun',7:'Jul',8:'Ago',9:'Set',10:'Out',11:'Nov',12:'Dez'};
 
         let appState = { empresa: 'VMC Tech', page: 'comercial', raw_data: [], charts: [] };
@@ -194,7 +194,7 @@
 
         async function fetchPloomes(endpoint) {
             const url = `https://api2.ploomes.com/${endpoint}`;
-            try { return (await axios.get(url, { headers: { 'User-Key': API_KEY, 'Content-Type': 'application/json' }, timeout: 30000 })).data.value; }
+            try { return (await axios.get(url, { headers: { 'User-Key': API_KEY, 'Content-Type': 'application/json' }, timeout: 60000 })).data.value; }
             catch (e) { console.error("Ploomes Error:", e); return []; }
         }
 
@@ -206,14 +206,11 @@
         }
 
         async function handleLogin() {
-            const email = document.getElementById('email').value.toLowerCase().trim();
             const senha = document.getElementById('password').value.trim();
             if (senha !== 'Acelerar@2026') { alert('Senha incorreta!'); return; }
-            showLoading('Sincronizando...');
-            document.getElementById('user-display').textContent = email;
+            document.getElementById('user-display').textContent = document.getElementById('email').value;
             document.getElementById('login-section').classList.add('hidden');
             document.getElementById('hub-section').classList.remove('hidden');
-            hideLoading();
         }
 
         function handleLogout() { location.reload(); }
@@ -234,13 +231,11 @@
         }
 
         async function loadData() {
-            const cacheKey = `acelerar_v6_${appState.empresa}`;
+            const cacheKey = `acelerar_v7_${appState.empresa}`;
             const cacheTimeKey = `${cacheKey}_time`;
             const cached = localStorage.getItem(cacheKey);
             const cachedTime = localStorage.getItem(cacheTimeKey);
-            const now = new Date().getTime();
-
-            if (cached && cachedTime && (now - cachedTime < 86400000)) {
+            if (cached && cachedTime && (new Date().getTime() - parseInt(cachedTime) < 86400000)) {
                 appState.raw_data = JSON.parse(cached);
                 document.getElementById('cache-info').textContent = `Sinc: ${new Date(parseInt(cachedTime)).toLocaleString('pt-BR')}`;
                 renderDashboard();
@@ -251,8 +246,8 @@
             showLoading(`Sincronizando Ploomes...`);
             const config = PIPELINES[appState.empresa];
             const [vendas, churn] = await Promise.all([
-                fetchPloomes(`Deals?$filter=PipelineId eq ${config.vendas} and StatusId eq 2&$expand=OtherProperties,Owner&$top=1000`),
-                fetchPloomes(`Deals?$filter=PipelineId eq ${config.churn}&$expand=OtherProperties,Owner&$top=1000`)
+                fetchPloomes(`Deals?$filter=PipelineId eq ${config.vendas} and StatusId eq 2&$expand=OtherProperties,Owner&$top=2000`),
+                fetchPloomes(`Deals?$filter=PipelineId eq ${config.churn}&$expand=OtherProperties,Owner&$top=2000`)
             ]);
 
             const mapDeal = (d, type) => {
@@ -263,7 +258,7 @@
                     id: d.Id, cliente: d.Title, data: date,
                     vendedor: d.Owner?.Name || 'N/A',
                     sdr: getVal(FIELDS.SDR) || 'N/A',
-                    mrr: sanitizeVal(getVal(FIELDS.MRR)),
+                    mrr: sanitizeVal(getVal(FIELDS.MRR)) || sanitizeVal(d.Amount),
                     upsell: sanitizeVal(getVal(FIELDS.UPSELL)),
                     adesao: sanitizeVal(getVal(FIELDS.ADESAO_S)) + sanitizeVal(getVal(FIELDS.ADESAO_R)),
                     produto: getVal(FIELDS.PRODUTO) || 'Sittax Simples',
@@ -272,20 +267,19 @@
             };
 
             appState.raw_data = [...vendas.map(d => mapDeal(d, 'Venda')), ...churn.map(d => mapDeal(d, 'Churn'))];
-            localStorage.setItem(`acelerar_v6_${appState.empresa}`, JSON.stringify(appState.raw_data));
-            localStorage.setItem(`acelerar_v6_${appState.empresa}_time`, new Date().getTime().toString());
+            localStorage.setItem(`acelerar_v7_${appState.empresa}`, JSON.stringify(appState.raw_data));
+            localStorage.setItem(`acelerar_v7_${appState.empresa}_time`, new Date().getTime().toString());
             renderDashboard();
             hideLoading();
         }
 
         function renderDashboard() {
-            const data = appState.raw_data;
-            const anos = [...new Set(data.map(d => d.ano))].sort((a,b) => b-a);
+            const anos = [...new Set(appState.raw_data.map(d => d.ano))].sort((a,b) => b-a);
             document.getElementById('ano-select').innerHTML = anos.map(a => `<option value="${a}">${a}</option>`).join('');
             
-            const prods = ['Todos', ...new Set(data.map(d => d.produto))];
-            const vends = ['Todos', ...new Set(data.map(d => d.vendedor))];
-            const sdrs = ['Todos', ...new Set(data.map(d => d.sdr))].filter(s => s !== 'N/A');
+            const prods = ['Todos', ...new Set(appState.raw_data.map(d => d.produto))];
+            const vends = ['Todos', ...new Set(appState.raw_data.map(d => d.vendedor))];
+            const sdrs = ['Todos', ...new Set(appState.raw_data.map(d => d.sdr))].filter(s => s !== 'N/A');
             
             document.getElementById('produto-select').innerHTML = prods.map(p => `<option value="${p}">${p}</option>`).join('');
             document.getElementById('vendedor-select').innerHTML = vends.map(v => `<option value="${v}">${v}</option>`).join('');
@@ -293,17 +287,17 @@
 
             document.getElementById('logo-empresa').src = PIPELINES[appState.empresa].logo;
             updateMeses();
-            applyFilters();
         }
 
         function updateMeses() {
             const ano = parseInt(document.getElementById('ano-select').value);
             const mesesReais = [...new Set(appState.raw_data.filter(d => d.ano === ano).map(d => d.mes))];
             document.getElementById('meses-container').innerHTML = Object.values(MESES_PT).map(m => `
-                <label class="flex items-center text-white mb-1 cursor-pointer hover:bg-white/10 p-1 rounded ${mesesReais.includes(m) ? '' : 'opacity-20'}">
-                    <input type="checkbox" value="${m}" ${mesesReais.includes(m) ? 'checked' : ''} onchange="applyFilters()" class="mr-2"> ${m}
+                <label class="flex items-center text-white mb-1 cursor-pointer hover:bg-white/10 p-1 rounded ${mesesReais.includes(m) ? '' : 'hidden'}">
+                    <input type="checkbox" value="${m}" checked onchange="applyFilters()" class="mr-2"> ${m}
                 </label>
             `).join('');
+            applyFilters();
         }
 
         function applyFilters() {
@@ -340,7 +334,7 @@
             document.getElementById('kpi-cancelados').textContent = cancelados;
 
             document.getElementById('tbody-detalhamento').innerHTML = f.sort((a,b) => b.data - a.data).slice(0, 50).map(d => `
-                <tr><td>${d.data.toLocaleDateString('pt-BR')}</td><td>${d.cliente}</td><td>${d.vendedor}</td><td>${d.sdr}</td><td>${d.produto}</td><td>R$ ${d.mrr}</td><td>R$ ${d.adesao}</td><td>R$ ${d.upsell}</td></tr>
+                <tr><td>${d.data.toLocaleDateString('pt-BR')}</td><td>${d.cliente}</td><td>${d.vendedor}</td><td>${d.sdr}</td><td>${d.produto}</td><td>R$ ${Math.round(d.mrr).toLocaleString('pt-BR')}</td><td>R$ ${Math.round(d.adesao).toLocaleString('pt-BR')}</td><td>R$ ${Math.round(d.upsell).toLocaleString('pt-BR')}</td></tr>
             `).join('');
 
             updateCharts(f);
@@ -388,7 +382,7 @@
         }
 
         function updateRankings(f) {
-            const getRank = (key, valKey) => {
+            const getRank = (key) => {
                 const map = {};
                 f.filter(d => d.status === 'Venda').forEach(d => {
                     const k = d[key];
