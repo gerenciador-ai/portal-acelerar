@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hub Holding Acelerar - Portal Estratégico (V9.3)</title>
+    <title>Hub Holding Acelerar - Portal Estratégico (V9.4)</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios@1.6.0/dist/axios.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -229,7 +229,7 @@
         }
 
         async function loadData() {
-            const cacheKey = `acelerar_v9_3_${appState.empresa}`;
+            const cacheKey = `acelerar_v9_4_${appState.empresa}`;
             const cacheTimeKey = `${cacheKey}_time`;
             const cached = localStorage.getItem(cacheKey);
             const cachedTime = localStorage.getItem(cacheTimeKey);
@@ -295,8 +295,8 @@
             };
 
             appState.raw_data = [...vendas.map(d => mapDeal(d, 'Venda')), ...churn.map(d => mapDeal(d, 'Churn'))];
-            localStorage.setItem(`acelerar_v9_3_${appState.empresa}`, JSON.stringify(appState.raw_data));
-            localStorage.setItem(`acelerar_v9_3_${appState.empresa}_time`, new Date().getTime().toString());
+            localStorage.setItem(`acelerar_v9_4_${appState.empresa}`, JSON.stringify(appState.raw_data));
+            localStorage.setItem(`acelerar_v9_4_${appState.empresa}_time`, new Date().getTime().toString());
             renderDashboard();
             hideLoading();
         }
@@ -370,19 +370,19 @@
             appState.charts.forEach(c => c.destroy());
             appState.charts = [];
             
-            // CORREÇÃO: Filtrar os meses do eixo para que apareçam apenas os que têm dados reais no ano
+            // FILTRAGEM RADICAL: Definir labels apenas com os meses selecionados
             const meses_labels = Object.values(MESES_PT).filter(m => mesesEixo.includes(m));
             const config = PIPELINES[appState.empresa];
 
             const createAccChart = (id, label, color, metaBase, valKey, isCount) => {
                 let acc = 0;
+                // Mapear dados apenas para os meses do eixo filtrado
                 const accData = meses_labels.map(m => {
                     const filtered = f.filter(d => d.mes === m && d.status === 'Venda');
                     acc += isCount ? filtered.length : filtered.reduce((s,d) => s + d[valKey], 0);
                     return acc;
                 });
                 
-                // Meta acumulada deve respeitar o índice do mês real (ex: Junho é o 6º mês)
                 const metaData = meses_labels.map((m) => {
                     const idx = Object.values(MESES_PT).indexOf(m) + 1;
                     return idx * metaBase;
@@ -404,7 +404,14 @@
             const evolChart = (id, label, color, valKey, status) => {
                 return new Chart(document.getElementById(id), {
                     type: 'bar',
-                    data: { labels: meses_labels, datasets: [{ label, data: meses_labels.map(m => f.filter(d => d.mes === m && (status ? d.status === status : true)).reduce((s,d) => s + d[valKey], 0)), backgroundColor: color }] },
+                    data: { 
+                        labels: meses_labels, 
+                        datasets: [{ 
+                            label, 
+                            data: meses_labels.map(m => f.filter(d => d.mes === m && (status ? d.status === status : true)).reduce((s,d) => s + d[valKey], 0)), 
+                            backgroundColor: color 
+                        }] 
+                    },
                     options: { responsive: true, maintainAspectRatio: false, scales: { y: { ticks: { color: '#FFF', font: { size: 8 } } }, x: { ticks: { color: '#FFF', font: { size: 8 } } } }, plugins: { legend: { labels: { color: '#FFF', font: { size: 9 } } } } }
                 });
             };
