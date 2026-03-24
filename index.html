@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hub Holding Acelerar - Portal Estratégico (V9.1)</title>
+    <title>Hub Holding Acelerar - Portal Estratégico (V9.2)</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios@1.6.0/dist/axios.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -177,7 +177,6 @@
             'Victec': { vendas: 110023047, churn: 110042202, meta_mrr: 10000, logo: 'https://raw.githubusercontent.com/gerenciador-ai/Relat-rios-Comercial/main/logo_victec.png' }
         };
         
-        // Mapeamento de Campos Ploomes (IDs Validados via API)
         const FIELDS = { 
             SDR: 110777789, 
             MRR: 110778108,        // Mensalidade - Simples
@@ -201,10 +200,7 @@
 
         function sanitizeVal(v) {
             if (v === null || v === undefined || v === '') return 0;
-            if (typeof v === 'number') return v;
-            let s = String(v).replace(/[R$\s]/g, '');
-            if (s.includes(',')) s = s.replace(/\./g, '').replace(',', '.');
-            return parseFloat(s) || 0;
+            return parseFloat(v) || 0;
         }
 
         async function handleLogin() {
@@ -233,11 +229,11 @@
         }
 
         async function loadData() {
-            const cacheKey = `acelerar_v9_1_${appState.empresa}`;
+            const cacheKey = `acelerar_v9_2_${appState.empresa}`;
             const cacheTimeKey = `${cacheKey}_time`;
             const cached = localStorage.getItem(cacheKey);
             const cachedTime = localStorage.getItem(cacheTimeKey);
-            if (cached && cachedTime && (new Date().getTime() - parseInt(cachedTime) < 3600000)) { // Cache de 1h
+            if (cached && cachedTime && (new Date().getTime() - parseInt(cachedTime) < 300000)) { // Cache de 5min para testes
                 appState.raw_data = JSON.parse(cached);
                 document.getElementById('cache-info').textContent = `Sinc: ${new Date(parseInt(cachedTime)).toLocaleString('pt-BR')}`;
                 renderDashboard();
@@ -247,7 +243,6 @@
         async function refreshData() {
             showLoading(`Sincronizando Ploomes...`);
             const config = PIPELINES[appState.empresa];
-            // Filtro: Situação = Ganha (StatusId eq 2)
             const [vendas, churn] = await Promise.all([
                 fetchPloomes(`Deals?$filter=PipelineId eq ${config.vendas} and StatusId eq 2&$expand=OtherProperties,Owner&$top=2000`),
                 fetchPloomes(`Deals?$filter=PipelineId eq ${config.churn}&$expand=OtherProperties,Owner&$top=2000`)
@@ -257,26 +252,20 @@
                 const props = d.OtherProperties || [];
                 const getProp = (id) => props.find(p => p.FieldId === id);
                 
-                // Obter valor do produto (considerando que pode ser um objeto de seleção)
                 const propProduto = getProp(FIELDS.PRODUTO);
-                let produto = "";
-                if (propProduto) {
-                    produto = propProduto.ValueName || propProduto.Value || "";
-                }
-                
-                // Regra: se vazio, considerar Sittax Simples
+                let produto = propProduto ? (propProduto.ObjectValueName || propProduto.ValueName || propProduto.Value || "") : "";
                 if (!produto || produto === "") produto = "Sittax Simples";
 
                 let mrr = 0;
                 let adesao = 0;
                 let upsell = 0;
 
-                const valMensalidadeSimples = sanitizeVal(getProp(FIELDS.MRR)?.Value);
-                const valAdesaoSimples = sanitizeVal(getProp(FIELDS.ADESAO_S)?.Value);
-                const valAumentoMensalidade = sanitizeVal(getProp(FIELDS.UPSELL)?.Value);
-                const valAdesaoRecupera = sanitizeVal(getProp(FIELDS.ADESAO_R)?.Value);
+                // CORREÇÃO CRÍTICA: Ploomes entrega valores financeiros em DecimalValue
+                const valMensalidadeSimples = sanitizeVal(getProp(FIELDS.MRR)?.DecimalValue);
+                const valAdesaoSimples = sanitizeVal(getProp(FIELDS.ADESAO_S)?.DecimalValue);
+                const valAumentoMensalidade = sanitizeVal(getProp(FIELDS.UPSELL)?.DecimalValue);
+                const valAdesaoRecupera = sanitizeVal(getProp(FIELDS.ADESAO_R)?.DecimalValue);
 
-                // Normalização do nome do produto para comparação
                 const prodNorm = produto.toLowerCase();
 
                 if (prodNorm.includes("simples")) {
@@ -289,7 +278,6 @@
                 } else if (prodNorm.includes("recupera")) {
                     adesao = valAdesaoRecupera;
                 } else {
-                    // Fallback para outros produtos se necessário
                     mrr = valMensalidadeSimples;
                     adesao = valAdesaoSimples;
                 }
@@ -298,7 +286,7 @@
                 return {
                     id: d.Id, cliente: d.Title, data: date,
                     vendedor: d.Owner?.Name || 'N/A',
-                    sdr: getProp(FIELDS.SDR)?.ValueName || getProp(FIELDS.SDR)?.Value || 'N/A',
+                    sdr: getProp(FIELDS.SDR)?.ObjectValueName || getProp(FIELDS.SDR)?.ValueName || getProp(FIELDS.SDR)?.Value || 'N/A',
                     mrr: mrr,
                     upsell: upsell,
                     adesao: adesao,
@@ -308,8 +296,8 @@
             };
 
             appState.raw_data = [...vendas.map(d => mapDeal(d, 'Venda')), ...churn.map(d => mapDeal(d, 'Churn'))];
-            localStorage.setItem(`acelerar_v9_1_${appState.empresa}`, JSON.stringify(appState.raw_data));
-            localStorage.setItem(`acelerar_v9_1_${appState.empresa}_time`, new Date().getTime().toString());
+            localStorage.setItem(`acelerar_v9_2_${appState.empresa}`, JSON.stringify(appState.raw_data));
+            localStorage.setItem(`acelerar_v9_2_${appState.empresa}_time`, new Date().getTime().toString());
             renderDashboard();
             hideLoading();
         }
