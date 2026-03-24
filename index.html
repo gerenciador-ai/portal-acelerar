@@ -174,7 +174,7 @@
             'VMC Tech': { vendas: 110064393, churn: 110065017, meta_mrr: 8000, logo: 'https://raw.githubusercontent.com/gerenciador-ai/Relat-rios-Comercial/main/logo_vmctech.png' },
             'Victec': { vendas: 110023047, churn: 110042202, meta_mrr: 10000, logo: 'https://raw.githubusercontent.com/gerenciador-ai/Relat-rios-Comercial/main/logo_victec.png' }
         };
-        const FIELDS = { SDR: 110777789, MRR: 'deal_41DAB9BE-E571-46BB-B459-96172F50F77C', PRODUTO: 111431860, UPSELL: 'deal_F216F396-539A-494A-9D69-33C5C7436F7C', ADESAO_S: 'deal_C7DDC44C-E2CF-4F09-A72C-F7E63C118ED5', ADESAO_R: 'deal_29010379-597E-42F3-AF6E-5D935C409D9E' };
+        const FIELDS = { SDR: 110777789, MRR: 110778108, PRODUTO: 111431860, UPSELL: 111433407, ADESAO_S: 110778105, ADESAO_R: 111431861 };
         const MESES_PT = {1:'Jan',2:'Fev',3:'Mar',4:'Abr',5:'Mai',6:'Jun',7:'Jul',8:'Ago',9:'Set',10:'Out',11:'Nov',12:'Dez'};
 
         let appState = { empresa: 'VMC Tech', page: 'comercial', raw_data: [], charts: [] };
@@ -243,7 +243,7 @@
 
             const mapDeal = (d, type) => {
                 const props = d.OtherProperties || [];
-                const getVal = (id) => props.find(p => p.FieldId === id || p.FieldKey === id)?.Value;
+                const getVal = (id) => props.find(p => p.FieldId === id)?.Value;
                 const date = new Date(d.FinishDate || d.CreateDate || '');
                 let mrr = sanitizeVal(getVal(FIELDS.MRR));
                 if (mrr === 0 && d.Amount > 0) mrr = d.Amount;
