@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hub Holding Acelerar - Portal Estratégico (V9.2)</title>
+    <title>Hub Holding Acelerar - Portal Estratégico (V9.3)</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios@1.6.0/dist/axios.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -229,11 +229,11 @@
         }
 
         async function loadData() {
-            const cacheKey = `acelerar_v9_2_${appState.empresa}`;
+            const cacheKey = `acelerar_v9_3_${appState.empresa}`;
             const cacheTimeKey = `${cacheKey}_time`;
             const cached = localStorage.getItem(cacheKey);
             const cachedTime = localStorage.getItem(cacheTimeKey);
-            if (cached && cachedTime && (new Date().getTime() - parseInt(cachedTime) < 300000)) { // Cache de 5min para testes
+            if (cached && cachedTime && (new Date().getTime() - parseInt(cachedTime) < 300000)) { 
                 appState.raw_data = JSON.parse(cached);
                 document.getElementById('cache-info').textContent = `Sinc: ${new Date(parseInt(cachedTime)).toLocaleString('pt-BR')}`;
                 renderDashboard();
@@ -260,7 +260,6 @@
                 let adesao = 0;
                 let upsell = 0;
 
-                // CORREÇÃO CRÍTICA: Ploomes entrega valores financeiros em DecimalValue
                 const valMensalidadeSimples = sanitizeVal(getProp(FIELDS.MRR)?.DecimalValue);
                 const valAdesaoSimples = sanitizeVal(getProp(FIELDS.ADESAO_S)?.DecimalValue);
                 const valAumentoMensalidade = sanitizeVal(getProp(FIELDS.UPSELL)?.DecimalValue);
@@ -296,8 +295,8 @@
             };
 
             appState.raw_data = [...vendas.map(d => mapDeal(d, 'Venda')), ...churn.map(d => mapDeal(d, 'Churn'))];
-            localStorage.setItem(`acelerar_v9_2_${appState.empresa}`, JSON.stringify(appState.raw_data));
-            localStorage.setItem(`acelerar_v9_2_${appState.empresa}_time`, new Date().getTime().toString());
+            localStorage.setItem(`acelerar_v9_3_${appState.empresa}`, JSON.stringify(appState.raw_data));
+            localStorage.setItem(`acelerar_v9_3_${appState.empresa}_time`, new Date().getTime().toString());
             renderDashboard();
             hideLoading();
         }
@@ -370,6 +369,8 @@
         function updateCharts(f, mesesEixo) {
             appState.charts.forEach(c => c.destroy());
             appState.charts = [];
+            
+            // CORREÇÃO: Filtrar os meses do eixo para que apareçam apenas os que têm dados reais no ano
             const meses_labels = Object.values(MESES_PT).filter(m => mesesEixo.includes(m));
             const config = PIPELINES[appState.empresa];
 
@@ -380,9 +381,11 @@
                     acc += isCount ? filtered.length : filtered.reduce((s,d) => s + d[valKey], 0);
                     return acc;
                 });
-                const metaData = meses_labels.map((m, i) => {
-                    const idx = Object.values(MESES_PT).indexOf(m);
-                    return (idx + 1) * metaBase;
+                
+                // Meta acumulada deve respeitar o índice do mês real (ex: Junho é o 6º mês)
+                const metaData = meses_labels.map((m) => {
+                    const idx = Object.values(MESES_PT).indexOf(m) + 1;
+                    return idx * metaBase;
                 });
 
                 return new Chart(document.getElementById(id), {
