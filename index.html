@@ -134,20 +134,22 @@
                         <div class="chart-container"><canvas id="chart-evolucao-upsell"></canvas></div>
                         <div class="chart-container"><canvas id="chart-evolucao-churn"></canvas></div>
                     </div>
-                    <div class="grid grid-cols-1 lg:grid-cols-4 gap-3 mb-3">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-3 mb-3">
                         <div class="ranking-card"><h4>🏆 Vendedores (MRR)</h4><div id="rank-vend-mrr"></div></div>
-                        <div class="ranking-card"><h4>🏆 Vendedores (Vol)</h4><div id="rank-vend-vol"></div></div>
-                        <div class="ranking-card"><h4>🏆 SDRs (MRR)</h4><div id="rank-sdr-mrr"></div></div>
-                        <div class="ranking-card"><h4>🏆 SDRs (Vol)</h4><div id="rank-sdr-vol"></div></div>
+                        <div class="ranking-card"><h4>🏆 Vendedores (VOL)</h4><div id="rank-vend-vol"></div></div>
+                        <div class="ranking-card"><h4>🏆 SDRS (MRR)</h4><div id="rank-sdr-mrr"></div></div>
+                        <div class="ranking-card"><h4>🏆 SDRS (VOL)</h4><div id="rank-sdr-vol"></div></div>
                     </div>
                     <div class="table-container">
-                        <table id="table-detalhamento">
-                            <thead><tr><th>Data Ativação</th><th>Cliente</th><th>Vendedor</th><th>SDR</th><th>Produto</th><th>MRR</th><th>Adesão</th><th>Upgrade</th></tr></thead>
+                        <h4 class="text-blue-300 font-bold text-[9px] mb-2 uppercase">Detalhamento de Negócios</h4>
+                        <table id="table-vendas">
+                            <thead><tr><th>Data</th><th>Cliente</th><th>Vendedor</th><th>SDR</th><th>Produto</th><th>MRR</th><th>Adesão</th><th>Upsell</th></tr></thead>
                             <tbody id="tbody-detalhamento"></tbody>
                         </table>
                     </div>
                 </div>
-                <div id="page-inadimplencia" class="hidden">
+
+                <div id="page-inadimplencia" style="display: none;">
                     <h1 class="text-md font-bold text-blue-300 mb-4">📋 Inadimplência</h1>
                     <div class="kpi-row">
                         <div class="kpi-card"><div class="label">Total em Aberto</div><div class="value" id="kpi-total-aberto">R$ 0</div></div>
@@ -174,7 +176,15 @@
             'VMC Tech': { vendas: 110064393, churn: 110065017, meta_mrr: 8000, logo: 'https://raw.githubusercontent.com/gerenciador-ai/Relat-rios-Comercial/main/logo_vmctech.png' },
             'Victec': { vendas: 110023047, churn: 110042202, meta_mrr: 10000, logo: 'https://raw.githubusercontent.com/gerenciador-ai/Relat-rios-Comercial/main/logo_victec.png' }
         };
-        const FIELDS = { SDR: 110777789, MRR: 'deal_41DAB9BE-E571-46BB-B459-96172F50F77C', PRODUTO: 111431860, UPSELL: 'deal_F216F396-539A-494A-9D69-33C5C7436F7C', ADESAO_S: 'deal_C7DDC44C-E2CF-4F09-A72C-F7E63C118ED5', ADESAO_R: 'deal_29010379-597E-42F3-AF6E-5D935C409D9E' };
+        // Mapeamento de Campos Ploomes
+        const FIELDS = { 
+            SDR: 110777789, 
+            MRR: 110778108,        // Mensalidade - Simples
+            PRODUTO: 111431860,    // Produto
+            UPSELL: 111433407,     // Aumento de Mensalidade
+            ADESAO_S: 110778105,   // Adesão - Simples
+            ADESAO_R: 111431861    // Adesão - Recupera
+        };
         const MESES_PT = {1:'Jan',2:'Fev',3:'Mar',4:'Abr',5:'Mai',6:'Jun',7:'Jul',8:'Ago',9:'Set',10:'Out',11:'Nov',12:'Dez'};
 
         let appState = { empresa: 'VMC Tech', page: 'comercial', raw_data: [], charts: [] };
@@ -189,7 +199,7 @@
         }
 
         function sanitizeVal(v) {
-            if (!v) return 0;
+            if (v === null || v === undefined || v === '') return 0;
             if (typeof v === 'number') return v;
             let s = String(v).replace(/[R$\s]/g, '');
             if (s.includes(',')) s = s.replace(/\./g, '').replace(',', '.');
@@ -236,6 +246,7 @@
         async function refreshData() {
             showLoading(`Sincronizando Ploomes...`);
             const config = PIPELINES[appState.empresa];
+            // Filtro: Situação = Ganha (StatusId eq 2)
             const [vendas, churn] = await Promise.all([
                 fetchPloomes(`Deals?$filter=PipelineId eq ${config.vendas} and StatusId eq 2&$expand=OtherProperties,Owner&$top=2000`),
                 fetchPloomes(`Deals?$filter=PipelineId eq ${config.churn}&$expand=OtherProperties,Owner&$top=2000`)
@@ -243,18 +254,46 @@
 
             const mapDeal = (d, type) => {
                 const props = d.OtherProperties || [];
-                const getVal = (id) => props.find(p => p.FieldId === id || p.FieldKey === id)?.Value;
+                const getVal = (id) => props.find(p => p.FieldId === id)?.Value;
                 const date = new Date(d.FinishDate || d.CreateDate || '');
-                let mrr = sanitizeVal(getVal(FIELDS.MRR));
-                if (mrr === 0 && d.Amount > 0) mrr = d.Amount;
+                
+                // Lógica de Produto Padrão
+                let produto = getVal(FIELDS.PRODUTO);
+                if (!produto || produto === '') produto = 'Sittax Simples';
+
+                // Inicialização de valores
+                let mrr = 0;
+                let adesao = 0;
+                let upsell = 0;
+
+                const valMensalidadeSimples = sanitizeVal(getVal(FIELDS.MRR));
+                const valAdesaoSimples = sanitizeVal(getVal(FIELDS.ADESAO_S));
+                const valAumentoMensalidade = sanitizeVal(getVal(FIELDS.UPSELL));
+                const valAdesaoRecupera = sanitizeVal(getVal(FIELDS.ADESAO_R));
+
+                if (produto === 'Sittax Simples') {
+                    // Regra 1: Produto Simples com valores
+                    if (valMensalidadeSimples > 0 || valAdesaoSimples > 0) {
+                        mrr = valMensalidadeSimples;
+                        adesao = valAdesaoSimples;
+                    } 
+                    // Regra 2: Produto Simples sem valores iniciais -> Upsell
+                    else if (valAumentoMensalidade > 0) {
+                        upsell = valAumentoMensalidade;
+                    }
+                } else if (produto === 'Sittax Recupera') {
+                    // Regra 3: Produto Recupera
+                    adesao = valAdesaoRecupera;
+                }
+
                 return {
                     id: d.Id, cliente: d.Title, data: date,
                     vendedor: d.Owner?.Name || 'N/A',
                     sdr: getVal(FIELDS.SDR) || 'N/A',
                     mrr: mrr,
-                    upsell: sanitizeVal(getVal(FIELDS.UPSELL)),
-                    adesao: sanitizeVal(getVal(FIELDS.ADESAO_S)) + sanitizeVal(getVal(FIELDS.ADESAO_R)),
-                    produto: getVal(FIELDS.PRODUTO) || 'Sittax Simples',
+                    upsell: upsell,
+                    adesao: adesao,
+                    produto: produto,
                     status: type, ano: date.getFullYear(), mes: MESES_PT[date.getMonth()+1], mesNum: date.getMonth()+1
                 };
             };
@@ -334,7 +373,6 @@
         function updateCharts(f, mesesEixo) {
             appState.charts.forEach(c => c.destroy());
             appState.charts = [];
-            // Gráficos agora usam APENAS os meses selecionados no filtro (Sincronização de Eixo X)
             const meses_labels = Object.values(MESES_PT).filter(m => mesesEixo.includes(m));
             const config = PIPELINES[appState.empresa];
 
@@ -404,50 +442,43 @@
             renderRank('rank-sdr-vol', sdrData, 'vol', false);
         }
 
-        async function loadInadimplencia() {
-            showLoading('Sincronizando Inadimplência...');
-            const sheetId = INADIMPLENCIA_SHEET_ID[appState.empresa];
-            try {
-                const res = await axios.get(`https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv`);
-                const lines = res.data.split(/\r?\n/).filter(l => l.trim() !== '');
-                const sep = lines[0].includes(';') ? ';' : ',';
-                const headers = lines[0].split(sep).map(h => h.trim());
-                const rows = lines.slice(1).map(line => {
-                    const values = line.split(sep);
-                    const row = {};
-                    headers.forEach((h, i) => row[h] = values[i]);
-                    return row;
-                });
-                const hoje = new Date();
-                const inad = rows.map(r => {
-                    const dStr = r['Vencimento'] || r['Data de Vencimento'] || '';
-                    const p = dStr.split('/');
-                    const data = p.length === 3 ? new Date(p[2], p[1]-1, p[0]) : new Date(NaN);
-                    const dias = isNaN(data.getTime()) ? 0 : Math.floor((hoje - data)/(1000*60*60*24));
-                    return { nome: r['Nome'] || r['Cliente'] || 'N/A', valor: sanitizeVal(r['Valor'] || r['Valor Aberto']), dias: dias > 0 ? dias : 0 };
-                }).filter(i => i.dias > 0);
-                document.getElementById('kpi-total-aberto').textContent = `R$ ${Math.round(inad.reduce((s, i) => s + i.valor, 0)).toLocaleString('pt-BR')}`;
-                document.getElementById('kpi-clientes-inad').textContent = inad.length;
-                document.getElementById('kpi-repasse').textContent = `R$ ${Math.round(inad.reduce((s, i) => s + i.valor, 0)*0.3).toLocaleString('pt-BR')}`;
-                document.getElementById('tbody-inadimplencia').innerHTML = inad.sort((a,b)=>b.dias-a.dias).slice(0, 50).map(i => `
-                    <tr><td>${i.nome}</td><td>R$ ${Math.round(i.valor).toLocaleString('pt-BR')}</td><td>${i.dias} d</td><td>${i.dias > 90 ? '> 90' : '0-90'}</td></tr>
-                `).join('');
-            } catch (e) { console.error(e); }
-            hideLoading();
-        }
-
         function switchPage(p) {
             appState.page = p;
+            document.getElementById('page-comercial').style.display = p === 'comercial' ? 'block' : 'none';
+            document.getElementById('page-inadimplencia').style.display = p === 'inadimplencia' ? 'block' : 'none';
             document.getElementById('btn-comercial').classList.toggle('active', p === 'comercial');
             document.getElementById('btn-inadimplencia').classList.toggle('active', p === 'inadimplencia');
-            document.getElementById('page-comercial').classList.toggle('hidden', p !== 'comercial');
-            document.getElementById('page-inadimplencia').classList.toggle('hidden', p !== 'inadimplencia');
-            if (p === 'inadimplencia') loadInadimplencia(); else applyFilters();
+            if (p === 'inadimplencia') loadInadimplencia();
         }
 
         function changeEmpresa() {
             appState.empresa = document.getElementById('empresa-select').value;
-            if (appState.page === 'comercial') loadData(); else loadInadimplencia();
+            loadData();
+        }
+
+        async function loadInadimplencia() {
+            showLoading(`Lendo Inadimplência...`);
+            const sheetId = INADIMPLENCIA_SHEET_ID[appState.empresa];
+            try {
+                const res = await axios.get(`https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json`);
+                const json = JSON.parse(res.data.substring(47, res.data.length - 2));
+                const rows = json.table.rows.map(r => ({
+                    cliente: r.c[0]?.v || 'N/A',
+                    valor: r.c[1]?.v || 0,
+                    atraso: r.c[2]?.v || 0,
+                    faixa: r.c[3]?.v || 'N/A'
+                })).filter(r => r.valor > 0);
+
+                const total = rows.reduce((s,r) => s + r.valor, 0);
+                document.getElementById('kpi-total-aberto').textContent = `R$ ${Math.round(total).toLocaleString('pt-BR')}`;
+                document.getElementById('kpi-clientes-inad').textContent = rows.length;
+                document.getElementById('kpi-repasse').textContent = `R$ ${Math.round(total * 0.3).toLocaleString('pt-BR')}`;
+
+                document.getElementById('tbody-inadimplencia').innerHTML = rows.map(r => `
+                    <tr><td>${r.cliente}</td><td>R$ ${Math.round(r.valor).toLocaleString('pt-BR')}</td><td>${r.atraso} dias</td><td>${r.faixa}</td></tr>
+                `).join('');
+            } catch (e) { console.error("Inadimplência Error:", e); }
+            hideLoading();
         }
     </script>
 </body>
