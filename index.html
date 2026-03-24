@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hub Holding Acelerar - Portal Estratégico (V7)</title>
+    <title>Hub Holding Acelerar - Portal Estratégico (V8)</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios@1.6.0/dist/axios.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         * { font-family: 'Inter', sans-serif; }
-        body { background-color: #0A1E2E; color: #FFFFFF; margin: 0; padding: 0; }
+        body { background-color: #0A1E2E; color: #FFFFFF; margin: 0; padding: 0; overflow-x: hidden; }
         .login-container, .hub-container { display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; background-color: #0A1E2E; }
         .login-box { background: rgba(11, 42, 78, 0.9); border: 1px solid #89CFF0; border-radius: 20px; padding: 40px; width: 100%; max-width: 400px; box-shadow: 0 8px 32px rgba(137, 207, 240, 0.2); }
         .login-box input { width: 100%; padding: 12px; margin-bottom: 15px; background-color: #F8F9FA; border: 1px solid #89CFF0; border-radius: 8px; color: #0B2A4E; font-weight: 600; }
@@ -22,42 +22,42 @@
         .dashboard-container { display: none; background-color: #0A1E2E; min-height: 100vh; }
         
         /* Compact Header */
-        .dashboard-header { display: flex; justify-content: space-between; align-items: center; padding: 10px 30px; background-color: #0B2A4E; border-bottom: 1px solid #89CFF0; position: sticky; top: 0; z-index: 100; height: 60px; }
-        .dashboard-header .logo { width: 110px; }
-        .dashboard-header .nav-tabs { display: flex; gap: 5px; }
-        .dashboard-header .nav-tabs button { padding: 6px 15px; background-color: transparent; border: 1px solid #89CFF0; color: #FFFFFF; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.8rem; }
+        .dashboard-header { display: flex; justify-content: space-between; align-items: center; padding: 0 20px; background-color: #0B2A4E; border-bottom: 1px solid #89CFF0; position: sticky; top: 0; z-index: 100; height: 50px; }
+        .dashboard-header .logo { width: 90px; }
+        .dashboard-header .nav-tabs { display: flex; gap: 10px; }
+        .dashboard-header .nav-tabs button { padding: 4px 12px; background-color: transparent; border: 1px solid #89CFF0; color: #FFFFFF; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 0.75rem; }
         .dashboard-header .nav-tabs button.active { background-color: #89CFF0; color: #0B2A4E; }
         
-        .dashboard-wrapper { display: flex; min-height: calc(100vh - 60px); }
-        .sidebar { width: 240px; background-color: #0B2A4E; padding: 15px; border-right: 1px solid rgba(137, 207, 240, 0.2); flex-shrink: 0; overflow-y: auto; height: calc(100vh - 60px); position: sticky; top: 60px; }
-        .sidebar h3 { color: #89CFF0; margin-top: 15px; margin-bottom: 8px; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; }
-        .sidebar select { width: 100%; padding: 6px; margin-bottom: 12px; background-color: #F8F9FA; border: 1px solid #89CFF0; border-radius: 6px; color: #0B2A4E; font-weight: 700; font-size: 0.85rem; }
-        .main-content { flex: 1; padding: 25px; overflow-y: auto; }
+        .dashboard-wrapper { display: flex; min-height: calc(100vh - 50px); }
+        .sidebar { width: 220px; background-color: #0B2A4E; padding: 15px; border-right: 1px solid rgba(137, 207, 240, 0.2); flex-shrink: 0; overflow-y: auto; height: calc(100vh - 50px); position: sticky; top: 50px; }
+        .sidebar h3 { color: #89CFF0; margin-top: 15px; margin-bottom: 8px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; }
+        .sidebar select { width: 100%; padding: 5px; margin-bottom: 10px; background-color: #F8F9FA; border: 1px solid #89CFF0; border-radius: 4px; color: #0B2A4E; font-weight: 700; font-size: 0.8rem; }
+        .main-content { flex: 1; padding: 20px; overflow-y: auto; }
         
-        .kpi-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 20px; }
-        .kpi-card { background: rgba(11, 42, 78, 0.6); border: 1px solid rgba(137, 207, 240, 0.3); border-radius: 10px; padding: 10px; text-align: center; }
-        .kpi-card .label { color: #FFF; font-size: 0.6rem; font-weight: 600; margin-bottom: 3px; opacity: 0.8; text-transform: uppercase; }
-        .kpi-card .value { color: #89CFF0; font-size: 1.2rem; font-weight: 800; }
-        .chart-container { background: rgba(11, 42, 78, 0.4); border: 1px solid rgba(137, 207, 240, 0.2); border-radius: 10px; padding: 12px; margin-bottom: 15px; height: 280px; }
-        .table-container { background: rgba(11, 42, 78, 0.4); border: 1px solid rgba(137, 207, 240, 0.2); border-radius: 10px; padding: 12px; overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; font-size: 0.75rem; }
-        th { background-color: rgba(137, 207, 240, 0.1); color: #89CFF0; padding: 8px; text-align: left; border-bottom: 2px solid #89CFF0; }
-        td { padding: 6px 8px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .kpi-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 20px; }
+        .kpi-card { background: rgba(11, 42, 78, 0.6); border: 1px solid rgba(137, 207, 240, 0.3); border-radius: 8px; padding: 8px; text-align: center; }
+        .kpi-card .label { color: #FFF; font-size: 0.55rem; font-weight: 600; margin-bottom: 2px; opacity: 0.8; text-transform: uppercase; }
+        .kpi-card .value { color: #89CFF0; font-size: 1.1rem; font-weight: 800; }
+        .chart-container { background: rgba(11, 42, 78, 0.4); border: 1px solid rgba(137, 207, 240, 0.2); border-radius: 8px; padding: 10px; margin-bottom: 10px; height: 250px; }
+        .table-container { background: rgba(11, 42, 78, 0.4); border: 1px solid rgba(137, 207, 240, 0.2); border-radius: 8px; padding: 10px; overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.7rem; }
+        th { background-color: rgba(137, 207, 240, 0.1); color: #89CFF0; padding: 6px; text-align: left; border-bottom: 2px solid #89CFF0; }
+        td { padding: 5px 6px; border-bottom: 1px solid rgba(255,255,255,0.05); }
         #loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0A1E2E; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 9999; display: none; }
         .spinner { width: 30px; height: 30px; border: 3px solid rgba(137, 207, 240, 0.1); border-top: 3px solid #89CFF0; border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        #floating-exit { position: fixed; bottom: 15px; right: 15px; padding: 8px 15px; background-color: #E74C3C; color: #FFFFFF; border-radius: 6px; font-weight: 700; cursor: pointer; display: none; z-index: 1000; font-size: 0.8rem; }
-        .ranking-card { background: rgba(11, 42, 78, 0.4); border: 1px solid rgba(137, 207, 240, 0.2); border-radius: 10px; padding: 10px; }
-        .ranking-card h4 { color: #89CFF0; font-size: 0.7rem; font-weight: 800; margin-bottom: 10px; text-transform: uppercase; border-bottom: 1px solid rgba(137, 207, 240, 0.2); padding-bottom: 3px; }
+        #floating-exit { position: fixed; bottom: 15px; right: 15px; padding: 6px 12px; background-color: #E74C3C; color: #FFFFFF; border-radius: 4px; font-weight: 700; cursor: pointer; display: none; z-index: 1000; font-size: 0.75rem; }
+        .ranking-card { background: rgba(11, 42, 78, 0.4); border: 1px solid rgba(137, 207, 240, 0.2); border-radius: 8px; padding: 8px; }
+        .ranking-card h4 { color: #89CFF0; font-size: 0.65rem; font-weight: 800; margin-bottom: 8px; text-transform: uppercase; border-bottom: 1px solid rgba(137, 207, 240, 0.2); padding-bottom: 2px; }
     </style>
 </head>
 <body>
-    <div id="loading-overlay"><div class="spinner"></div><p id="loading-text" class="mt-4 text-blue-300 font-bold text-center px-10 text-xs">Sincronizando com Ploomes API...</p></div>
+    <div id="loading-overlay"><div class="spinner"></div><p id="loading-text" class="mt-4 text-blue-300 font-bold text-center px-10 text-[10px]">Sincronizando com Ploomes API...</p></div>
 
     <div id="login-section" class="login-container">
         <div class="login-box">
-            <img src="https://raw.githubusercontent.com/gerenciador-ai/Relat-rios-Comercial/main/logo_acelerar_sidebar.png" class="logo-login mx-auto mb-6 w-40" alt="Acelerar">
-            <h2 class="text-lg font-bold text-center text-blue-300 mb-4">Acesso ao Portal</h2>
+            <img src="https://raw.githubusercontent.com/gerenciador-ai/Relat-rios-Comercial/main/logo_acelerar_sidebar.png" class="logo-login mx-auto mb-6 w-32" alt="Acelerar">
+            <h2 class="text-md font-bold text-center text-blue-300 mb-4">Acesso ao Portal</h2>
             <input type="email" id="email" placeholder="E-mail corporativo" />
             <input type="password" id="password" placeholder="Senha mestra" />
             <button onclick="handleLogin()">🚀 Acessar</button>
@@ -67,12 +67,12 @@
     <div id="hub-section" class="hub-container hidden">
         <div class="hub-box">
             <img src="https://raw.githubusercontent.com/gerenciador-ai/Relat-rios-Comercial/main/logo_acelerar_sidebar.png" class="logo" alt="Acelerar">
-            <h1 class="text-xl font-bold text-blue-300 mb-8">Hub Estratégico</h1>
-            <div class="hub-buttons">
+            <h1 class="text-lg font-bold text-blue-300 mb-8">Hub Estratégico</h1>
+            <div class="hub-buttons flex gap-4">
                 <button class="hub-btn" onclick="openModule('comercial')">📊 Comercial</button>
                 <button class="hub-btn" onclick="openModule('financeiro')">💰 Financeiro</button>
             </div>
-            <button class="mt-10 text-red-400 font-bold underline opacity-50 hover:opacity-100 text-sm" onclick="handleLogout()">Sair do Portal</button>
+            <button class="mt-10 text-red-400 font-bold underline opacity-50 hover:opacity-100 text-xs" onclick="handleLogout()">Sair do Portal</button>
         </div>
     </div>
 
@@ -88,7 +88,7 @@
 
         <div class="dashboard-wrapper">
             <div class="sidebar">
-                <h3 id="user-display" class="text-[9px] opacity-50 border-b border-white/10 pb-1 mb-3">USUÁRIO</h3>
+                <h3 id="user-display" class="text-[8px] opacity-50 border-b border-white/10 pb-1 mb-2">USUÁRIO</h3>
                 <h3>🏢 Empresa</h3>
                 <select id="empresa-select" onchange="changeEmpresa()">
                     <option value="VMC Tech">VMC Tech</option>
@@ -98,7 +98,7 @@
                     <h3>📅 Ano</h3>
                     <select id="ano-select" onchange="updateMeses()"></select>
                     <h3>📅 Meses</h3>
-                    <div id="meses-container" class="max-h-24 overflow-y-auto mb-3 bg-black/20 p-2 rounded text-[10px]"></div>
+                    <div id="meses-container" class="max-h-24 overflow-y-auto mb-2 bg-black/20 p-2 rounded text-[9px]"></div>
                     <h3>📦 Produto</h3>
                     <select id="produto-select" onchange="applyFilters()"></select>
                     <h3>👤 Vendedor</h3>
@@ -106,17 +106,17 @@
                     <h3>👤 SDR</h3>
                     <select id="sdr-select" onchange="applyFilters()"></select>
                 </div>
-                <div class="mt-6 pt-2 border-t border-white/10">
-                    <p id="cache-info" class="text-[8px] text-white/30 uppercase text-center"></p>
-                    <button onclick="refreshData()" class="w-full mt-1 text-[9px] text-blue-400 font-bold hover:underline">🔄 Forçar Sincronização</button>
+                <div class="mt-4 pt-2 border-t border-white/10">
+                    <p id="cache-info" class="text-[7px] text-white/30 uppercase text-center"></p>
+                    <button onclick="refreshData()" class="w-full mt-1 text-[8px] text-blue-400 font-bold hover:underline">🔄 Forçar Sincronização</button>
                 </div>
             </div>
 
             <div class="main-content">
                 <div id="page-comercial">
-                    <div class="flex items-center gap-4 mb-4">
-                        <img id="logo-empresa" src="" style="width: 100px;">
-                        <h1 id="titulo-comercial" class="text-lg font-bold text-blue-300">Resumo Comercial</h1>
+                    <div class="flex items-center gap-3 mb-4">
+                        <img id="logo-empresa" src="" style="width: 80px;">
+                        <h1 id="titulo-comercial" class="text-md font-bold text-blue-300">Resumo Comercial</h1>
                     </div>
                     
                     <div class="kpi-row">
@@ -131,18 +131,18 @@
                         <div class="kpi-card" style="border-left: 2px solid #89CFF0;"><div class="label">Carteira Ativa</div><div class="value" id="kpi-carteira" style="color: #89CFF0;">0</div></div>
                     </div>
 
-                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-3 mb-3">
                         <div class="chart-container"><canvas id="chart-mrr-meta"></canvas></div>
                         <div class="chart-container"><canvas id="chart-contratos-meta"></canvas></div>
                     </div>
 
-                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-3 mb-3">
                         <div class="chart-container"><canvas id="chart-evolucao-mrr"></canvas></div>
                         <div class="chart-container"><canvas id="chart-evolucao-upsell"></canvas></div>
                         <div class="chart-container"><canvas id="chart-evolucao-churn"></canvas></div>
                     </div>
 
-                    <div class="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-4">
+                    <div class="grid grid-cols-1 lg:grid-cols-4 gap-3 mb-3">
                         <div class="ranking-card"><h4>🏆 Vendedores (MRR)</h4><div id="rank-vend-mrr"></div></div>
                         <div class="ranking-card"><h4>🏆 Vendedores (Vol)</h4><div id="rank-vend-vol"></div></div>
                         <div class="ranking-card"><h4>🏆 SDRs (MRR)</h4><div id="rank-sdr-mrr"></div></div>
@@ -158,7 +158,7 @@
                 </div>
 
                 <div id="page-inadimplencia" class="hidden">
-                    <h1 class="text-lg font-bold text-blue-300 mb-4">📋 Inadimplência</h1>
+                    <h1 class="text-md font-bold text-blue-300 mb-4">📋 Inadimplência</h1>
                     <div class="kpi-row">
                         <div class="kpi-card"><div class="label">Total em Aberto</div><div class="value" id="kpi-total-aberto">R$ 0</div></div>
                         <div class="kpi-card"><div class="label">Clientes Inadimplentes</div><div class="value" id="kpi-clientes-inad">0</div></div>
@@ -200,6 +200,7 @@
 
         function sanitizeVal(v) {
             if (!v) return 0;
+            if (typeof v === 'number') return v;
             let s = String(v).replace(/[R$\s]/g, '');
             if (s.includes(',')) s = s.replace(/\./g, '').replace(',', '.');
             return parseFloat(s) || 0;
@@ -231,7 +232,7 @@
         }
 
         async function loadData() {
-            const cacheKey = `acelerar_v7_${appState.empresa}`;
+            const cacheKey = `acelerar_v8_${appState.empresa}`;
             const cacheTimeKey = `${cacheKey}_time`;
             const cached = localStorage.getItem(cacheKey);
             const cachedTime = localStorage.getItem(cacheTimeKey);
@@ -254,11 +255,16 @@
                 const props = d.OtherProperties || [];
                 const getVal = (id) => props.find(p => p.FieldId === id)?.Value;
                 const date = new Date(d.FinishDate || d.CreateDate || '');
+                
+                // Lógica de Contingência para Valores: Se campo personalizado for 0/null, usa Amount nativo
+                let mrr = sanitizeVal(getVal(FIELDS.MRR));
+                if (mrr === 0 && d.Amount > 0) mrr = d.Amount;
+
                 return {
                     id: d.Id, cliente: d.Title, data: date,
                     vendedor: d.Owner?.Name || 'N/A',
                     sdr: getVal(FIELDS.SDR) || 'N/A',
-                    mrr: sanitizeVal(getVal(FIELDS.MRR)) || sanitizeVal(d.Amount),
+                    mrr: mrr,
                     upsell: sanitizeVal(getVal(FIELDS.UPSELL)),
                     adesao: sanitizeVal(getVal(FIELDS.ADESAO_S)) + sanitizeVal(getVal(FIELDS.ADESAO_R)),
                     produto: getVal(FIELDS.PRODUTO) || 'Sittax Simples',
@@ -267,8 +273,8 @@
             };
 
             appState.raw_data = [...vendas.map(d => mapDeal(d, 'Venda')), ...churn.map(d => mapDeal(d, 'Churn'))];
-            localStorage.setItem(`acelerar_v7_${appState.empresa}`, JSON.stringify(appState.raw_data));
-            localStorage.setItem(`acelerar_v7_${appState.empresa}_time`, new Date().getTime().toString());
+            localStorage.setItem(`acelerar_v8_${appState.empresa}`, JSON.stringify(appState.raw_data));
+            localStorage.setItem(`acelerar_v8_${appState.empresa}_time`, new Date().getTime().toString());
             renderDashboard();
             hideLoading();
         }
@@ -291,6 +297,7 @@
 
         function updateMeses() {
             const ano = parseInt(document.getElementById('ano-select').value);
+            // Filtro de Meses 100% Dinâmico: Apenas meses que possuem dados para o ano selecionado
             const mesesReais = [...new Set(appState.raw_data.filter(d => d.ano === ano).map(d => d.mes))];
             document.getElementById('meses-container').innerHTML = Object.values(MESES_PT).map(m => `
                 <label class="flex items-center text-white mb-1 cursor-pointer hover:bg-white/10 p-1 rounded ${mesesReais.includes(m) ? '' : 'hidden'}">
@@ -360,9 +367,9 @@
                     type: 'bar',
                     data: { labels: meses_labels, datasets: [
                         { label, data: accData, backgroundColor: '#89CFF0', order: 2 },
-                        { label: 'Meta', data: metaData, type: 'line', borderColor: '#FFF', borderWidth: 2, pointRadius: 0, order: 1 }
+                        { label: 'Meta', data: metaData, type: 'line', borderColor: '#FFF', borderWidth: 1.5, pointRadius: 0, order: 1 }
                     ]},
-                    options: { responsive: true, maintainAspectRatio: false, scales: { y: { ticks: { color: '#FFF', font: { size: 9 } } }, x: { ticks: { color: '#FFF', font: { size: 9 } } } }, plugins: { legend: { labels: { color: '#FFF', font: { size: 10 } } } } }
+                    options: { responsive: true, maintainAspectRatio: false, scales: { y: { ticks: { color: '#FFF', font: { size: 8 } } }, x: { ticks: { color: '#FFF', font: { size: 8 } } } }, plugins: { legend: { labels: { color: '#FFF', font: { size: 9 } } } } }
                 });
             };
 
@@ -373,7 +380,7 @@
                 return new Chart(document.getElementById(id), {
                     type: 'bar',
                     data: { labels: meses_labels, datasets: [{ label, data: meses_labels.map(m => f.filter(d => d.mes === m && (status ? d.status === status : true)).reduce((s,d) => s + d[valKey], 0)), backgroundColor: color }] },
-                    options: { responsive: true, maintainAspectRatio: false, scales: { y: { ticks: { color: '#FFF', font: { size: 9 } } }, x: { ticks: { color: '#FFF', font: { size: 9 } } } }, plugins: { legend: { labels: { color: '#FFF', font: { size: 10 } } } } }
+                    options: { responsive: true, maintainAspectRatio: false, scales: { y: { ticks: { color: '#FFF', font: { size: 8 } } }, x: { ticks: { color: '#FFF', font: { size: 8 } } } }, plugins: { legend: { labels: { color: '#FFF', font: { size: 9 } } } } }
                 });
             };
             appState.charts.push(evolChart('chart-evolucao-mrr', 'MRR Mensal', '#89CFF0', 'mrr', 'Venda'));
@@ -397,11 +404,11 @@
             const renderRank = (id, data, sortKey, isMoeda) => {
                 const sorted = data.sort((a,b) => b[sortKey] - a[sortKey]).slice(0, 5);
                 document.getElementById(id).innerHTML = sorted.map((r, i) => `
-                    <div class="flex justify-between text-[9px] mb-1">
+                    <div class="flex justify-between text-[8px] mb-1">
                         <span>${i+1}. ${r.name}</span>
                         <span class="font-bold">${isMoeda ? 'R$ '+Math.round(r.val).toLocaleString('pt-BR') : r.vol}</span>
                     </div>
-                `).join('') || '<p class="text-[8px] opacity-30">Sem dados</p>';
+                `).join('') || '<p class="text-[7px] opacity-30">Sem dados</p>';
             };
 
             const vendData = getRank('vendedor');
