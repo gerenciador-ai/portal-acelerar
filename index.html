@@ -74,6 +74,11 @@
         .table-container td { padding: 10px 12px; border-bottom: 1px solid rgba(137, 207, 240, 0.2); color: #FFFFFF; }
         .table-container tr:hover { background-color: rgba(137, 207, 240, 0.1); }
         
+        /* Loading Overlay */
+        #loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(10, 30, 46, 0.9); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 9999; display: none; }
+        .spinner { width: 50px; height: 50px; border: 5px solid #0B2A4E; border-top: 5px solid #89CFF0; border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
         /* Floating Exit Button */
         #floating-exit { position: fixed; bottom: 20px; right: 20px; padding: 12px 20px; background-color: #E74C3C; color: #FFFFFF; border: none; border-radius: 8px; cursor: pointer; font-weight: 700; display: none; z-index: 1000; box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3); }
         #floating-exit:hover { background-color: #C0392B; }
@@ -83,6 +88,12 @@
     </style>
 </head>
 <body>
+    <!-- LOADING OVERLAY -->
+    <div id="loading-overlay">
+        <div class="spinner"></div>
+        <p id="loading-text" style="margin-top: 20px; color: #89CFF0; font-weight: 600;">Carregando dados da Holding...</p>
+    </div>
+
     <!-- LOGIN SECTION -->
     <div id="login-section" class="login-container">
         <div class="login-box">
@@ -221,48 +232,30 @@
                     <!-- Charts -->
                     <h2>📈 Evolução Mensal</h2>
                     <div class="chart-grid">
-                        <div class="chart-container">
-                            <canvas id="chart-mrr-conq"></canvas>
-                        </div>
-                        <div class="chart-container">
-                            <canvas id="chart-upsell"></canvas>
-                        </div>
-                        <div class="chart-container">
-                            <canvas id="chart-churn"></canvas>
-                        </div>
+                        <div class="chart-container"><canvas id="chart-mrr-conq"></canvas></div>
+                        <div class="chart-container"><canvas id="chart-upsell"></canvas></div>
+                        <div class="chart-container"><canvas id="chart-churn"></canvas></div>
                     </div>
 
                     <!-- Metas -->
                     <h2>🎯 Performance vs. Metas</h2>
                     <div class="chart-grid">
-                        <div class="chart-container">
-                            <canvas id="chart-meta-mrr"></canvas>
-                        </div>
-                        <div class="chart-container">
-                            <canvas id="chart-meta-contratos"></canvas>
-                        </div>
+                        <div class="chart-container"><canvas id="chart-meta-mrr"></canvas></div>
+                        <div class="chart-container"><canvas id="chart-meta-contratos"></canvas></div>
                     </div>
 
                     <!-- Rankings -->
                     <h2>🏆 Rankings de Performance Comercial</h2>
                     <h3 style="color: #89CFF0; margin-top: 20px;">👤 Vendedores</h3>
                     <div class="chart-grid">
-                        <div class="chart-container">
-                            <canvas id="chart-rank-vend-mrr"></canvas>
-                        </div>
-                        <div class="chart-container">
-                            <canvas id="chart-rank-vend-cont"></canvas>
-                        </div>
+                        <div class="chart-container"><canvas id="chart-rank-vend-mrr"></canvas></div>
+                        <div class="chart-container"><canvas id="chart-rank-vend-cont"></canvas></div>
                     </div>
 
                     <h3 style="color: #89CFF0; margin-top: 20px;">🎧 SDRs</h3>
                     <div class="chart-grid">
-                        <div class="chart-container">
-                            <canvas id="chart-rank-sdr-mrr"></canvas>
-                        </div>
-                        <div class="chart-container">
-                            <canvas id="chart-rank-sdr-cont"></canvas>
-                        </div>
+                        <div class="chart-container"><canvas id="chart-rank-sdr-mrr"></canvas></div>
+                        <div class="chart-container"><canvas id="chart-rank-sdr-cont"></canvas></div>
                     </div>
 
                     <!-- Detalhamento -->
@@ -396,15 +389,33 @@
                 produto: 'Todos',
                 vendedor: 'Todos',
                 sdr: 'Todos'
-            }
+            },
+            charts: []
         };
+
+        // ============================================
+        // UTILITÁRIOS
+        // ============================================
+        function showLoading(text) {
+            document.getElementById('loading-overlay').style.display = 'flex';
+            document.getElementById('loading-text').textContent = text;
+        }
+
+        function hideLoading() {
+            document.getElementById('loading-overlay').style.display = 'none';
+        }
+
+        function clearCharts() {
+            appState.charts.forEach(chart => chart.destroy());
+            appState.charts = [];
+        }
 
         // ============================================
         // FUNÇÕES DE AUTENTICAÇÃO
         // ============================================
         async function handleLogin() {
-            const email = document.getElementById('email').value.toLowerCase();
-            const senha = document.getElementById('password').value;
+            const email = document.getElementById('email').value.toLowerCase().trim();
+            const senha = document.getElementById('password').value.trim();
             const errorMsg = document.getElementById('error-msg');
 
             if (!email || !senha) {
@@ -419,14 +430,15 @@
                 return;
             }
 
+            showLoading('Autenticando...');
             try {
-                // Valida o e-mail na planilha de usuários
                 const usuarios = await loadData(USUARIOS_SHEET_ID);
-                const emailsAutorizados = usuarios.map(u => u.Email?.toLowerCase() || '');
+                const emailsAutorizados = usuarios.map(u => String(u.Email || '').toLowerCase().trim());
                 
                 if (!emailsAutorizados.includes(email)) {
                     errorMsg.classList.remove('hidden');
                     errorMsg.textContent = '❌ E-mail não autorizado.';
+                    hideLoading();
                     return;
                 }
 
@@ -438,24 +450,20 @@
                 document.getElementById('hub-section').classList.remove('hidden');
                 errorMsg.classList.add('hidden');
             } catch (error) {
-                console.error('Erro ao validar usuário:', error);
+                console.error('Erro login:', error);
                 errorMsg.classList.remove('hidden');
-                errorMsg.textContent = '❌ Erro ao conectar. Tente novamente.';
+                errorMsg.textContent = '❌ Erro ao conectar. Verifique sua internet.';
             }
+            hideLoading();
         }
 
         function handleLogout() {
-            sessionStorage.clear();
-            localStorage.clear();
             appState.usuario_logado = false;
-            appState.email_usuario = null;
-            
             document.getElementById('login-section').classList.remove('hidden');
             document.getElementById('hub-section').classList.add('hidden');
             document.getElementById('dashboard-section').classList.add('hidden');
-            document.getElementById('email').value = '';
-            document.getElementById('password').value = '';
             document.getElementById('floating-exit').style.display = 'none';
+            clearCharts();
         }
 
         function openModule(module) {
@@ -463,13 +471,12 @@
                 appState.page = 'comercial';
                 document.getElementById('hub-section').classList.add('hidden');
                 document.getElementById('dashboard-section').classList.remove('hidden');
-                document.getElementById('filtros-comercial').style.display = 'block';
                 document.getElementById('page-comercial').classList.remove('hidden');
                 document.getElementById('page-inadimplencia').classList.add('hidden');
                 document.getElementById('floating-exit').style.display = 'block';
                 loadDashboard();
-            } else if (module === 'financeiro') {
-                alert('Módulo Financeiro em desenvolvimento. Volte em breve!');
+            } else {
+                alert('Módulo Financeiro em desenvolvimento.');
             }
         }
 
@@ -484,18 +491,16 @@
             if (page === 'comercial') {
                 document.getElementById('page-comercial').classList.remove('hidden');
                 document.getElementById('page-inadimplencia').classList.add('hidden');
-                document.getElementById('filtros-comercial').style.display = 'block';
                 loadDashboard();
-            } else if (page === 'inadimplencia') {
+            } else {
                 document.getElementById('page-comercial').classList.add('hidden');
                 document.getElementById('page-inadimplencia').classList.remove('hidden');
-                document.getElementById('filtros-comercial').style.display = 'none';
                 loadInadimplencia();
             }
         }
 
         // ============================================
-        // FUNÇÕES DE CARREGAMENTO DE DADOS
+        // DATA LOADING
         // ============================================
         async function loadData(sheetId, gid = null) {
             try {
@@ -503,503 +508,238 @@
                     ? `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv&gid=${gid}`
                     : `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv`;
                 
-                const response = await axios.get(url);
-                const lines = response.data.trim().split('\n');
-                const headers = lines[0].split(',').map(h => h.trim());
+                const response = await axios.get(url, { timeout: 10000 });
+                const csvData = response.data;
                 
+                // Parser CSV simples (considerando vírgula como separador)
+                const lines = csvData.split(/\r?\n/);
+                if (lines.length < 2) return [];
+
+                const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, ''));
                 const data = [];
+
                 for (let i = 1; i < lines.length; i++) {
-                    const values = lines[i].split(',');
+                    if (!lines[i]) continue;
+                    // Regex para lidar com vírgulas dentro de aspas
+                    const values = lines[i].match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g) || lines[i].split(',');
                     const row = {};
                     headers.forEach((header, index) => {
-                        row[header] = values[index]?.trim() || '';
+                        row[header] = (values[index] || '').trim().replace(/^"|"$/g, '');
                     });
                     data.push(row);
                 }
                 return data;
             } catch (error) {
-                console.error('Erro ao carregar dados:', error);
+                console.error(`Erro ao carregar ${sheetId}:`, error);
                 return [];
             }
         }
 
         function parseCurrency(value) {
-            if (!value || value === '') return 0;
+            if (!value) return 0;
             if (typeof value === 'number') return value;
-            
-            let s = String(value).replace('R$', '').trim();
-            if (!s) return 0;
-            
+            let s = String(value).replace(/[R$\s]/g, '');
             if (s.includes(',')) {
                 s = s.replace(/\./g, '').replace(',', '.');
-            } else if (s.includes('.')) {
-                const parts = s.split('.');
-                if (parts[parts.length - 1].length !== 2) {
-                    s = s.replace(/\./g, '');
-                }
             }
-            
-            try {
-                return parseFloat(s) || 0;
-            } catch {
-                return 0;
-            }
+            return parseFloat(s) || 0;
         }
 
-        async function processarDados(empresa) {
+        async function processarVendas(empresa) {
             const config = EMPRESAS[empresa];
             const df_v = await loadData(config.vendas_id, config.vendas_gid);
             const df_c = await loadData(config.cancelados_id, config.cancelados_gid);
             
-            if (df_v.length === 0) return { vendas: [], cancelados: [] };
+            if (df_v.length === 0) return [];
 
-            // Processa vendas
-            let vendas = df_v.map(row => ({
-                vendedor: row['Vendedor'] || 'N/A',
-                sdr: row['SDR'] || 'N/A',
-                cliente: row['Cliente'] || 'N/A',
-                cnpj: String(row['CNPJ do Cliente'] || '').replace(/\D/g, ''),
-                produto: row['Qual produto?'] || 'Sittax Simples',
-                mrr: parseCurrency(row['Mensalidade - Simples']),
-                adesao: parseCurrency(row['Adesão - Simples']) + parseCurrency(row['Adesão - Recupera']),
-                upgrade: parseCurrency(row['Aumento da mensalidade']),
-                data: new Date(row['Data de Ativação']),
-                status: 'Confirmada',
-                data_cancelamento: null
-            })).filter(v => !isNaN(v.data.getTime()));
-
-            // Adiciona ano e mês
-            vendas = vendas.map(v => ({
-                ...v,
-                ano: v.data.getFullYear(),
-                mes_num: v.data.getMonth() + 1,
-                mes_nome: MESES_PT[v.data.getMonth() + 1]
-            }));
-
-            // Processa cancelados
-            if (df_c.length > 0) {
-                const col_cnpj_c = Object.keys(df_c[0]).find(c => c.toLowerCase().includes('cnpj') || c.toLowerCase().includes('cliente')) || Object.keys(df_c[0])[0];
-                const col_data_canc = Object.keys(df_c[0]).find(c => c.toLowerCase().includes('cancelamento')) || Object.keys(df_c[0])[Object.keys(df_c[0]).length - 1];
-                const col_data_ativ_c = Object.keys(df_c[0]).find(c => c.toLowerCase().includes('ativação') || c.toLowerCase().includes('ativacao'));
-
-                if (col_data_ativ_c) {
-                    const cancelados = df_c.map(row => ({
-                        cnpj: String(row[col_cnpj_c] || '').replace(/\D/g, ''),
-                        data_ativ_ref: new Date(row[col_data_ativ_c]),
-                        data_canc_real: new Date(row[col_data_canc])
-                    })).filter(c => !isNaN(c.data_ativ_ref.getTime()) && !isNaN(c.data_canc_real.getTime()));
-
-                    // Merge com vendas
-                    vendas = vendas.map(v => {
-                        const cancelado = cancelados.find(c => c.cnpj === v.cnpj && c.data_ativ_ref.getTime() === v.data.getTime());
-                        if (cancelado) {
-                            return {
-                                ...v,
-                                status: 'Cancelada',
-                                data_cancelamento: cancelado.data_canc_real
-                            };
-                        }
-                        return v;
-                    });
+            // Mapeamento de colunas (baseado no comercial.py original)
+            let vendas = df_v.map(row => {
+                const dataStr = row['Data de Ativação'] || '';
+                const parts = dataStr.split('/');
+                let data = new Date(NaN);
+                if (parts.length === 3) {
+                    data = new Date(parts[2], parts[1]-1, parts[0]); // Formato DD/MM/YYYY
                 }
+
+                return {
+                    vendedor: row['Vendedor'] || 'N/A',
+                    sdr: row['SDR'] || 'N/A',
+                    cliente: row['Cliente'] || 'N/A',
+                    cnpj: String(row['CNPJ do Cliente'] || '').replace(/\D/g, ''),
+                    produto: row['Qual produto?'] || 'Sittax Simples',
+                    mrr: parseCurrency(row['Mensalidade - Simples']),
+                    adesao: parseCurrency(row['Adesão - Simples']) + parseCurrency(row['Adesão - Recupera']),
+                    upgrade: parseCurrency(row['Aumento da mensalidade']),
+                    data: data,
+                    status: 'Confirmada',
+                    data_cancelamento: null
+                };
+            }).filter(v => !isNaN(v.data.getTime()));
+
+            // Adiciona campos de tempo
+            vendas.forEach(v => {
+                v.ano = v.data.getFullYear();
+                v.mes_num = v.data.getMonth() + 1;
+                v.mes_nome = MESES_PT[v.mes_num];
+            });
+
+            // Lógica de Churn (CNPJ + Data Ativação)
+            if (df_c.length > 0) {
+                df_c.forEach(row => {
+                    const cnpj_c = String(row['CNPJ do Cliente'] || row['CNPJ'] || '').replace(/\D/g, '');
+                    const data_ativ_c_str = row['Data de Ativação'] || '';
+                    const parts = data_ativ_c_str.split('/');
+                    if (parts.length === 3) {
+                        const data_ativ_c = new Date(parts[2], parts[1]-1, parts[0]);
+                        const v_idx = vendas.findIndex(v => v.cnpj === cnpj_c && v.data.getTime() === data_ativ_c.getTime());
+                        if (v_idx !== -1) {
+                            vendas[v_idx].status = 'Cancelada';
+                        }
+                    }
+                });
             }
 
-            return { vendas, cancelados: df_c };
+            return vendas;
         }
 
-        async function changeEmpresa() {
-            appState.empresa = document.getElementById('empresa-select').value;
-            document.getElementById('logo-empresa').src = EMPRESAS[appState.empresa].logo;
-            document.getElementById('logo-empresa-inad').src = EMPRESAS[appState.empresa].logo;
-            document.getElementById('titulo-comercial').textContent = `📊 Resumo Comercial - ${appState.empresa}`;
-            document.getElementById('titulo-inadimplencia').textContent = `📋 Inadimplência - ${appState.empresa}`;
-            loadDashboard();
-        }
-
-        function applyFilters() {
-            appState.filtros.ano = parseInt(document.getElementById('ano-select').value);
-            appState.filtros.produto = document.getElementById('produto-select').value;
-            appState.filtros.vendedor = document.getElementById('vendedor-select').value;
-            appState.filtros.sdr = document.getElementById('sdr-select').value;
-
-            const checkboxes = document.querySelectorAll('input[name="mes-checkbox"]:checked');
-            appState.filtros.meses = Array.from(checkboxes).map(cb => cb.value);
-
-            loadDashboard();
-        }
-
+        // ============================================
+        // RENDERIZAÇÃO
+        // ============================================
         async function loadDashboard() {
-            const { vendas } = await processarDados(appState.empresa);
+            showLoading(`Carregando Comercial ${appState.empresa}...`);
+            const vendas = await processarVendas(appState.empresa);
             appState.dados_comercial = vendas;
 
-            // Popula filtros
-            const anos = [...new Set(vendas.map(v => v.ano))].sort((a, b) => b - a);
-            const produtos = [...new Set(vendas.map(v => v.produto))];
-            const vendedores = [...new Set(vendas.map(v => v.vendedor))];
-            const sdrs = [...new Set(vendas.map(v => v.sdr))];
+            if (vendas.length === 0) {
+                alert('Aviso: Nenhuma venda encontrada para esta empresa. Verifique se as planilhas estão publicadas.');
+                hideLoading();
+                return;
+            }
 
-            // Popula seletores
-            document.getElementById('produto-select').innerHTML = '<option value="Todos">Todos</option>' + 
-                produtos.map(p => `<option value="${p}">${p}</option>`).join('');
-            document.getElementById('vendedor-select').innerHTML = '<option value="Todos">Todos</option>' + 
-                vendedores.map(v => `<option value="${v}">${v}</option>`).join('');
-            document.getElementById('sdr-select').innerHTML = '<option value="Todos">Todos</option>' + 
-                sdrs.map(s => `<option value="${s}">${s}</option>`).join('');
+            // Popula Filtros (SDR, Vendedor, Produto)
+            const produtos = ['Todos', ...new Set(vendas.map(v => v.produto))];
+            const vendedores = ['Todos', ...new Set(vendas.map(v => v.vendedor))];
+            const sdrs = ['Todos', ...new Set(vendas.map(v => v.sdr))];
 
-            // Popula meses
-            const anoSel = appState.filtros.ano;
-            const mesesDoAno = [...new Set(vendas.filter(v => v.ano === anoSel).map(v => v.mes_nome))];
+            document.getElementById('produto-select').innerHTML = produtos.map(p => `<option value="${p}">${p}</option>`).join('');
+            document.getElementById('vendedor-select').innerHTML = vendedores.map(v => `<option value="${v}">${v}</option>`).join('');
+            document.getElementById('sdr-select').innerHTML = sdrs.map(s => `<option value="${s}">${s}</option>`).join('');
+
+            // Popula Meses do Ano Selecionado
+            const anoSel = parseInt(document.getElementById('ano-select').value);
+            const mesesNoAno = [...new Set(vendas.filter(v => v.ano === anoSel).map(v => v.mes_nome))];
             const mesContainer = document.getElementById('meses-container');
-            mesContainer.innerHTML = mesesDoAno.map(m => `
-                <label style="display: flex; align-items: center; margin-bottom: 8px; color: #FFFFFF;">
-                    <input type="checkbox" name="mes-checkbox" value="${m}" style="margin-right: 8px;" onchange="applyFilters()">
-                    ${m}
+            mesContainer.innerHTML = mesesNoAno.map(m => `
+                <label style="display: flex; align-items: center; margin-bottom: 5px;">
+                    <input type="checkbox" name="mes-checkbox" value="${m}" checked onchange="applyFilters()">
+                    <span style="margin-left: 8px;">${m}</span>
                 </label>
             `).join('');
 
-            // Se nenhum mês foi selecionado, seleciona todos
-            if (appState.filtros.meses.length === 0) {
-                document.querySelectorAll('input[name="mes-checkbox"]').forEach(cb => cb.checked = true);
-                appState.filtros.meses = mesesDoAno;
-            }
+            applyFilters();
+            hideLoading();
+        }
 
-            // Aplica filtros
-            let vendas_filtradas = vendas.filter(v => 
-                v.ano === appState.filtros.ano &&
-                appState.filtros.meses.includes(v.mes_nome) &&
-                (appState.filtros.produto === 'Todos' || v.produto === appState.filtros.produto) &&
-                (appState.filtros.vendedor === 'Todos' || v.vendedor === appState.filtros.vendedor) &&
-                (appState.filtros.sdr === 'Todos' || v.sdr === appState.filtros.sdr)
+        function applyFilters() {
+            const ano = parseInt(document.getElementById('ano-select').value);
+            const produto = document.getElementById('produto-select').value;
+            const vendedor = document.getElementById('vendedor-select').value;
+            const sdr = document.getElementById('sdr-select').value;
+            const mesesChecked = Array.from(document.querySelectorAll('input[name="mes-checkbox"]:checked')).map(cb => cb.value);
+
+            let filtrados = appState.dados_comercial.filter(v => 
+                v.ano === ano &&
+                mesesChecked.includes(v.mes_nome) &&
+                (produto === 'Todos' || v.produto === produto) &&
+                (vendedor === 'Todos' || v.vendedor === vendedor) &&
+                (sdr === 'Todos' || v.sdr === sdr)
             );
 
-            // Calcula KPIs
-            const mrr_conq = vendas_filtradas.reduce((sum, v) => sum + v.mrr, 0);
-            const cl_fech = vendas_filtradas.length;
-            
-            const df_churn = vendas.filter(v => 
-                v.ano === appState.filtros.ano &&
-                appState.filtros.meses.includes(v.mes_nome) &&
-                v.status === 'Cancelada' &&
-                v.produto.includes('Sittax Simples')
-            );
-            const mrr_perd = df_churn.reduce((sum, v) => sum + v.mrr, 0);
-            const cl_canc = df_churn.length;
-            const mrr_ativo_net = mrr_conq - mrr_perd;
-            const upsell_v = vendas_filtradas.reduce((sum, v) => sum + v.upgrade, 0);
-            const upsell_q = vendas_filtradas.filter(v => v.upgrade > 0).length;
-            const tkt_med = cl_fech > 0 ? mrr_conq / cl_fech : 0;
-            const base_ativa = vendas.filter(v => v.status === 'Confirmada').length - vendas.filter(v => v.status === 'Cancelada').length;
-            const churn_p = mrr_conq > 0 ? (mrr_perd / mrr_conq * 100) : 0;
+            updateKPIs(filtrados);
+            updateCharts(filtrados, ano);
+            updateTable(filtrados);
+        }
 
-            // Atualiza KPIs
+        function updateKPIs(dados) {
+            const mrr_conq = dados.reduce((s, v) => s + v.mrr, 0);
+            const mrr_perd = dados.filter(v => v.status === 'Cancelada').reduce((s, v) => s + v.mrr, 0);
+            const mrr_net = mrr_conq - mrr_perd;
+            const upsell = dados.reduce((s, v) => s + v.upgrade, 0);
+            const upsell_q = dados.filter(v => v.upgrade > 0).length;
+            const adesao = dados.reduce((s, v) => s + v.adesao, 0);
+            const cl_fech = dados.length;
+            const cl_canc = dados.filter(v => v.status === 'Cancelada').length;
+            const tkt = cl_fech > 0 ? mrr_conq / cl_fech : 0;
+            const base = appState.dados_comercial.filter(v => v.status === 'Confirmada').length;
+
             document.getElementById('kpi-mrr-conq').textContent = `R$ ${Math.round(mrr_conq).toLocaleString('pt-BR')}`;
-            document.getElementById('kpi-mrr-net').textContent = `R$ ${Math.round(mrr_ativo_net).toLocaleString('pt-BR')}`;
+            document.getElementById('kpi-mrr-net').textContent = `R$ ${Math.round(mrr_net).toLocaleString('pt-BR')}`;
             document.getElementById('kpi-mrr-perd').textContent = `R$ ${Math.round(mrr_perd).toLocaleString('pt-BR')}`;
-            document.getElementById('kpi-churn-pct').textContent = `-${churn_p.toFixed(1)}%`;
-            document.getElementById('kpi-upsell').textContent = `R$ ${Math.round(upsell_v).toLocaleString('pt-BR')}`;
+            document.getElementById('kpi-churn-pct').textContent = mrr_conq > 0 ? `-${(mrr_perd/mrr_conq*100).toFixed(1)}%` : '0%';
+            document.getElementById('kpi-upsell').textContent = `R$ ${Math.round(upsell).toLocaleString('pt-BR')}`;
             document.getElementById('kpi-upsell-qty').textContent = `${upsell_q} eventos`;
-            document.getElementById('kpi-ticket').textContent = `R$ ${Math.round(tkt_med).toLocaleString('pt-BR')}`;
-            document.getElementById('kpi-adesao').textContent = `R$ ${Math.round(vendas_filtradas.reduce((sum, v) => sum + v.adesao, 0)).toLocaleString('pt-BR')}`;
+            document.getElementById('kpi-ticket').textContent = `R$ ${Math.round(tkt).toLocaleString('pt-BR')}`;
+            document.getElementById('kpi-adesao').textContent = `R$ ${Math.round(adesao).toLocaleString('pt-BR')}`;
             document.getElementById('kpi-cl-fech').textContent = cl_fech;
             document.getElementById('kpi-cl-canc').textContent = cl_canc;
-            document.getElementById('kpi-base-ativa').textContent = base_ativa;
-
-            // Renderiza gráficos
-            renderCharts(vendas, vendas_filtradas);
-
-            // Renderiza tabela
-            renderTable(vendas_filtradas);
+            document.getElementById('kpi-base-ativa').textContent = base;
         }
 
-        function renderCharts(vendas, vendas_filtradas) {
-            // Gráfico MRR Conquistado
-            const mrrPorMes = {};
-            vendas.filter(v => v.ano === appState.filtros.ano).forEach(v => {
-                if (!mrrPorMes[v.mes_nome]) mrrPorMes[v.mes_nome] = 0;
-                mrrPorMes[v.mes_nome] += v.mrr;
-            });
+        function updateCharts(dados, ano) {
+            clearCharts();
+            
+            // Agrupamento por mês para evolução
+            const meses_labels = Object.values(MESES_PT);
+            const mrr_evo = meses_labels.map(m => dados.filter(v => v.mes_nome === m).reduce((s, v) => s + v.mrr, 0));
+            const upsell_evo = meses_labels.map(m => dados.filter(v => v.mes_nome === m).reduce((s, v) => s + v.upgrade, 0));
+            const churn_evo = meses_labels.map(m => dados.filter(v => v.mes_nome === m && v.status === 'Cancelada').reduce((s, v) => s + v.mrr, 0));
 
-            const meses_ordem = Object.keys(MESES_PT).map(k => MESES_PT[k]);
-            const labels = meses_ordem.filter(m => mrrPorMes[m]);
-            const data_mrr = labels.map(m => mrrPorMes[m] || 0);
+            const config = (id, label, data, color) => {
+                const ctx = document.getElementById(id).getContext('2d');
+                const chart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: meses_labels,
+                        datasets: [{ label: label, data: data, backgroundColor: color, borderRadius: 5 }]
+                    },
+                    options: { 
+                        responsive: true, maintainAspectRatio: false,
+                        plugins: { legend: { labels: { color: '#FFF' } } },
+                        scales: { y: { ticks: { color: '#FFF' }, grid: { color: 'rgba(255,255,255,0.1)' } }, x: { ticks: { color: '#FFF' } } }
+                    }
+                });
+                appState.charts.push(chart);
+            };
 
-            const ctx1 = document.getElementById('chart-mrr-conq').getContext('2d');
-            new Chart(ctx1, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'MRR Conquistado',
-                        data: data_mrr,
-                        backgroundColor: CORES.primary,
-                        borderColor: CORES.secondary,
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { labels: { color: CORES.text } } },
-                    scales: { y: { ticks: { color: CORES.text }, grid: { color: 'rgba(137, 207, 240, 0.1)' } }, x: { ticks: { color: CORES.text }, grid: { color: 'rgba(137, 207, 240, 0.1)' } } }
-                }
-            });
+            config('chart-mrr-conq', 'MRR Conquistado', mrr_evo, CORES.primary);
+            config('chart-upsell', 'Upsell', upsell_evo, CORES.secondary);
+            config('chart-churn', 'Churn', churn_evo, CORES.churn);
 
-            // Gráfico Upsell
-            const upsellPorMes = {};
-            vendas.filter(v => v.ano === appState.filtros.ano && v.upgrade > 0).forEach(v => {
-                if (!upsellPorMes[v.mes_nome]) upsellPorMes[v.mes_nome] = 0;
-                upsellPorMes[v.mes_nome] += v.upgrade;
-            });
+            // Rankings
+            const rank = (id, field, title) => {
+                const map = {};
+                dados.forEach(v => { map[v[field]] = (map[v[field]] || 0) + v.mrr; });
+                const sorted = Object.entries(map).sort((a,b) => b[1]-a[1]).slice(0,5);
+                
+                const ctx = document.getElementById(id).getContext('2d');
+                const chart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: sorted.map(s => s[0]),
+                        datasets: [{ label: title, data: sorted.map(s => s[1]), backgroundColor: CORES.secondary }]
+                    },
+                    options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+                });
+                appState.charts.push(chart);
+            };
 
-            const data_upsell = labels.map(m => upsellPorMes[m] || 0);
-
-            const ctx2 = document.getElementById('chart-upsell').getContext('2d');
-            new Chart(ctx2, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Upsell',
-                        data: data_upsell,
-                        backgroundColor: CORES.secondary,
-                        borderColor: CORES.primary,
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { labels: { color: CORES.text } } },
-                    scales: { y: { ticks: { color: CORES.text }, grid: { color: 'rgba(137, 207, 240, 0.1)' } }, x: { ticks: { color: CORES.text }, grid: { color: 'rgba(137, 207, 240, 0.1)' } } }
-                }
-            });
-
-            // Gráfico Churn
-            const churnPorMes = {};
-            vendas.filter(v => v.ano === appState.filtros.ano && v.status === 'Cancelada').forEach(v => {
-                if (!churnPorMes[v.mes_nome]) churnPorMes[v.mes_nome] = 0;
-                churnPorMes[v.mes_nome] += v.mrr;
-            });
-
-            const data_churn = labels.map(m => churnPorMes[m] || 0);
-
-            const ctx3 = document.getElementById('chart-churn').getContext('2d');
-            new Chart(ctx3, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Churn',
-                        data: data_churn,
-                        backgroundColor: CORES.churn,
-                        borderColor: CORES.secondary,
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { labels: { color: CORES.text } } },
-                    scales: { y: { ticks: { color: CORES.text }, grid: { color: 'rgba(137, 207, 240, 0.1)' } }, x: { ticks: { color: CORES.text }, grid: { color: 'rgba(137, 207, 240, 0.1)' } } }
-                }
-            });
-
-            // Gráficos de Metas
-            const metaMRR = 8000;
-            const metaCont = 17;
-            const mrrAcum = {};
-            const contAcum = {};
-            let mrrSum = 0, contSum = 0;
-
-            labels.forEach(m => {
-                mrrSum += mrrPorMes[m] || 0;
-                contSum += (vendas.filter(v => v.ano === appState.filtros.ano && v.mes_nome === m).length) || 0;
-                mrrAcum[m] = mrrSum;
-                contAcum[m] = contSum;
-            });
-
-            const ctx4 = document.getElementById('chart-meta-mrr').getContext('2d');
-            new Chart(ctx4, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [
-                        {
-                            label: 'Real',
-                            data: labels.map(m => mrrAcum[m]),
-                            backgroundColor: CORES.primary,
-                            borderColor: CORES.secondary,
-                            borderWidth: 1
-                        },
-                        {
-                            label: 'Meta (8k/mês)',
-                            data: labels.map((m, i) => metaMRR * (i + 1)),
-                            type: 'line',
-                            borderColor: '#F1C40F',
-                            borderWidth: 3,
-                            fill: false,
-                            tension: 0.4
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { labels: { color: CORES.text } } },
-                    scales: { y: { ticks: { color: CORES.text }, grid: { color: 'rgba(137, 207, 240, 0.1)' } }, x: { ticks: { color: CORES.text }, grid: { color: 'rgba(137, 207, 240, 0.1)' } } }
-                }
-            });
-
-            const ctx5 = document.getElementById('chart-meta-contratos').getContext('2d');
-            new Chart(ctx5, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [
-                        {
-                            label: 'Real',
-                            data: labels.map(m => contAcum[m]),
-                            backgroundColor: CORES.secondary,
-                            borderColor: CORES.primary,
-                            borderWidth: 1
-                        },
-                        {
-                            label: 'Meta (17/mês)',
-                            data: labels.map((m, i) => metaCont * (i + 1)),
-                            type: 'line',
-                            borderColor: '#F39C12',
-                            borderWidth: 3,
-                            fill: false,
-                            tension: 0.4
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { labels: { color: CORES.text } } },
-                    scales: { y: { ticks: { color: CORES.text }, grid: { color: 'rgba(137, 207, 240, 0.1)' } }, x: { ticks: { color: CORES.text }, grid: { color: 'rgba(137, 207, 240, 0.1)' } } }
-                }
-            });
-
-            // Rankings Vendedores
-            const rankVendMRR = {};
-            const rankVendCont = {};
-            vendas_filtrados.forEach(v => {
-                if (!rankVendMRR[v.vendedor]) rankVendMRR[v.vendedor] = 0;
-                if (!rankVendCont[v.vendedor]) rankVendCont[v.vendedor] = 0;
-                rankVendMRR[v.vendedor] += v.mrr;
-                rankVendCont[v.vendedor]++;
-            });
-
-            const topVendMRR = Object.entries(rankVendMRR).sort((a, b) => b[1] - a[1]).slice(0, 5);
-            const topVendCont = Object.entries(rankVendCont).sort((a, b) => b[1] - a[1]).slice(0, 5);
-
-            const ctx6 = document.getElementById('chart-rank-vend-mrr').getContext('2d');
-            new Chart(ctx6, {
-                type: 'bar',
-                data: {
-                    labels: topVendMRR.map(v => v[0]),
-                    datasets: [{
-                        label: 'MRR',
-                        data: topVendMRR.map(v => v[1]),
-                        backgroundColor: CORES.primary,
-                        borderColor: CORES.secondary,
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    indexAxis: 'y',
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { labels: { color: CORES.text } } },
-                    scales: { x: { ticks: { color: CORES.text }, grid: { color: 'rgba(137, 207, 240, 0.1)' } }, y: { ticks: { color: CORES.text }, grid: { color: 'rgba(137, 207, 240, 0.1)' } } }
-                }
-            });
-
-            const ctx7 = document.getElementById('chart-rank-vend-cont').getContext('2d');
-            new Chart(ctx7, {
-                type: 'bar',
-                data: {
-                    labels: topVendCont.map(v => v[0]),
-                    datasets: [{
-                        label: 'Contratos',
-                        data: topVendCont.map(v => v[1]),
-                        backgroundColor: CORES.secondary,
-                        borderColor: CORES.primary,
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    indexAxis: 'y',
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { labels: { color: CORES.text } } },
-                    scales: { x: { ticks: { color: CORES.text }, grid: { color: 'rgba(137, 207, 240, 0.1)' } }, y: { ticks: { color: CORES.text }, grid: { color: 'rgba(137, 207, 240, 0.1)' } } }
-                }
-            });
-
-            // Rankings SDRs
-            const rankSdrMRR = {};
-            const rankSdrCont = {};
-            vendas_filtrados.forEach(v => {
-                if (!rankSdrMRR[v.sdr]) rankSdrMRR[v.sdr] = 0;
-                if (!rankSdrCont[v.sdr]) rankSdrCont[v.sdr] = 0;
-                rankSdrMRR[v.sdr] += v.mrr;
-                rankSdrCont[v.sdr]++;
-            });
-
-            const topSdrMRR = Object.entries(rankSdrMRR).sort((a, b) => b[1] - a[1]).slice(0, 5);
-            const topSdrCont = Object.entries(rankSdrCont).sort((a, b) => b[1] - a[1]).slice(0, 5);
-
-            const ctx8 = document.getElementById('chart-rank-sdr-mrr').getContext('2d');
-            new Chart(ctx8, {
-                type: 'bar',
-                data: {
-                    labels: topSdrMRR.map(s => s[0]),
-                    datasets: [{
-                        label: 'MRR',
-                        data: topSdrMRR.map(s => s[1]),
-                        backgroundColor: CORES.primary,
-                        borderColor: CORES.secondary,
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    indexAxis: 'y',
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { labels: { color: CORES.text } } },
-                    scales: { x: { ticks: { color: CORES.text }, grid: { color: 'rgba(137, 207, 240, 0.1)' } }, y: { ticks: { color: CORES.text }, grid: { color: 'rgba(137, 207, 240, 0.1)' } } }
-                }
-            });
-
-            const ctx9 = document.getElementById('chart-rank-sdr-cont').getContext('2d');
-            new Chart(ctx9, {
-                type: 'bar',
-                data: {
-                    labels: topSdrCont.map(s => s[0]),
-                    datasets: [{
-                        label: 'Contratos',
-                        data: topSdrCont.map(s => s[1]),
-                        backgroundColor: CORES.secondary,
-                        borderColor: CORES.primary,
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    indexAxis: 'y',
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { labels: { color: CORES.text } } },
-                    scales: { x: { ticks: { color: CORES.text }, grid: { color: 'rgba(137, 207, 240, 0.1)' } }, y: { ticks: { color: CORES.text }, grid: { color: 'rgba(137, 207, 240, 0.1)' } } }
-                }
-            });
+            rank('chart-rank-vend-mrr', 'vendedor', 'MRR por Vendedor');
+            rank('chart-rank-sdr-mrr', 'sdr', 'MRR por SDR');
         }
 
-        function renderTable(vendas_filtradas) {
+        function updateTable(dados) {
             const tbody = document.getElementById('tbody-detalhamento');
-            tbody.innerHTML = vendas_filtradas.map(v => `
+            tbody.innerHTML = dados.sort((a,b) => b.data - a.data).map(v => `
                 <tr>
                     <td>${v.data.toLocaleDateString('pt-BR')}</td>
                     <td>${v.cliente}</td>
@@ -1015,84 +755,61 @@
         }
 
         async function loadInadimplencia() {
+            showLoading('Carregando Inadimplência...');
             const config = EMPRESAS[appState.empresa];
-            const df_cr = await loadData(config.contas_receber_id);
-            appState.dados_inadimplencia = df_cr;
-
-            if (df_cr.length === 0) {
-                document.getElementById('kpi-total-aberto').textContent = 'R$ 0';
-                document.getElementById('kpi-clientes-inad').textContent = '0';
-                document.getElementById('kpi-repasse').textContent = 'R$ 0';
+            const df = await loadData(config.contas_receber_id);
+            
+            if (df.length === 0) {
+                alert('Planilha de Inadimplência não encontrada ou vazia.');
+                hideLoading();
                 return;
             }
 
-            // Processa dados de inadimplência
-            const col_valor = Object.keys(df_cr[0]).find(c => c.toLowerCase().includes('valor')) || Object.keys(df_cr[0])[0];
-            const col_venc = Object.keys(df_cr[0]).find(c => c.toLowerCase().includes('vencimento')) || Object.keys(df_cr[0])[1];
-            const col_cpf = Object.keys(df_cr[0]).find(c => c.toLowerCase().includes('cpf') || c.toLowerCase().includes('cnpj')) || Object.keys(df_cr[0])[2];
-            const col_nome = Object.keys(df_cr[0]).find(c => c.toLowerCase().includes('nome')) || Object.keys(df_cr[0])[3];
+            const hoje = new Date();
+            const inad = df.map(row => {
+                const v_str = row['Valor'] || row['Valor Aberto'] || '0';
+                const d_str = row['Vencimento'] || row['Data de Vencimento'] || '';
+                const parts = d_str.split('/');
+                let data = new Date(NaN);
+                if (parts.length === 3) data = new Date(parts[2], parts[1]-1, parts[0]);
 
-            let inad = df_cr.map(row => ({
-                cliente: row[col_nome] || 'N/A',
-                cpf: row[col_cpf] || 'N/A',
-                valor: parseCurrency(row[col_valor]),
-                data_vencimento: new Date(row[col_venc]),
-                dias_atraso: Math.floor((new Date() - new Date(row[col_venc])) / (1000 * 60 * 60 * 24))
-            })).filter(i => !isNaN(i.data_vencimento.getTime()));
+                const dias = isNaN(data.getTime()) ? 0 : Math.floor((hoje - data) / (1000*60*60*24));
+                return {
+                    cliente: row['Nome'] || row['Cliente'] || 'N/A',
+                    valor: parseCurrency(v_str),
+                    atraso: dias > 0 ? dias : 0
+                };
+            }).filter(i => i.atraso > 0);
 
-            // Categoriza atraso
-            inad = inad.map(i => ({
-                ...i,
-                faixa_atraso: i.dias_atraso <= 30 ? '0-30 dias' : i.dias_atraso <= 60 ? '31-60 dias' : i.dias_atraso <= 90 ? '61-90 dias' : '>90 dias'
-            }));
+            const total = inad.reduce((s, i) => s + i.valor, 0);
+            document.getElementById('kpi-total-aberto').textContent = `R$ ${Math.round(total).toLocaleString('pt-BR')}`;
+            document.getElementById('kpi-clientes-inad').textContent = inad.length;
+            document.getElementById('kpi-repasse').textContent = `R$ ${Math.round(total * 0.3).toLocaleString('pt-BR')}`;
 
-            const total_aberto = inad.reduce((sum, i) => sum + i.valor, 0);
-            const clientes_inad = new Set(inad.map(i => i.cpf)).size;
-            const repasse = total_aberto * 0.30;
-
-            document.getElementById('kpi-total-aberto').textContent = `R$ ${Math.round(total_aberto).toLocaleString('pt-BR')}`;
-            document.getElementById('kpi-clientes-inad').textContent = clientes_inad;
-            document.getElementById('kpi-repasse').textContent = `R$ ${Math.round(repasse).toLocaleString('pt-BR')}`;
-
-            // Gráfico Aging
-            const aging = {};
-            inad.forEach(i => {
-                if (!aging[i.faixa_atraso]) aging[i.faixa_atraso] = 0;
-                aging[i.faixa_atraso]++;
-            });
-
-            const ctx = document.getElementById('chart-aging').getContext('2d');
-            new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: Object.keys(aging),
-                    datasets: [{
-                        data: Object.values(aging),
-                        backgroundColor: [CORES.primary, CORES.secondary, '#FF6B6B', CORES.churn]
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { labels: { color: CORES.text } } }
-                }
-            });
-
-            // Tabela Inadimplência
             const tbody = document.getElementById('tbody-inadimplencia');
-            tbody.innerHTML = inad.sort((a, b) => b.dias_atraso - a.dias_atraso).map(i => `
+            tbody.innerHTML = inad.sort((a,b) => b.atraso - a.atraso).map(i => `
                 <tr>
                     <td>${i.cliente}</td>
                     <td>R$ ${Math.round(i.valor).toLocaleString('pt-BR')}</td>
-                    <td>${i.dias_atraso}</td>
-                    <td>${i.faixa_atraso}</td>
+                    <td>${i.atraso}</td>
+                    <td>${i.atraso > 90 ? '> 90 dias' : i.atraso > 60 ? '61-90 dias' : '0-60 dias'}</td>
                 </tr>
             `).join('');
+            
+            hideLoading();
         }
 
-        // Inicializa
+        async function changeEmpresa() {
+            appState.empresa = document.getElementById('empresa-select').value;
+            document.getElementById('logo-empresa').src = EMPRESAS[appState.empresa].logo;
+            document.getElementById('logo-empresa-inad').src = EMPRESAS[appState.empresa].logo;
+            document.getElementById('titulo-comercial').textContent = `📊 Resumo Comercial - ${appState.empresa}`;
+            if (appState.page === 'comercial') loadDashboard(); else loadInadimplencia();
+        }
+
+        // Inicialização
         document.addEventListener('DOMContentLoaded', () => {
-            document.getElementById('user-display').textContent = appState.email_usuario || 'Usuário';
+            console.log('Portal Acelerar Iniciado');
         });
     </script>
 </body>
