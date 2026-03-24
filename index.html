@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hub Holding Acelerar - Portal Estratégico (V9)</title>
+    <title>Hub Holding Acelerar - Portal Estratégico (V9.1)</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios@1.6.0/dist/axios.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -176,12 +176,13 @@
             'VMC Tech': { vendas: 110064393, churn: 110065017, meta_mrr: 8000, logo: 'https://raw.githubusercontent.com/gerenciador-ai/Relat-rios-Comercial/main/logo_vmctech.png' },
             'Victec': { vendas: 110023047, churn: 110042202, meta_mrr: 10000, logo: 'https://raw.githubusercontent.com/gerenciador-ai/Relat-rios-Comercial/main/logo_victec.png' }
         };
-        // Mapeamento de Campos Ploomes
+        
+        // Mapeamento de Campos Ploomes (IDs Validados via API)
         const FIELDS = { 
             SDR: 110777789, 
             MRR: 110778108,        // Mensalidade - Simples
-            PRODUTO: 111431860,    // Produto
-            UPSELL: 111433407,     // Aumento de Mensalidade
+            PRODUTO: 111431860,    // Qual produto?
+            UPSELL: 111433407,     // Aumento da mensalidade
             ADESAO_S: 110778105,   // Adesão - Simples
             ADESAO_R: 111431861    // Adesão - Recupera
         };
@@ -232,11 +233,11 @@
         }
 
         async function loadData() {
-            const cacheKey = `acelerar_v9_${appState.empresa}`;
+            const cacheKey = `acelerar_v9_1_${appState.empresa}`;
             const cacheTimeKey = `${cacheKey}_time`;
             const cached = localStorage.getItem(cacheKey);
             const cachedTime = localStorage.getItem(cacheTimeKey);
-            if (cached && cachedTime && (new Date().getTime() - parseInt(cachedTime) < 86400000)) {
+            if (cached && cachedTime && (new Date().getTime() - parseInt(cachedTime) < 3600000)) { // Cache de 1h
                 appState.raw_data = JSON.parse(cached);
                 document.getElementById('cache-info').textContent = `Sinc: ${new Date(parseInt(cachedTime)).toLocaleString('pt-BR')}`;
                 renderDashboard();
@@ -254,42 +255,50 @@
 
             const mapDeal = (d, type) => {
                 const props = d.OtherProperties || [];
-                const getVal = (id) => props.find(p => p.FieldId === id)?.Value;
-                const date = new Date(d.FinishDate || d.CreateDate || '');
+                const getProp = (id) => props.find(p => p.FieldId === id);
                 
-                // Lógica de Produto Padrão
-                let produto = getVal(FIELDS.PRODUTO);
-                if (!produto || produto === '') produto = 'Sittax Simples';
+                // Obter valor do produto (considerando que pode ser um objeto de seleção)
+                const propProduto = getProp(FIELDS.PRODUTO);
+                let produto = "";
+                if (propProduto) {
+                    produto = propProduto.ValueName || propProduto.Value || "";
+                }
+                
+                // Regra: se vazio, considerar Sittax Simples
+                if (!produto || produto === "") produto = "Sittax Simples";
 
-                // Inicialização de valores
                 let mrr = 0;
                 let adesao = 0;
                 let upsell = 0;
 
-                const valMensalidadeSimples = sanitizeVal(getVal(FIELDS.MRR));
-                const valAdesaoSimples = sanitizeVal(getVal(FIELDS.ADESAO_S));
-                const valAumentoMensalidade = sanitizeVal(getVal(FIELDS.UPSELL));
-                const valAdesaoRecupera = sanitizeVal(getVal(FIELDS.ADESAO_R));
+                const valMensalidadeSimples = sanitizeVal(getProp(FIELDS.MRR)?.Value);
+                const valAdesaoSimples = sanitizeVal(getProp(FIELDS.ADESAO_S)?.Value);
+                const valAumentoMensalidade = sanitizeVal(getProp(FIELDS.UPSELL)?.Value);
+                const valAdesaoRecupera = sanitizeVal(getProp(FIELDS.ADESAO_R)?.Value);
 
-                if (produto === 'Sittax Simples') {
-                    // Regra 1: Produto Simples com valores
+                // Normalização do nome do produto para comparação
+                const prodNorm = produto.toLowerCase();
+
+                if (prodNorm.includes("simples")) {
                     if (valMensalidadeSimples > 0 || valAdesaoSimples > 0) {
                         mrr = valMensalidadeSimples;
                         adesao = valAdesaoSimples;
-                    } 
-                    // Regra 2: Produto Simples sem valores iniciais -> Upsell
-                    else if (valAumentoMensalidade > 0) {
+                    } else if (valAumentoMensalidade > 0) {
                         upsell = valAumentoMensalidade;
                     }
-                } else if (produto === 'Sittax Recupera') {
-                    // Regra 3: Produto Recupera
+                } else if (prodNorm.includes("recupera")) {
                     adesao = valAdesaoRecupera;
+                } else {
+                    // Fallback para outros produtos se necessário
+                    mrr = valMensalidadeSimples;
+                    adesao = valAdesaoSimples;
                 }
 
+                const date = new Date(d.FinishDate || d.CreateDate || '');
                 return {
                     id: d.Id, cliente: d.Title, data: date,
                     vendedor: d.Owner?.Name || 'N/A',
-                    sdr: getVal(FIELDS.SDR) || 'N/A',
+                    sdr: getProp(FIELDS.SDR)?.ValueName || getProp(FIELDS.SDR)?.Value || 'N/A',
                     mrr: mrr,
                     upsell: upsell,
                     adesao: adesao,
@@ -299,8 +308,8 @@
             };
 
             appState.raw_data = [...vendas.map(d => mapDeal(d, 'Venda')), ...churn.map(d => mapDeal(d, 'Churn'))];
-            localStorage.setItem(`acelerar_v9_${appState.empresa}`, JSON.stringify(appState.raw_data));
-            localStorage.setItem(`acelerar_v9_${appState.empresa}_time`, new Date().getTime().toString());
+            localStorage.setItem(`acelerar_v9_1_${appState.empresa}`, JSON.stringify(appState.raw_data));
+            localStorage.setItem(`acelerar_v9_1_${appState.empresa}_time`, new Date().getTime().toString());
             renderDashboard();
             hideLoading();
         }
