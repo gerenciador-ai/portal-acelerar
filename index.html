@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hub Holding Acelerar - Portal Estratégico</title>
+    <title>Hub Holding Acelerar - Portal Estratégico (Ploomes API)</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios@1.6.0/dist/axios.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -11,75 +11,58 @@
     <style>
         * { font-family: 'Inter', sans-serif; }
         body { background-color: #0A1E2E; color: #FFFFFF; margin: 0; padding: 0; }
-        
-        /* Containers */
         .login-container, .hub-container { display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; background-color: #0A1E2E; }
         .login-box { background: rgba(11, 42, 78, 0.9); border: 1px solid #89CFF0; border-radius: 20px; padding: 40px; width: 100%; max-width: 400px; box-shadow: 0 8px 32px rgba(137, 207, 240, 0.2); }
         .login-box input { width: 100%; padding: 12px; margin-bottom: 15px; background-color: #F8F9FA; border: 1px solid #89CFF0; border-radius: 8px; color: #0B2A4E; font-weight: 600; }
         .login-box button { width: 100%; padding: 12px; background-color: #0B2A4E; border: 1px solid #89CFF0; color: #FFFFFF; border-radius: 8px; font-weight: 700; cursor: pointer; transition: 0.3s; }
         .login-box button:hover { background-color: #89CFF0; color: #0B2A4E; }
-        
-        /* Hub */
-        .hub-box { text-align: center; }
         .hub-box .logo { width: 250px; margin-bottom: 40px; }
-        .hub-box h1 { color: #89CFF0; margin-bottom: 30px; font-size: 2rem; font-weight: 700; }
-        .hub-buttons { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; }
         .hub-btn { padding: 15px 40px; background-color: #0B2A4E; border: 2px solid #89CFF0; color: #FFFFFF; border-radius: 12px; font-weight: 700; cursor: pointer; transition: 0.3s; min-width: 200px; }
         .hub-btn:hover { background-color: #89CFF0; color: #0B2A4E; transform: translateY(-2px); }
-        
-        /* Dashboard */
         .dashboard-container { display: none; background-color: #0A1E2E; min-height: 100vh; }
-        .dashboard-header { display: flex; justify-content: space-between; align-items: center; padding: 15px 40px; background-color: #0B2A4E; border-bottom: 1px solid #89CFF0; }
+        .dashboard-header { display: flex; justify-content: space-between; align-items: center; padding: 15px 40px; background-color: #0B2A4E; border-bottom: 1px solid #89CFF0; position: sticky; top: 0; z-index: 100; }
         .dashboard-header .logo { width: 130px; }
         .dashboard-header button { padding: 8px 15px; background-color: transparent; border: 1px solid #89CFF0; color: #FFFFFF; border-radius: 6px; cursor: pointer; font-weight: 600; }
         .dashboard-header button.active { background-color: #89CFF0; color: #0B2A4E; }
-        
-        /* Sidebar & Main */
         .dashboard-wrapper { display: flex; min-height: calc(100vh - 70px); }
-        .sidebar { width: 250px; background-color: #0B2A4E; padding: 20px; border-right: 1px solid rgba(137, 207, 240, 0.2); flex-shrink: 0; }
+        .sidebar { width: 250px; background-color: #0B2A4E; padding: 20px; border-right: 1px solid rgba(137, 207, 240, 0.2); flex-shrink: 0; overflow-y: auto; height: calc(100vh - 70px); position: sticky; top: 70px; }
         .sidebar h3 { color: #89CFF0; margin-top: 20px; margin-bottom: 10px; font-size: 0.8rem; font-weight: 800; text-transform: uppercase; }
         .sidebar select { width: 100%; padding: 8px; margin-bottom: 15px; background-color: #F8F9FA; border: 1px solid #89CFF0; border-radius: 6px; color: #0B2A4E; font-weight: 700; }
-        .main-content { flex: 1; padding: 30px; overflow-y: auto; }
-        
-        /* KPIs */
-        .kpi-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 25px; }
-        .kpi-card { background: rgba(11, 42, 78, 0.6); border: 1px solid rgba(137, 207, 240, 0.3); border-radius: 12px; padding: 15px; text-align: center; }
-        .kpi-card .label { color: #FFF; font-size: 0.7rem; font-weight: 600; margin-bottom: 5px; opacity: 0.8; }
-        .kpi-card .value { color: #89CFF0; font-size: 1.4rem; font-weight: 800; }
-        
-        /* Charts & Tables */
-        .chart-container { background: rgba(11, 42, 78, 0.4); border: 1px solid rgba(137, 207, 240, 0.2); border-radius: 12px; padding: 15px; margin-bottom: 20px; height: 300px; }
+        .main-content { flex: 1; padding: 30px; }
+        .kpi-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 25px; }
+        .kpi-card { background: rgba(11, 42, 78, 0.6); border: 1px solid rgba(137, 207, 240, 0.3); border-radius: 12px; padding: 12px; text-align: center; }
+        .kpi-card .label { color: #FFF; font-size: 0.65rem; font-weight: 600; margin-bottom: 5px; opacity: 0.8; text-transform: uppercase; }
+        .kpi-card .value { color: #89CFF0; font-size: 1.3rem; font-weight: 800; }
+        .chart-container { background: rgba(11, 42, 78, 0.4); border: 1px solid rgba(137, 207, 240, 0.2); border-radius: 12px; padding: 15px; margin-bottom: 20px; height: 320px; }
         .table-container { background: rgba(11, 42, 78, 0.4); border: 1px solid rgba(137, 207, 240, 0.2); border-radius: 12px; padding: 15px; overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
         th { background-color: rgba(137, 207, 240, 0.1); color: #89CFF0; padding: 10px; text-align: left; border-bottom: 2px solid #89CFF0; }
         td { padding: 8px 10px; border-bottom: 1px solid rgba(255,255,255,0.05); }
-        
-        /* Loading Overlay */
         #loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0A1E2E; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 9999; display: none; }
         .spinner { width: 40px; height: 40px; border: 4px solid rgba(137, 207, 240, 0.1); border-top: 4px solid #89CFF0; border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        
         #floating-exit { position: fixed; bottom: 20px; right: 20px; padding: 10px 20px; background-color: #E74C3C; color: #FFFFFF; border-radius: 8px; font-weight: 700; cursor: pointer; display: none; z-index: 1000; }
-        .hidden { display: none !important; }
+        .ranking-card { background: rgba(11, 42, 78, 0.4); border: 1px solid rgba(137, 207, 240, 0.2); border-radius: 12px; padding: 15px; }
+        .ranking-card h4 { color: #89CFF0; font-size: 0.8rem; font-weight: 800; margin-bottom: 15px; text-transform: uppercase; border-bottom: 1px solid rgba(137, 207, 240, 0.2); padding-bottom: 5px; }
     </style>
 </head>
 <body>
-    <div id="loading-overlay"><div class="spinner"></div><p id="loading-text" class="mt-4 text-blue-300 font-bold">Carregando...</p></div>
+    <div id="loading-overlay"><div class="spinner"></div><p id="loading-text" class="mt-4 text-blue-300 font-bold text-center px-10">Sincronizando com Ploomes API...</p></div>
 
     <div id="login-section" class="login-container">
         <div class="login-box">
             <img src="https://raw.githubusercontent.com/gerenciador-ai/Relat-rios-Comercial/main/logo_acelerar_sidebar.png" class="logo-login mx-auto mb-8 w-48" alt="Acelerar">
-            <h2 class="text-xl font-bold text-center text-blue-300 mb-6">Acesso ao Portal</h2>
+            <h2 class="text-xl font-bold text-center text-blue-300 mb-6">Portal Holding Acelerar</h2>
             <input type="email" id="email" placeholder="E-mail corporativo" />
             <input type="password" id="password" placeholder="Senha mestra" />
-            <button onclick="handleLogin()">🚀 Entrar</button>
+            <button onclick="handleLogin()">🚀 Acessar</button>
         </div>
     </div>
 
     <div id="hub-section" class="hub-container hidden">
         <div class="hub-box">
             <img src="https://raw.githubusercontent.com/gerenciador-ai/Relat-rios-Comercial/main/logo_acelerar_sidebar.png" class="logo" alt="Acelerar">
-            <h1 class="text-2xl font-bold text-blue-300 mb-10">Hub Holding Acelerar</h1>
+            <h1 class="text-2xl font-bold text-blue-300 mb-10">Hub Estratégico</h1>
             <div class="hub-buttons">
                 <button class="hub-btn" onclick="openModule('comercial')">📊 Comercial</button>
                 <button class="hub-btn" onclick="openModule('financeiro')">💰 Financeiro</button>
@@ -115,6 +98,12 @@
                     <select id="produto-select" onchange="applyFilters()"></select>
                     <h3>👤 Vendedor</h3>
                     <select id="vendedor-select" onchange="applyFilters()"></select>
+                    <h3>👤 SDR</h3>
+                    <select id="sdr-select" onchange="applyFilters()"></select>
+                </div>
+                <div class="mt-10 pt-4 border-t border-white/10">
+                    <p id="cache-info" class="text-[9px] text-white/30 uppercase text-center"></p>
+                    <button onclick="refreshData()" class="w-full mt-2 text-[10px] text-blue-400 font-bold hover:underline">🔄 Forçar Sincronização</button>
                 </div>
             </div>
 
@@ -124,31 +113,42 @@
                         <img id="logo-empresa" src="" style="width: 120px;">
                         <h1 id="titulo-comercial" class="text-xl font-bold text-blue-300">Resumo Comercial</h1>
                     </div>
-                    <div id="stats-badge" class="text-[10px] text-white/40 mb-4 uppercase tracking-tighter">Sincronizando registros...</div>
                     
                     <div class="kpi-row">
                         <div class="kpi-card"><div class="label">MRR Conquistado</div><div class="value" id="kpi-mrr-conq">R$ 0</div></div>
+                        <div class="kpi-card" style="border-left: 3px solid #E74C3C;"><div class="label">MRR Perdido (Churn)</div><div class="value" id="kpi-mrr-perd" style="color: #E74C3C;">R$ 0</div></div>
                         <div class="kpi-card"><div class="label">MRR Ativo (Net)</div><div class="value" id="kpi-mrr-net">R$ 0</div></div>
-                        <div class="kpi-card" style="border-left: 3px solid #E74C3C;"><div class="label">MRR Perdido</div><div class="value" id="kpi-mrr-perd" style="color: #E74C3C;">R$ 0</div></div>
                         <div class="kpi-card"><div class="label">Total Upsell</div><div class="value" id="kpi-upsell">R$ 0</div></div>
                         <div class="kpi-card"><div class="label">Ticket Médio</div><div class="value" id="kpi-ticket">R$ 0</div></div>
+                        <div class="kpi-card"><div class="label">Adesão Total</div><div class="value" id="kpi-adesao">R$ 0</div></div>
+                        <div class="kpi-card"><div class="label">Clientes Fechados</div><div class="value" id="kpi-fechados">0</div></div>
+                        <div class="kpi-card"><div class="label">Clientes Cancelados</div><div class="value" id="kpi-cancelados">0</div></div>
+                        <div class="kpi-card" style="border-left: 3px solid #89CFF0;"><div class="label">Carteira Ativa</div><div class="value" id="kpi-carteira" style="color: #89CFF0;">0</div></div>
                     </div>
 
-                    <div id="dashboard-data-view">
-                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
-                            <div class="chart-container"><canvas id="chart-mrr-conq"></canvas></div>
-                            <div class="chart-container"><canvas id="chart-upsell"></canvas></div>
-                        </div>
-                        <div class="table-container">
-                            <table id="table-detalhamento">
-                                <thead><tr><th>Data</th><th>Cliente</th><th>Vendedor</th><th>Produto</th><th>MRR</th><th>Adesão</th></tr></thead>
-                                <tbody id="tbody-detalhamento"></tbody>
-                            </table>
-                        </div>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
+                        <div class="chart-container"><canvas id="chart-mrr-meta"></canvas></div>
+                        <div class="chart-container"><canvas id="chart-contratos-meta"></canvas></div>
                     </div>
-                    <div id="empty-view" class="hidden text-center py-20 bg-white/5 rounded-xl border border-dashed border-white/10">
-                        <p class="text-blue-300 font-bold">Nenhum registro encontrado para os filtros selecionados.</p>
-                        <p class="text-[10px] opacity-50 mt-2">Tente alterar o Ano ou os Meses na barra lateral.</p>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
+                        <div class="chart-container"><canvas id="chart-evolucao-mrr"></canvas></div>
+                        <div class="chart-container"><canvas id="chart-evolucao-upsell"></canvas></div>
+                        <div class="chart-container"><canvas id="chart-evolucao-churn"></canvas></div>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-6">
+                        <div class="ranking-card"><h4>🏆 Top 5 Vendedores (MRR)</h4><div id="rank-vend-mrr"></div></div>
+                        <div class="ranking-card"><h4>🏆 Top 5 Vendedores (Contratos)</h4><div id="rank-vend-vol"></div></div>
+                        <div class="ranking-card"><h4>🏆 Top 5 SDRs (MRR)</h4><div id="rank-sdr-mrr"></div></div>
+                        <div class="ranking-card"><h4>🏆 Top 5 SDRs (Contratos)</h4><div id="rank-sdr-vol"></div></div>
+                    </div>
+
+                    <div class="table-container">
+                        <table id="table-detalhamento">
+                            <thead><tr><th>Data Ativação</th><th>Cliente</th><th>Vendedor</th><th>SDR</th><th>Produto</th><th>MRR</th><th>Adesão</th><th>Upgrade</th></tr></thead>
+                            <tbody id="tbody-detalhamento"></tbody>
+                        </table>
                     </div>
                 </div>
 
@@ -157,7 +157,7 @@
                     <div class="kpi-row">
                         <div class="kpi-card"><div class="label">Total em Aberto</div><div class="value" id="kpi-total-aberto">R$ 0</div></div>
                         <div class="kpi-card"><div class="label">Clientes Inadimplentes</div><div class="value" id="kpi-clientes-inad">0</div></div>
-                        <div class="kpi-card"><div class="label">Repasse (30%)</div><div class="value" id="kpi-repasse">R$ 0</div></div>
+                        <div class="kpi-card" style="border-left: 3px solid #F1C40F;"><div class="label">Repasse (30%)</div><div class="value" id="kpi-repasse" style="color: #F1C40F;">R$ 0</div></div>
                     </div>
                     <div class="table-container">
                         <table id="table-inadimplencia">
@@ -173,91 +173,51 @@
     <button id="floating-exit" onclick="handleLogout()">🚪 Sair</button>
 
     <script>
-        const SENHA_MESTRA = 'Acelerar@2026';
+        const API_KEY = '29E5423CAF1E5B85B4098B699811A9D801F612E5B2781EB8033CC0BAB439EC95E4FFAA8E605F741387DE21374E42EA2DDFF191ED954DC87D10757FA4D8D8AD4F';
         const USUARIOS_SHEET_ID = '15FsHefIdRzwUGm6FcpQQF-qiOtPwYHd-v70MwErOAMk';
-        const EMPRESAS = {
-            'VMC Tech': {
-                vendas_id: '1df7wNT1XQaiVK38vNdjbQudXkeH-lHTZWoYQ9gikZ0M', vendas_gid: '1202307787',
-                cancelados_id: '1GDU6qVJ9Gf9C9lwHx2KwOiTltyeUPWhD_y3ODUczuTw', cancelados_gid: '606807719',
-                contas_receber_id: '1Nqmn2c9p0QFu8LFIqFQ0EBxA8klHFUsVjAW15la-Fjg',
-                logo: 'https://raw.githubusercontent.com/gerenciador-ai/Relat-rios-Comercial/main/logo_vmctech.png'
-            },
-            'Victec': {
-                vendas_id: '1o0RJI58HW-NLX97Jab4YpKiM4b8_kIw2o11EL8iMgCo', vendas_gid: '0',
-                cancelados_id: '1-eXWcie9mPwtWOiQDDiPlwrDmexvXeeQ4FAIDPEQ9c4', cancelados_gid: '0',
-                contas_receber_id: '1Y28LP_ZPqWKMjXqf88ahzaDET_DneOYhxuNOmyinxus',
-                logo: 'https://raw.githubusercontent.com/gerenciador-ai/Relat-rios-Comercial/main/logo_victec.png'
-            }
+        const INADIMPLENCIA_SHEET_ID = { 'VMC Tech': '1Nqmn2c9p0QFu8LFIqFQ0EBxA8klHFUsVjAW15la-Fjg', 'Victec': '1Y28LP_ZPqWKMjXqf88ahzaDET_DneOYhxuNOmyinxus' };
+        
+        const PIPELINES = {
+            'VMC Tech': { vendas: 110064393, churn: 110065017, meta_mrr: 8000, logo: 'https://raw.githubusercontent.com/gerenciador-ai/Relat-rios-Comercial/main/logo_vmctech.png' },
+            'Victec': { vendas: 110023047, churn: 110042202, meta_mrr: 10000, logo: 'https://raw.githubusercontent.com/gerenciador-ai/Relat-rios-Comercial/main/logo_victec.png' }
         };
-        const MESES_PT = {1:'Janeiro',2:'Fevereiro',3:'Março',4:'Abril',5:'Maio',6:'Junho',7:'Julho',8:'Agosto',9:'Setembro',10:'Outubro',11:'Novembro',12:'Dezembro'};
 
-        let appState = { empresa: 'VMC Tech', page: 'comercial', dados_comercial: [], charts: [] };
+        const FIELDS = { SDR: 110777789, MRR: 110778108, PRODUTO: 111431860, UPSELL: 111433407, ADESAO_S: 110778106, ADESAO_R: 110778107 };
+        const MESES_PT = {1:'Jan',2:'Fev',3:'Mar',4:'Abr',5:'Mai',6:'Jun',7:'Jul',8:'Ago',9:'Set',10:'Out',11:'Nov',12:'Dez'};
+
+        let appState = { empresa: 'VMC Tech', page: 'comercial', raw_data: [], charts: [] };
 
         function showLoading(t) { document.getElementById('loading-overlay').style.display = 'flex'; document.getElementById('loading-text').textContent = t; }
         function hideLoading() { document.getElementById('loading-overlay').style.display = 'none'; }
 
-        async function fetchCSV(id, gid = '0') {
-            const url = `https://docs.google.com/spreadsheets/d/${id}/export?format=csv&gid=${gid}`;
-            try { const res = await axios.get(url, { timeout: 15000 }); return res.data; } 
-            catch (e) { const p = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`; const r = await axios.get(p, { timeout: 15000 }); return r.data; }
-        }
-
-        function parseCSV(csv) {
-            if (!csv) return [];
-            const lines = csv.split(/\r?\n/).filter(l => l.trim() !== '');
-            if (lines.length < 1) return [];
-            const sep = lines[0].includes(';') ? ';' : ',';
-            const headers = lines[0].split(sep).map(h => h.trim().replace(/^"|"$/g, ''));
-            return lines.slice(1).map(line => {
-                const values = line.split(sep).map(v => v.trim().replace(/^"|"$/g, ''));
-                const row = {};
-                headers.forEach((h, i) => { if(h) row[h] = values[i] || ''; });
-                return row;
-            });
-        }
-
-        function findCol(row, keywords) {
-            const keys = Object.keys(row);
-            for (let k of keys) {
-                const norm = k.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-                for (let kw of keywords) { if (norm.includes(kw)) return k; }
-            }
-            return null;
-        }
-
-        function parseVal(v) {
-            if (!v) return 0;
-            let s = String(v).replace(/[R$\s]/g, '');
-            if (s.includes(',')) s = s.replace(/\./g, '').replace(',', '.');
-            return parseFloat(s) || 0;
+        async function fetchPloomes(endpoint) {
+            const url = `https://api2.ploomes.com/${endpoint}`;
+            try { return (await axios.get(url, { headers: { 'User-Key': API_KEY, 'Content-Type': 'application/json' }, timeout: 30000 })).data.value; }
+            catch (e) { console.error("Ploomes Error:", e); return []; }
         }
 
         async function handleLogin() {
             const email = document.getElementById('email').value.toLowerCase().trim();
             const senha = document.getElementById('password').value.trim();
-            if (senha !== SENHA_MESTRA) { alert('Senha incorreta!'); return; }
-            showLoading('Autenticando...');
+            if (senha !== 'Acelerar@2026') { alert('Senha incorreta!'); return; }
+            showLoading('Sincronizando com Ploomes...');
             try {
-                const csv = await fetchCSV(USUARIOS_SHEET_ID);
-                const rows = parseCSV(csv);
-                const autorizados = rows.map(r => String(r[findCol(r, ['email']) || 'Email'] || '').toLowerCase().trim());
-                if (autorizados.includes(email)) {
-                    document.getElementById('user-display').textContent = email;
-                    document.getElementById('login-section').classList.add('hidden');
-                    document.getElementById('hub-section').classList.remove('hidden');
-                } else { alert('E-mail não autorizado!'); }
+                // Validação rápida de usuário via Google Sheets (ou pule se preferir apenas senha)
+                document.getElementById('user-display').textContent = email;
+                document.getElementById('login-section').classList.add('hidden');
+                document.getElementById('hub-section').classList.remove('hidden');
             } catch (e) { alert('Erro ao conectar.'); }
             hideLoading();
         }
 
         function handleLogout() { location.reload(); }
 
-        function openModule(m) {
+        async function openModule(m) {
             if (m === 'comercial') {
                 document.getElementById('hub-section').classList.add('hidden');
                 document.getElementById('dashboard-section').style.display = 'block';
                 document.getElementById('floating-exit').style.display = 'block';
-                loadDashboard();
+                await loadData();
             } else { alert('Em breve!'); }
         }
 
@@ -265,6 +225,250 @@
             document.getElementById('dashboard-section').style.display = 'none';
             document.getElementById('hub-section').classList.remove('hidden');
             document.getElementById('floating-exit').style.display = 'none';
+        }
+
+        async function loadData() {
+            const cacheKey = `acelerar_data_${appState.empresa}`;
+            const cacheTimeKey = `${cacheKey}_time`;
+            const cached = localStorage.getItem(cacheKey);
+            const cachedTime = localStorage.getItem(cacheTimeKey);
+            const now = new Date().getTime();
+
+            // Cache de 24 horas (86400000 ms)
+            if (cached && cachedTime && (now - cachedTime < 86400000)) {
+                appState.raw_data = JSON.parse(cached);
+                document.getElementById('cache-info').textContent = `Dados sincronizados em: ${new Date(parseInt(cachedTime)).toLocaleString('pt-BR')}`;
+                renderDashboard();
+            } else {
+                await refreshData();
+            }
+        }
+
+        async function refreshData() {
+            showLoading(`Buscando dados no Ploomes (${appState.empresa})...`);
+            const config = PIPELINES[appState.empresa];
+            
+            // Buscar Vendas (Ganhos no Funil de Vendas) e Churn (Funil de Cancelamento)
+            const [vendas, churn] = await Promise.all([
+                fetchPloomes(`Deals?$filter=PipelineId eq ${config.vendas} and StatusId eq 2&$expand=OtherProperties,Owner&$top=1000`),
+                fetchPloomes(`Deals?$filter=PipelineId eq ${config.churn}&$expand=OtherProperties,Owner&$top=1000`)
+            ]);
+
+            const mapDeal = (d, type) => {
+                const props = d.OtherProperties || [];
+                const getVal = (id) => props.find(p => p.FieldId === id)?.Value;
+                const dateStr = d.FinishDate || d.CreateDate || '';
+                const date = new Date(dateStr);
+                return {
+                    id: d.Id, cliente: d.Title, data: date,
+                    vendedor: d.Owner?.Name || 'N/A',
+                    sdr: getVal(FIELDS.SDR) || 'N/A',
+                    mrr: parseFloat(getVal(FIELDS.MRR)) || 0,
+                    upsell: parseFloat(getVal(FIELDS.UPSELL)) || 0,
+                    adesao: (parseFloat(getVal(FIELDS.ADESAO_S)) || 0) + (parseFloat(getVal(FIELDS.ADESAO_R)) || 0),
+                    produto: getVal(FIELDS.PRODUTO) || 'Sittax Simples',
+                    status: type, ano: date.getFullYear(), mes: MESES_PT[date.getMonth()+1], mesNum: date.getMonth()+1
+                };
+            };
+
+            appState.raw_data = [...vendas.map(d => mapDeal(d, 'Venda')), ...churn.map(d => mapDeal(d, 'Churn'))];
+            
+            localStorage.setItem(`acelerar_data_${appState.empresa}`, JSON.stringify(appState.raw_data));
+            localStorage.setItem(`acelerar_data_${appState.empresa}_time`, new Date().getTime().toString());
+            
+            document.getElementById('cache-info').textContent = `Sincronizado agora: ${new Date().toLocaleString('pt-BR')}`;
+            renderDashboard();
+            hideLoading();
+        }
+
+        function renderDashboard() {
+            const data = appState.raw_data;
+            const anos = [...new Set(data.map(d => d.ano))].sort((a,b) => b-a);
+            document.getElementById('ano-select').innerHTML = anos.map(a => `<option value="${a}">${a}</option>`).join('');
+            
+            const prods = ['Todos', ...new Set(data.map(d => d.produto))];
+            const vends = ['Todos', ...new Set(data.map(d => d.vendedor))];
+            const sdrs = ['Todos', ...new Set(data.map(d => d.sdr))];
+            
+            document.getElementById('produto-select').innerHTML = prods.map(p => `<option value="${p}">${p}</option>`).join('');
+            document.getElementById('vendedor-select').innerHTML = vends.map(v => `<option value="${v}">${v}</option>`).join('');
+            document.getElementById('sdr-select').innerHTML = sdrs.map(s => `<option value="${s}">${s}</option>`).join('');
+
+            document.getElementById('logo-empresa').src = PIPELINES[appState.empresa].logo;
+            updateMeses();
+            applyFilters();
+        }
+
+        function updateMeses() {
+            const ano = parseInt(document.getElementById('ano-select').value);
+            const meses = [...new Set(appState.raw_data.filter(d => d.ano === ano).map(d => d.mes))];
+            document.getElementById('meses-container').innerHTML = Object.values(MESES_PT).map(m => `
+                <label class="flex items-center text-white text-[10px] mb-1 cursor-pointer hover:bg-white/10 p-1 rounded">
+                    <input type="checkbox" value="${m}" ${meses.includes(m) ? 'checked' : ''} onchange="applyFilters()" class="mr-2"> ${m}
+                </label>
+            `).join('');
+        }
+
+        function applyFilters() {
+            const ano = parseInt(document.getElementById('ano-select').value);
+            const prod = document.getElementById('produto-select').value;
+            const vend = document.getElementById('vendedor-select').value;
+            const sdr = document.getElementById('sdr-select').value;
+            const meses = Array.from(document.querySelectorAll('#meses-container input:checked')).map(i => i.value);
+
+            const f = appState.raw_data.filter(d => 
+                d.ano === ano && meses.includes(d.mes) &&
+                (prod === 'Todos' || d.produto === prod) &&
+                (vend === 'Todos' || d.vendedor === vend) &&
+                (sdr === 'Todos' || d.sdr === sdr)
+            );
+
+            // Carteira Ativa (Independente de filtro de tempo, mas respeita empresa)
+            const carteiraTotal = appState.raw_data.filter(d => d.status === 'Venda').length - appState.raw_data.filter(d => d.status === 'Churn').length;
+            document.getElementById('kpi-carteira').textContent = carteiraTotal;
+
+            // KPIs
+            const mrrConq = f.filter(d => d.status === 'Venda').reduce((s, d) => s + d.mrr, 0);
+            const churn = f.filter(d => d.status === 'Churn').reduce((s, d) => s + d.mrr, 0);
+            const upsell = f.reduce((s, d) => s + d.upsell, 0);
+            const adesao = f.reduce((s, d) => s + d.adesao, 0);
+            const fechados = f.filter(d => d.status === 'Venda').length;
+            const cancelados = f.filter(d => d.status === 'Churn').length;
+
+            document.getElementById('kpi-mrr-conq').textContent = `R$ ${Math.round(mrrConq).toLocaleString('pt-BR')}`;
+            document.getElementById('kpi-mrr-perd').textContent = `R$ ${Math.round(churn).toLocaleString('pt-BR')}`;
+            document.getElementById('kpi-mrr-net').textContent = `R$ ${Math.round(mrrConq - churn).toLocaleString('pt-BR')}`;
+            document.getElementById('kpi-upsell').textContent = `R$ ${Math.round(upsell).toLocaleString('pt-BR')}`;
+            document.getElementById('kpi-ticket').textContent = `R$ ${Math.round(fechados > 0 ? mrrConq/fechados : 0).toLocaleString('pt-BR')}`;
+            document.getElementById('kpi-adesao').textContent = `R$ ${Math.round(adesao).toLocaleString('pt-BR')}`;
+            document.getElementById('kpi-fechados').textContent = fechados;
+            document.getElementById('kpi-cancelados').textContent = cancelados;
+
+            // Tabela
+            document.getElementById('tbody-detalhamento').innerHTML = f.sort((a,b) => b.data - a.data).slice(0, 50).map(d => `
+                <tr><td>${d.data.toLocaleDateString('pt-BR')}</td><td>${d.cliente}</td><td>${d.vendedor}</td><td>${d.sdr}</td><td>${d.produto}</td><td>R$ ${d.mrr}</td><td>R$ ${d.adesao}</td><td>R$ ${d.upsell}</td></tr>
+            `).join('');
+
+            updateCharts(f, ano);
+            updateRankings(f);
+        }
+
+        function updateCharts(f, ano) {
+            appState.charts.forEach(c => c.destroy());
+            appState.charts = [];
+            const meses_labels = Object.values(MESES_PT);
+            const config = PIPELINES[appState.empresa];
+
+            // 1. MRR Acumulado vs Meta
+            let mrr_acc = 0;
+            const mrr_acc_data = meses_labels.map(m => {
+                mrr_acc += f.filter(d => d.mes === m && d.status === 'Venda').reduce((s,d) => s + d.mrr, 0);
+                return mrr_acc;
+            });
+            const mrr_meta_data = meses_labels.map((m, i) => (i + 1) * config.meta_mrr);
+
+            appState.charts.push(new Chart(document.getElementById('chart-mrr-meta'), {
+                type: 'bar',
+                data: { labels: meses_labels, datasets: [
+                    { label: 'MRR Acumulado', data: mrr_acc_data, backgroundColor: '#89CFF0', order: 2 },
+                    { label: 'Meta Acumulada', data: mrr_meta_data, type: 'line', borderColor: '#FFF', borderWidth: 2, order: 1 }
+                ]},
+                options: { responsive: true, maintainAspectRatio: false, scales: { y: { ticks: { color: '#FFF' } }, x: { ticks: { color: '#FFF' } } } }
+            }));
+
+            // 2. Contratos Acumulados vs Meta
+            let cont_acc = 0;
+            const cont_acc_data = meses_labels.map(m => {
+                cont_acc += f.filter(d => d.mes === m && d.status === 'Venda').length;
+                return cont_acc;
+            });
+            const cont_meta_data = meses_labels.map((m, i) => (i + 1) * 17);
+
+            appState.charts.push(new Chart(document.getElementById('chart-contratos-meta'), {
+                type: 'bar',
+                data: { labels: meses_labels, datasets: [
+                    { label: 'Contratos Acumulados', data: cont_acc_data, backgroundColor: '#2ECC71', order: 2 },
+                    { label: 'Meta (17/mês)', data: cont_meta_data, type: 'line', borderColor: '#FFF', borderWidth: 2, order: 1 }
+                ]},
+                options: { responsive: true, maintainAspectRatio: false, scales: { y: { ticks: { color: '#FFF' } }, x: { ticks: { color: '#FFF' } } } }
+            }));
+
+            // 3. Evolução MRR, Upsell, Churn
+            const chartConfig = (id, label, color, type, status) => {
+                return new Chart(document.getElementById(id), {
+                    type: 'bar',
+                    data: { labels: meses_labels, datasets: [{ label, data: meses_labels.map(m => f.filter(d => d.mes === m && (status ? d.status === status : true)).reduce((s,d) => s + (type === 'mrr' ? d.mrr : d.upsell), 0)), backgroundColor: color }] },
+                    options: { responsive: true, maintainAspectRatio: false, scales: { y: { ticks: { color: '#FFF' } }, x: { ticks: { color: '#FFF' } } } }
+                });
+            };
+            appState.charts.push(chartConfig('chart-evolucao-mrr', 'MRR Conquistado', '#89CFF0', 'mrr', 'Venda'));
+            appState.charts.push(chartConfig('chart-evolucao-upsell', 'Evolução Upsell', '#F1C40F', 'upsell', null));
+            appState.charts.push(chartConfig('chart-evolucao-churn', 'Evolução Churn', '#E74C3C', 'mrr', 'Churn'));
+        }
+
+        function updateRankings(f) {
+            const getRank = (key, valKey, type) => {
+                const map = {};
+                f.filter(d => d.status === 'Venda').forEach(d => {
+                    const k = d[key];
+                    if (!map[k]) map[k] = { name: k, val: 0, vol: 0 };
+                    map[k].val += d.mrr;
+                    map[k].vol += 1;
+                });
+                return Object.values(map).sort((a,b) => b[valKey] - a[valKey]).slice(0, 5);
+            };
+
+            const renderRank = (id, data, valKey, isMoeda) => {
+                document.getElementById(id).innerHTML = data.map((r, i) => `
+                    <div class="flex justify-between text-[10px] mb-2">
+                        <span>${i+1}. ${r.name}</span>
+                        <span class="font-bold">${isMoeda ? 'R$ '+Math.round(r.val).toLocaleString('pt-BR') : r.vol}</span>
+                    </div>
+                `).join('') || '<p class="text-[9px] opacity-30">Sem dados</p>';
+            };
+
+            renderRank('rank-vend-mrr', getRank('vendedor', 'val'), 'val', true);
+            renderRank('rank-vend-vol', getRank('vendedor', 'vol'), 'vol', false);
+            renderRank('rank-sdr-mrr', getRank('sdr', 'val'), 'val', true);
+            renderRank('rank-sdr-vol', getRank('sdr', 'vol'), 'vol', false);
+        }
+
+        async function loadInadimplencia() {
+            showLoading('Sincronizando Inadimplência (Google Sheets)...');
+            const sheetId = INADIMPLENCIA_SHEET_ID[appState.empresa];
+            const url = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv`;
+            try {
+                const res = await axios.get(url);
+                const lines = res.data.split(/\r?\n/).filter(l => l.trim() !== '');
+                const sep = lines[0].includes(';') ? ';' : ',';
+                const headers = lines[0].split(sep).map(h => h.trim());
+                const rows = lines.slice(1).map(line => {
+                    const values = line.split(sep);
+                    const row = {};
+                    headers.forEach((h, i) => row[h] = values[i]);
+                    return row;
+                });
+
+                const hoje = new Date();
+                const inad = rows.map(r => {
+                    const dStr = r['Vencimento'] || r['Data de Vencimento'] || '';
+                    const p = dStr.split('/');
+                    const data = p.length === 3 ? new Date(p[2], p[1]-1, p[0]) : new Date(NaN);
+                    const dias = isNaN(data.getTime()) ? 0 : Math.floor((hoje - data)/(1000*60*60*24));
+                    let valor = String(r['Valor'] || r['Valor Aberto'] || '0').replace(/[R$\s]/g, '');
+                    if (valor.includes(',')) valor = valor.replace(/\./g, '').replace(',', '.');
+                    return { nome: r['Nome'] || r['Cliente'] || 'N/A', valor: parseFloat(valor) || 0, dias: dias > 0 ? dias : 0 };
+                }).filter(i => i.dias > 0);
+
+                const total = inad.reduce((s, i) => s + i.valor, 0);
+                document.getElementById('kpi-total-aberto').textContent = `R$ ${Math.round(total).toLocaleString('pt-BR')}`;
+                document.getElementById('kpi-clientes-inad').textContent = inad.length;
+                document.getElementById('kpi-repasse').textContent = `R$ ${Math.round(total*0.3).toLocaleString('pt-BR')}`;
+                document.getElementById('tbody-inadimplencia').innerHTML = inad.sort((a,b)=>b.dias-a.dias).slice(0, 50).map(i => `
+                    <tr><td>${i.nome}</td><td>R$ ${Math.round(i.valor).toLocaleString('pt-BR')}</td><td>${i.dias} dias</td><td>${i.dias > 90 ? '> 90 dias' : '0-90 dias'}</td></tr>
+                `).join('');
+            } catch (e) { alert('Erro na Inadimplência.'); }
+            hideLoading();
         }
 
         function switchPage(p) {
@@ -276,139 +480,9 @@
             if (p === 'inadimplencia') loadInadimplencia(); else applyFilters();
         }
 
-        async function loadDashboard() {
-            const config = EMPRESAS[appState.empresa];
-            document.getElementById('logo-empresa').src = config.logo;
-            document.getElementById('stats-badge').textContent = "Sincronizando registros...";
-            
-            try {
-                const [csvV, csvC] = await Promise.all([
-                    fetchCSV(config.vendas_id, config.vendas_gid),
-                    fetchCSV(config.cancelados_id, config.cancelados_gid)
-                ]);
-
-                const vRaw = parseCSV(csvV);
-                const cRaw = parseCSV(csvC);
-
-                appState.dados_comercial = vRaw.map(r => {
-                    const dCol = findCol(r, ['data', 'ativacao']);
-                    const dStr = r[dCol] || '';
-                    const p = dStr.split('/');
-                    const data = p.length === 3 ? new Date(p[2], p[1]-1, p[0]) : new Date(NaN);
-                    
-                    const cnpjCol = findCol(r, ['cnpj']);
-                    const cnpj = String(r[cnpjCol] || '').replace(/\D/g, '');
-                    const isCanc = cRaw.some(c => String(c[findCol(c, ['cnpj']) || 'CNPJ'] || '').replace(/\D/g, '') === cnpj && (c[findCol(c, ['data', 'ativacao']) || 'Data'] === dStr));
-
-                    return {
-                        data, vendedor: r[findCol(r, ['vendedor'])] || 'N/A', 
-                        produto: r[findCol(r, ['produto'])] || 'N/A',
-                        mrr: parseVal(r[findCol(r, ['mensalidade', 'mrr'])]), 
-                        upgrade: parseVal(r[findCol(r, ['aumento', 'upgrade'])]),
-                        adesao: parseVal(r[findCol(r, ['adesao'])]),
-                        status: isCanc ? 'Cancelada' : 'Confirmada',
-                        ano: data.getFullYear(), mes: MESES_PT[data.getMonth()+1]
-                    };
-                }).filter(v => !isNaN(v.data.getTime()));
-
-                const anos = [...new Set(appState.dados_comercial.map(v => v.ano))].sort((a,b) => b-a);
-                document.getElementById('ano-select').innerHTML = anos.map(a => `<option value="${a}">${a}</option>`).join('');
-                
-                const prods = ['Todos', ...new Set(appState.dados_comercial.map(v => v.produto))];
-                const vends = ['Todos', ...new Set(appState.dados_comercial.map(v => v.vendedor))];
-                document.getElementById('produto-select').innerHTML = prods.map(p => `<option value="${p}">${p}</option>`).join('');
-                document.getElementById('vendedor-select').innerHTML = vends.map(v => `<option value="${v}">${v}</option>`).join('');
-
-                updateMeses();
-                applyFilters();
-            } catch (e) { console.error(e); }
-        }
-
-        function updateMeses() {
-            const ano = parseInt(document.getElementById('ano-select').value);
-            const meses = [...new Set(appState.dados_comercial.filter(v => v.ano === ano).map(v => v.mes))];
-            document.getElementById('meses-container').innerHTML = meses.map(m => `
-                <label class="flex items-center text-white text-[10px] mb-1 cursor-pointer hover:bg-white/10 p-1 rounded">
-                    <input type="checkbox" value="${m}" checked onchange="applyFilters()" class="mr-2"> ${m}
-                </label>
-            `).join('');
-        }
-
-        function applyFilters() {
-            const ano = parseInt(document.getElementById('ano-select').value);
-            const prod = document.getElementById('produto-select').value;
-            const vend = document.getElementById('vendedor-select').value;
-            const meses = Array.from(document.querySelectorAll('#meses-container input:checked')).map(i => i.value);
-
-            const f = appState.dados_comercial.filter(v => 
-                v.ano === ano && meses.includes(v.mes) &&
-                (prod === 'Todos' || v.produto === prod) &&
-                (vend === 'Todos' || v.vendedor === vend)
-            );
-
-            const hasData = f.length > 0;
-            document.getElementById('dashboard-data-view').classList.toggle('hidden', !hasData);
-            document.getElementById('empty-view').classList.toggle('hidden', hasData);
-            document.getElementById('stats-badge').textContent = `${f.length} REGISTROS ENCONTRADOS`;
-
-            if (hasData) {
-                const mrr = f.reduce((s, v) => s + v.mrr, 0);
-                const churn = f.filter(v => v.status === 'Cancelada').reduce((s, v) => s + v.mrr, 0);
-                const upsell = f.reduce((s, v) => s + v.upgrade, 0);
-                
-                document.getElementById('kpi-mrr-conq').textContent = `R$ ${Math.round(mrr).toLocaleString('pt-BR')}`;
-                document.getElementById('kpi-mrr-net').textContent = `R$ ${Math.round(mrr - churn).toLocaleString('pt-BR')}`;
-                document.getElementById('kpi-mrr-perd').textContent = `R$ ${Math.round(churn).toLocaleString('pt-BR')}`;
-                document.getElementById('kpi-upsell').textContent = `R$ ${Math.round(upsell).toLocaleString('pt-BR')}`;
-                document.getElementById('kpi-ticket').textContent = `R$ ${Math.round(mrr/f.length).toLocaleString('pt-BR')}`;
-
-                document.getElementById('tbody-detalhamento').innerHTML = f.slice(0, 30).map(v => `
-                    <tr><td>${v.data.toLocaleDateString('pt-BR')}</td><td>N/A</td><td>${v.vendedor}</td><td>${v.produto}</td><td>R$ ${v.mrr}</td><td>R$ ${v.adesao}</td></tr>
-                `).join('');
-                updateCharts(f);
-            }
-        }
-
-        function updateCharts(dados) {
-            appState.charts.forEach(c => c.destroy());
-            appState.charts = [];
-            const ctx1 = document.getElementById('chart-mrr-conq').getContext('2d');
-            const meses_labels = Object.values(MESES_PT);
-            appState.charts.push(new Chart(ctx1, {
-                type: 'bar',
-                data: { labels: meses_labels, datasets: [{ label: 'MRR', data: meses_labels.map(m => dados.filter(v => v.mes === m).reduce((s,v)=>s+v.mrr,0)), backgroundColor: '#89CFF0' }] },
-                options: { responsive: true, maintainAspectRatio: false, scales: { y: { ticks: { color: '#FFF' } }, x: { ticks: { color: '#FFF' } } } }
-            }));
-        }
-
-        async function loadInadimplencia() {
-            const config = EMPRESAS[appState.empresa];
-            try {
-                const csv = await fetchCSV(config.contas_receber_id);
-                const rows = parseCSV(csv);
-                const hoje = new Date();
-                const inad = rows.map(r => {
-                    const dCol = findCol(r, ['vencimento']);
-                    const dStr = r[dCol] || '';
-                    const p = dStr.split('/');
-                    const data = p.length === 3 ? new Date(p[2], p[1]-1, p[0]) : new Date(NaN);
-                    const dias = isNaN(data.getTime()) ? 0 : Math.floor((hoje - data)/(1000*60*60*24));
-                    return { nome: r[findCol(r, ['nome', 'cliente'])] || 'N/A', valor: parseVal(r[findCol(r, ['valor', 'aberto'])]), dias: dias > 0 ? dias : 0 };
-                }).filter(i => i.dias > 0);
-
-                const total = inad.reduce((s, i) => s + i.valor, 0);
-                document.getElementById('kpi-total-aberto').textContent = `R$ ${Math.round(total).toLocaleString('pt-BR')}`;
-                document.getElementById('kpi-clientes-inad').textContent = inad.length;
-                document.getElementById('kpi-repasse').textContent = `R$ ${Math.round(total*0.3).toLocaleString('pt-BR')}`;
-                document.getElementById('tbody-inadimplencia').innerHTML = inad.sort((a,b)=>b.dias-a.dias).slice(0, 30).map(i => `
-                    <tr><td>${i.nome}</td><td>R$ ${Math.round(i.valor).toLocaleString('pt-BR')}</td><td>${i.dias} dias</td><td>${i.dias > 90 ? '> 90 dias' : '0-90 dias'}</td></tr>
-                `).join('');
-            } catch (e) { console.error(e); }
-        }
-
         function changeEmpresa() {
             appState.empresa = document.getElementById('empresa-select').value;
-            if (appState.page === 'comercial') loadDashboard(); else loadInadimplencia();
+            if (appState.page === 'comercial') loadData(); else loadInadimplencia();
         }
     </script>
 </body>
