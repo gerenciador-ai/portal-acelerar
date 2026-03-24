@@ -11,167 +11,139 @@
     <style>
         * { font-family: 'Inter', sans-serif; }
         body { background-color: #0A1E2E; color: #FFFFFF; margin: 0; padding: 0; }
-        
-        /* Containers */
         .login-container, .hub-container { display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; background-color: #0A1E2E; }
-        .login-box { background: rgba(11, 42, 78, 0.8); border: 1px solid #89CFF0; border-radius: 20px; padding: 40px; width: 100%; max-width: 400px; box-shadow: 0 8px 32px rgba(137, 207, 240, 0.1); }
-        .login-box h2 { color: #89CFF0; text-align: center; margin-bottom: 30px; }
+        .login-box { background: rgba(11, 42, 78, 0.9); border: 1px solid #89CFF0; border-radius: 20px; padding: 40px; width: 100%; max-width: 400px; box-shadow: 0 8px 32px rgba(137, 207, 240, 0.2); }
         .login-box input { width: 100%; padding: 12px; margin-bottom: 15px; background-color: #F8F9FA; border: 1px solid #89CFF0; border-radius: 8px; color: #0B2A4E; font-weight: 600; }
-        .login-box button { width: 100%; padding: 12px; background-color: #0B2A4E; border: 1px solid #89CFF0; color: #FFFFFF; border-radius: 8px; font-weight: 700; cursor: pointer; transition: all 0.3s ease; }
+        .login-box button { width: 100%; padding: 12px; background-color: #0B2A4E; border: 1px solid #89CFF0; color: #FFFFFF; border-radius: 8px; font-weight: 700; cursor: pointer; transition: 0.3s; }
         .login-box button:hover { background-color: #89CFF0; color: #0B2A4E; }
-        
-        /* Hub */
-        .hub-box { text-align: center; }
         .hub-box .logo { width: 250px; margin-bottom: 40px; }
-        .hub-box h1 { color: #89CFF0; margin-bottom: 30px; font-size: 2rem; }
-        .hub-buttons { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; }
-        .hub-btn { padding: 15px 40px; background-color: #0B2A4E; border: 2px solid #89CFF0; color: #FFFFFF; border-radius: 12px; font-weight: 700; cursor: pointer; transition: all 0.3s ease; font-size: 1rem; }
-        .hub-btn:hover { background-color: #89CFF0; color: #0B2A4E; transform: translateY(-2px); box-shadow: 0 0 15px rgba(137, 207, 240, 0.4); }
-        
-        /* Dashboard */
+        .hub-btn { padding: 15px 40px; background-color: #0B2A4E; border: 2px solid #89CFF0; color: #FFFFFF; border-radius: 12px; font-weight: 700; cursor: pointer; transition: 0.3s; min-width: 200px; }
+        .hub-btn:hover { background-color: #89CFF0; color: #0B2A4E; transform: translateY(-2px); }
         .dashboard-container { display: none; background-color: #0A1E2E; min-height: 100vh; }
-        .dashboard-header { display: flex; justify-content: space-between; align-items: center; padding: 20px 40px; background-color: #0B2A4E; border-bottom: 1px solid #89CFF0; }
-        .dashboard-header .logo { width: 150px; }
-        .dashboard-header button { padding: 8px 15px; background-color: transparent; border: 1px solid #89CFF0; color: #FFFFFF; border-radius: 6px; cursor: pointer; font-weight: 600; transition: all 0.3s ease; }
-        .dashboard-header button:hover { background-color: #89CFF0; color: #0B2A4E; }
-        
-        /* Sidebar & Main */
-        .dashboard-wrapper { display: flex; }
-        .sidebar { width: 250px; background-color: #0B2A4E; padding: 20px; border-right: 1px solid #89CFF0; overflow-y: auto; height: calc(100vh - 80px); }
-        .sidebar h3 { color: #89CFF0; margin-top: 20px; margin-bottom: 15px; font-size: 0.9rem; text-transform: uppercase; }
-        .sidebar select, .sidebar input { width: 100%; padding: 8px; margin-bottom: 10px; background-color: #F8F9FA; border: 1px solid #89CFF0; border-radius: 6px; color: #0B2A4E; font-weight: 600; }
-        .main-content { flex: 1; padding: 40px; overflow-y: auto; height: calc(100vh - 80px); }
-        
-        /* KPIs */
-        .kpi-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px; }
-        .kpi-card { background: rgba(11, 42, 78, 0.8); border: 1px solid #89CFF0; border-radius: 12px; padding: 20px; text-align: center; }
-        .kpi-card .label { color: #FFFFFF; font-weight: 600; font-size: 0.9rem; margin-bottom: 10px; }
-        .kpi-card .value { color: #89CFF0; font-size: 1.8rem; font-weight: 700; }
-        
-        /* Charts & Tables */
-        .chart-container { background: rgba(11, 42, 78, 0.8); border: 1px solid #89CFF0; border-radius: 12px; padding: 20px; margin-bottom: 30px; height: 350px; }
-        .chart-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 20px; }
-        .table-container { background: rgba(11, 42, 78, 0.8); border: 1px solid #89CFF0; border-radius: 12px; padding: 20px; overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; }
-        th { background-color: #0B2A4E; color: #89CFF0; padding: 12px; text-align: left; border-bottom: 2px solid #89CFF0; }
-        td { padding: 10px 12px; border-bottom: 1px solid rgba(137, 207, 240, 0.1); }
-        
-        /* Loading Overlay */
-        #loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(10, 30, 46, 0.98); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 9999; display: none; }
-        .spinner { width: 60px; height: 60px; border: 6px solid #0B2A4E; border-top: 6px solid #89CFF0; border-radius: 50%; animation: spin 1s linear infinite; }
+        .dashboard-header { display: flex; justify-content: space-between; align-items: center; padding: 15px 40px; background-color: #0B2A4E; border-bottom: 1px solid #89CFF0; }
+        .dashboard-header .logo { width: 130px; }
+        .dashboard-header button { padding: 8px 15px; background-color: transparent; border: 1px solid #89CFF0; color: #FFFFFF; border-radius: 6px; cursor: pointer; font-weight: 600; }
+        .dashboard-header button.active { background-color: #89CFF0; color: #0B2A4E; }
+        .dashboard-wrapper { display: flex; min-height: calc(100vh - 70px); }
+        .sidebar { width: 250px; background-color: #0B2A4E; padding: 20px; border-right: 1px solid rgba(137, 207, 240, 0.2); }
+        .sidebar h3 { color: #89CFF0; margin-top: 20px; margin-bottom: 10px; font-size: 0.8rem; font-weight: 800; text-transform: uppercase; }
+        .sidebar select { width: 100%; padding: 8px; margin-bottom: 15px; background-color: #F8F9FA; border: 1px solid #89CFF0; border-radius: 6px; color: #0B2A4E; font-weight: 700; }
+        .main-content { flex: 1; padding: 30px; }
+        .kpi-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 25px; }
+        .kpi-card { background: rgba(11, 42, 78, 0.6); border: 1px solid rgba(137, 207, 240, 0.3); border-radius: 12px; padding: 15px; text-align: center; }
+        .kpi-card .label { color: #FFF; font-size: 0.7rem; font-weight: 600; margin-bottom: 5px; opacity: 0.8; }
+        .kpi-card .value { color: #89CFF0; font-size: 1.4rem; font-weight: 800; }
+        .chart-container { background: rgba(11, 42, 78, 0.4); border: 1px solid rgba(137, 207, 240, 0.2); border-radius: 12px; padding: 15px; margin-bottom: 20px; height: 300px; }
+        .table-container { background: rgba(11, 42, 78, 0.4); border: 1px solid rgba(137, 207, 240, 0.2); border-radius: 12px; padding: 15px; overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+        th { background-color: rgba(137, 207, 240, 0.1); color: #89CFF0; padding: 10px; text-align: left; border-bottom: 2px solid #89CFF0; }
+        td { padding: 8px 10px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        #loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0A1E2E; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 9999; display: none; }
+        .spinner { width: 40px; height: 40px; border: 4px solid rgba(137, 207, 240, 0.1); border-top: 4px solid #89CFF0; border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        
-        #floating-exit { position: fixed; bottom: 20px; right: 20px; padding: 12px 20px; background-color: #E74C3C; color: #FFFFFF; border-radius: 8px; font-weight: 700; cursor: pointer; display: none; z-index: 1000; }
-        .hidden { display: none !important; }
-        .error-log { color: #E74C3C; font-size: 0.8rem; margin-top: 15px; text-align: center; max-width: 80%; }
+        #floating-exit { position: fixed; bottom: 20px; right: 20px; padding: 10px 20px; background-color: #E74C3C; color: #FFFFFF; border-radius: 8px; font-weight: 700; cursor: pointer; display: none; z-index: 1000; }
     </style>
 </head>
 <body>
-    <div id="loading-overlay">
-        <div class="spinner"></div>
-        <p id="loading-text" style="margin-top: 20px; color: #89CFF0; font-weight: 600; text-align: center; padding: 0 20px;">Sincronizando com Holding Acelerar...</p>
-        <div id="error-log" class="error-log"></div>
-        <button id="btn-retry" class="hidden mt-6 px-8 py-3 bg-red-600 hover:bg-red-700 rounded-lg text-white font-bold transition-all" onclick="location.reload()">🔄 Tentar Novamente</button>
-    </div>
+    <div id="loading-overlay"><div class="spinner"></div><p id="loading-text" class="mt-4 text-blue-300 font-bold">Carregando...</p></div>
 
     <div id="login-section" class="login-container">
         <div class="login-box">
-            <img src="https://raw.githubusercontent.com/gerenciador-ai/Relat-rios-Comercial/main/logo_acelerar_sidebar.png" class="logo-login" alt="Acelerar">
-            <h2 class="text-xl font-bold">Portal Estratégico</h2>
-            <input type="email" id="email" placeholder="seu.email@empresa.com" />
-            <input type="password" id="password" placeholder="Digite sua senha" />
-            <button onclick="handleLogin()">🚀 Entrar no Portal</button>
-            <div id="login-error" class="hidden mt-4 text-red-500 text-sm font-bold text-center">❌ E-mail ou senha incorretos.</div>
+            <img src="https://raw.githubusercontent.com/gerenciador-ai/Relat-rios-Comercial/main/logo_acelerar_sidebar.png" class="logo-login mx-auto mb-8 w-48" alt="Acelerar">
+            <h2 class="text-xl font-bold text-center text-blue-300 mb-6">Acesso ao Portal</h2>
+            <input type="email" id="email" placeholder="E-mail corporativo" />
+            <input type="password" id="password" placeholder="Senha mestra" />
+            <button onclick="handleLogin()">🚀 Entrar</button>
         </div>
     </div>
 
     <div id="hub-section" class="hub-container hidden">
         <div class="hub-box">
             <img src="https://raw.githubusercontent.com/gerenciador-ai/Relat-rios-Comercial/main/logo_acelerar_sidebar.png" class="logo" alt="Acelerar">
-            <h1 class="text-2xl font-bold text-blue-300 mb-8">Hub Holding Acelerar</h1>
+            <h1 class="text-2xl font-bold text-blue-300 mb-10">Hub Holding Acelerar</h1>
             <div class="hub-buttons">
-                <button class="hub-btn" onclick="openModule('comercial')">📊 Módulo Comercial</button>
-                <button class="hub-btn" onclick="openModule('financeiro')">💰 Módulo Financeiro</button>
+                <button class="hub-btn" onclick="openModule('comercial')">📊 Comercial</button>
+                <button class="hub-btn" onclick="openModule('financeiro')">💰 Financeiro</button>
             </div>
-            <button class="mt-12 text-red-400 font-bold hover:underline" onclick="handleLogout()">🚪 Sair do Portal</button>
+            <button class="mt-12 text-red-400 font-bold underline opacity-50 hover:opacity-100" onclick="handleLogout()">Sair do Portal</button>
         </div>
     </div>
 
     <div id="dashboard-section" class="dashboard-container">
         <div class="dashboard-header">
             <img src="https://raw.githubusercontent.com/gerenciador-ai/Relat-rios-Comercial/main/logo_acelerar_sidebar.png" class="logo" alt="Acelerar">
-            <div class="flex gap-4">
-                <button onclick="switchPage('comercial')" id="btn-comercial" class="bg-blue-900">📊 Comercial</button>
+            <div class="flex gap-2">
+                <button onclick="switchPage('comercial')" id="btn-comercial" class="active">📊 Comercial</button>
                 <button onclick="switchPage('inadimplencia')" id="btn-inadimplencia">📋 Inadimplência</button>
-                <button onclick="returnToHub()" class="opacity-70 hover:opacity-100">← Hub</button>
+                <button onclick="returnToHub()" class="opacity-50">← Hub</button>
             </div>
         </div>
 
         <div class="dashboard-wrapper">
             <div class="sidebar">
-                <h3 class="text-blue-400 font-bold">👤 USUÁRIO</h3>
-                <p id="user-display" class="text-white text-xs mb-6 truncate"></p>
-                <h3 class="text-blue-400 font-bold">🏢 EMPRESA</h3>
-                <select id="empresa-select" onchange="changeEmpresa()" class="mb-6">
+                <h3 id="user-display" class="text-[10px] opacity-50 border-b border-white/10 pb-2 mb-4">USUÁRIO</h3>
+                <h3>🏢 Empresa</h3>
+                <select id="empresa-select" onchange="changeEmpresa()">
                     <option value="VMC Tech">VMC Tech</option>
                     <option value="Victec">Victec</option>
                 </select>
                 <div id="filtros-comercial">
-                    <h3 class="text-blue-400 font-bold">🔍 FILTROS</h3>
-                    <label class="text-[10px] font-bold block mb-1 opacity-60">📅 ANO</label>
-                    <select id="ano-select" onchange="applyFilters()">
-                        <option value="2024">2024</option>
-                        <option value="2025">2025</option>
-                        <option value="2026" selected>2026</option>
-                    </select>
-                    <label class="text-[10px] font-bold block mb-1 opacity-60">📅 MESES</label>
-                    <div id="meses-container" class="max-h-32 overflow-y-auto mb-4 bg-blue-900/30 p-2 rounded border border-blue-400/20"></div>
-                    <label class="text-[10px] font-bold block mb-1 opacity-60">📦 PRODUTO</label>
+                    <h3>📅 Ano</h3>
+                    <select id="ano-select" onchange="applyFilters()"></select>
+                    <h3>📅 Meses</h3>
+                    <div id="meses-container" class="max-h-32 overflow-y-auto mb-4 bg-black/20 p-2 rounded"></div>
+                    <h3>📦 Produto</h3>
                     <select id="produto-select" onchange="applyFilters()"></select>
-                    <label class="text-[10px] font-bold block mb-1 opacity-60">👤 VENDEDOR</label>
+                    <h3>👤 Vendedor</h3>
                     <select id="vendedor-select" onchange="applyFilters()"></select>
                 </div>
             </div>
 
             <div class="main-content">
                 <div id="page-comercial">
-                    <div class="flex items-center gap-6 mb-8">
-                        <img id="logo-empresa" src="" style="width: 140px;">
-                        <h1 id="titulo-comercial" class="text-2xl font-bold text-blue-300">Resumo Comercial</h1>
+                    <div class="flex items-center gap-4 mb-6">
+                        <img id="logo-empresa" src="" style="width: 120px;">
+                        <h1 id="titulo-comercial" class="text-xl font-bold text-blue-300">Resumo Comercial</h1>
                     </div>
+                    <div id="stats-badge" class="text-[10px] text-white/40 mb-4 uppercase tracking-tighter">Sincronizando registros...</div>
+                    
                     <div class="kpi-row">
                         <div class="kpi-card"><div class="label">MRR Conquistado</div><div class="value" id="kpi-mrr-conq">R$ 0</div></div>
                         <div class="kpi-card"><div class="label">MRR Ativo (Net)</div><div class="value" id="kpi-mrr-net">R$ 0</div></div>
-                        <div class="kpi-card" style="border-color: #E74C3C;"><div class="label">MRR Perdido (Churn)</div><div class="value" id="kpi-mrr-perd" style="color: #E74C3C;">R$ 0</div><div id="kpi-churn-pct" class="text-xs text-red-400 mt-1">0%</div></div>
+                        <div class="kpi-card" style="border-left: 3px solid #E74C3C;"><div class="label">MRR Perdido</div><div class="value" id="kpi-mrr-perd" style="color: #E74C3C;">R$ 0</div></div>
                         <div class="kpi-card"><div class="label">Total Upsell</div><div class="value" id="kpi-upsell">R$ 0</div></div>
                         <div class="kpi-card"><div class="label">Ticket Médio</div><div class="value" id="kpi-ticket">R$ 0</div></div>
                     </div>
-                    <div class="chart-grid mb-8">
-                        <div class="chart-container"><canvas id="chart-mrr-conq"></canvas></div>
-                        <div class="chart-container"><canvas id="chart-upsell"></canvas></div>
+
+                    <div id="dashboard-data-view">
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
+                            <div class="chart-container"><canvas id="chart-mrr-conq"></canvas></div>
+                            <div class="chart-container"><canvas id="chart-upsell"></canvas></div>
+                        </div>
+                        <div class="table-container">
+                            <table id="table-detalhamento">
+                                <thead><tr><th>Data</th><th>Cliente</th><th>Vendedor</th><th>Produto</th><th>MRR</th><th>Adesão</th></tr></thead>
+                                <tbody id="tbody-detalhamento"></tbody>
+                            </table>
+                        </div>
                     </div>
-                    <div class="table-container">
-                        <table id="table-detalhamento">
-                            <thead><tr><th>Data</th><th>Cliente</th><th>Vendedor</th><th>Produto</th><th>MRR</th><th>Adesão</th></tr></thead>
-                            <tbody id="tbody-detalhamento" class="text-xs"></tbody>
-                        </table>
+                    <div id="empty-view" class="hidden text-center py-20 bg-white/5 rounded-xl border border-dashed border-white/10">
+                        <p class="text-blue-300 font-bold">Nenhum registro encontrado para os filtros selecionados.</p>
+                        <p class="text-[10px] opacity-50 mt-2">Tente alterar o Ano ou os Meses na barra lateral.</p>
                     </div>
                 </div>
 
                 <div id="page-inadimplencia" class="hidden">
-                    <div class="flex items-center gap-6 mb-8">
-                        <img id="logo-empresa-inad" src="" style="width: 140px;">
-                        <h1 id="titulo-inadimplencia" class="text-2xl font-bold text-blue-300">Inadimplência</h1>
-                    </div>
+                    <h1 class="text-xl font-bold text-blue-300 mb-6">📋 Relatório de Inadimplência</h1>
                     <div class="kpi-row">
                         <div class="kpi-card"><div class="label">Total em Aberto</div><div class="value" id="kpi-total-aberto">R$ 0</div></div>
                         <div class="kpi-card"><div class="label">Clientes Inadimplentes</div><div class="value" id="kpi-clientes-inad">0</div></div>
-                        <div class="kpi-card"><div class="label">Repasse Sittax (30%)</div><div class="value" id="kpi-repasse">R$ 0</div></div>
+                        <div class="kpi-card"><div class="label">Repasse (30%)</div><div class="value" id="kpi-repasse">R$ 0</div></div>
                     </div>
                     <div class="table-container">
                         <table id="table-inadimplencia">
-                            <thead><tr><th>Cliente</th><th>Valor Total</th><th>Atraso (Dias)</th><th>Faixa</th></tr></thead>
-                            <tbody id="tbody-inadimplencia" class="text-xs"></tbody>
+                            <thead><tr><th>Cliente</th><th>Valor Aberto</th><th>Atraso</th><th>Faixa</th></tr></thead>
+                            <tbody id="tbody-inadimplencia"></tbody>
                         </table>
                     </div>
                 </div>
@@ -200,54 +172,43 @@
         };
         const MESES_PT = {1:'Janeiro',2:'Fevereiro',3:'Março',4:'Abril',5:'Maio',6:'Junho',7:'Julho',8:'Agosto',9:'Setembro',10:'Outubro',11:'Novembro',12:'Dezembro'};
 
-        let appState = {
-            empresa: 'VMC Tech', page: 'comercial', dados_comercial: [], charts: []
-        };
+        let appState = { empresa: 'VMC Tech', page: 'comercial', dados_comercial: [], charts: [] };
 
-        function showLoading(text) {
-            document.getElementById('loading-overlay').style.display = 'flex';
-            document.getElementById('loading-text').textContent = text;
-            document.getElementById('error-log').innerHTML = '';
-            document.getElementById('btn-retry').classList.add('hidden');
-        }
-
+        function showLoading(t) { document.getElementById('loading-overlay').style.display = 'flex'; document.getElementById('loading-text').textContent = t; }
         function hideLoading() { document.getElementById('loading-overlay').style.display = 'none'; }
-
-        function showError(text, details = '') {
-            document.getElementById('loading-text').innerHTML = `<span class="text-red-500">❌ ERRO CRÍTICO</span>`;
-            document.getElementById('error-log').innerHTML = `${text}<br><span class="opacity-50 text-[10px]">${details}</span>`;
-            document.getElementById('btn-retry').classList.remove('hidden');
-        }
 
         async function fetchCSV(id, gid = '0') {
             const url = `https://docs.google.com/spreadsheets/d/${id}/export?format=csv&gid=${gid}`;
-            try {
-                const res = await axios.get(url, { timeout: 15000 });
-                return res.data;
-            } catch (e) {
-                // Tenta via Proxy se falhar direto
-                const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
-                const resProxy = await axios.get(proxyUrl, { timeout: 15000 });
-                return resProxy.data;
-            }
+            try { const res = await axios.get(url, { timeout: 15000 }); return res.data; } 
+            catch (e) { const p = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`; const r = await axios.get(p, { timeout: 15000 }); return r.data; }
         }
 
-        function parseUniversalCSV(csv) {
-            if (!csv || csv.length < 5) return [];
+        function parseCSV(csv) {
+            if (!csv) return [];
             const lines = csv.split(/\r?\n/).filter(l => l.trim() !== '');
-            const separator = lines[0].includes(';') ? ';' : ',';
-            const headers = lines[0].split(separator).map(h => h.trim().replace(/^"|"$/g, ''));
+            if (lines.length < 1) return [];
+            const sep = lines[0].includes(';') ? ';' : ',';
+            const headers = lines[0].split(sep).map(h => h.trim().replace(/^"|"$/g, ''));
             return lines.slice(1).map(line => {
-                const values = line.split(separator).map(v => v.trim().replace(/^"|"$/g, ''));
+                const values = line.split(sep).map(v => v.trim().replace(/^"|"$/g, ''));
                 const row = {};
                 headers.forEach((h, i) => { if(h) row[h] = values[i] || ''; });
                 return row;
             });
         }
 
-        function parseBRValue(val) {
-            if (!val) return 0;
-            let s = String(val).replace(/[R$\s]/g, '');
+        function findCol(row, keywords) {
+            const keys = Object.keys(row);
+            for (let k of keys) {
+                const norm = k.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                for (let kw of keywords) { if (norm.includes(kw)) return k; }
+            }
+            return null;
+        }
+
+        function parseVal(v) {
+            if (!v) return 0;
+            let s = String(v).replace(/[R$\s]/g, '');
             if (s.includes(',')) s = s.replace(/\./g, '').replace(',', '.');
             return parseFloat(s) || 0;
         }
@@ -255,19 +216,18 @@
         async function handleLogin() {
             const email = document.getElementById('email').value.toLowerCase().trim();
             const senha = document.getElementById('password').value.trim();
-            if (senha !== SENHA_MESTRA) { alert('Senha mestra incorreta!'); return; }
-            
-            showLoading('Validando acesso...');
+            if (senha !== SENHA_MESTRA) { alert('Senha incorreta!'); return; }
+            showLoading('Autenticando...');
             try {
                 const csv = await fetchCSV(USUARIOS_SHEET_ID);
-                const rows = parseUniversalCSV(csv);
-                const autorizados = rows.map(r => String(r['Email'] || '').toLowerCase().trim());
+                const rows = parseCSV(csv);
+                const autorizados = rows.map(r => String(r[findCol(r, ['email']) || 'Email'] || '').toLowerCase().trim());
                 if (autorizados.includes(email)) {
                     document.getElementById('user-display').textContent = email;
                     document.getElementById('login-section').classList.add('hidden');
                     document.getElementById('hub-section').classList.remove('hidden');
-                } else { alert('E-mail não autorizado na Holding!'); }
-            } catch (e) { showError('Falha ao conectar com Banco de Usuários.', e.message); }
+                } else { alert('E-mail não autorizado!'); }
+            } catch (e) { alert('Erro ao conectar.'); }
             hideLoading();
         }
 
@@ -279,7 +239,7 @@
                 document.getElementById('dashboard-section').classList.remove('hidden');
                 document.getElementById('floating-exit').style.display = 'block';
                 loadDashboard();
-            } else { alert('Módulo em desenvolvimento.'); }
+            } else { alert('Em breve!'); }
         }
 
         function returnToHub() {
@@ -290,59 +250,71 @@
 
         function switchPage(p) {
             appState.page = p;
+            document.getElementById('btn-comercial').classList.toggle('active', p === 'comercial');
+            document.getElementById('btn-inadimplencia').classList.toggle('active', p === 'inadimplencia');
             document.getElementById('page-comercial').classList.toggle('hidden', p !== 'comercial');
             document.getElementById('page-inadimplencia').classList.toggle('hidden', p !== 'inadimplencia');
-            if (p === 'inadimplencia') loadInadimplencia(); else loadDashboard();
+            if (p === 'inadimplencia') loadInadimplencia(); else applyFilters();
         }
 
         async function loadDashboard() {
             showLoading(`Sincronizando ${appState.empresa}...`);
             const config = EMPRESAS[appState.empresa];
             document.getElementById('logo-empresa').src = config.logo;
-            document.getElementById('titulo-comercial').textContent = `Comercial - ${appState.empresa}`;
-
             try {
                 const [csvV, csvC] = await Promise.all([
                     fetchCSV(config.vendas_id, config.vendas_gid),
                     fetchCSV(config.cancelados_id, config.cancelados_gid)
                 ]);
 
-                const vRaw = parseUniversalCSV(csvV);
-                const cRaw = parseUniversalCSV(csvC);
+                const vRaw = parseCSV(csvV);
+                const cRaw = parseCSV(csvC);
 
                 appState.dados_comercial = vRaw.map(r => {
-                    const dStr = r['Data de Ativação'] || r['Data'] || '';
+                    const dCol = findCol(r, ['data', 'ativacao']);
+                    const dStr = r[dCol] || '';
                     const p = dStr.split('/');
                     const data = p.length === 3 ? new Date(p[2], p[1]-1, p[0]) : new Date(NaN);
-                    const cnpj = String(r['CNPJ do Cliente'] || '').replace(/\D/g, '');
-                    const isCanc = cRaw.some(c => String(c['CNPJ do Cliente'] || c['CNPJ'] || '').replace(/\D/g, '') === cnpj && (c['Data de Ativação'] === dStr));
+                    
+                    const cnpjCol = findCol(r, ['cnpj']);
+                    const cnpj = String(r[cnpjCol] || '').replace(/\D/g, '');
+                    const isCanc = cRaw.some(c => String(c[findCol(c, ['cnpj']) || 'CNPJ'] || '').replace(/\D/g, '') === cnpj && (c[findCol(c, ['data', 'ativacao']) || 'Data'] === dStr));
 
                     return {
-                        data, vendedor: r['Vendedor'] || 'N/A', produto: r['Qual produto?'] || 'N/A',
-                        mrr: parseBRValue(r['Mensalidade - Simples']), upgrade: parseBRValue(r['Aumento da mensalidade']),
-                        adesao: parseBRValue(r['Adesão - Simples']) + parseBRValue(r['Adesão - Recupera']),
+                        data, vendedor: r[findCol(r, ['vendedor'])] || 'N/A', 
+                        produto: r[findCol(r, ['produto'])] || 'N/A',
+                        mrr: parseVal(r[findCol(r, ['mensalidade', 'mrr'])]), 
+                        upgrade: parseVal(r[findCol(r, ['aumento', 'upgrade'])]),
+                        adesao: parseVal(r[findCol(r, ['adesao'])]),
                         status: isCanc ? 'Cancelada' : 'Confirmada',
                         ano: data.getFullYear(), mes: MESES_PT[data.getMonth()+1]
                     };
                 }).filter(v => !isNaN(v.data.getTime()));
 
-                // Filtros
+                // Auto-detect anos
+                const anos = [...new Set(appState.dados_comercial.map(v => v.ano))].sort((a,b) => b-a);
+                document.getElementById('ano-select').innerHTML = anos.map(a => `<option value="${a}">${a}</option>`).join('');
+                
+                // Preenche outros filtros
                 const prods = ['Todos', ...new Set(appState.dados_comercial.map(v => v.produto))];
                 const vends = ['Todos', ...new Set(appState.dados_comercial.map(v => v.vendedor))];
                 document.getElementById('produto-select').innerHTML = prods.map(p => `<option value="${p}">${p}</option>`).join('');
                 document.getElementById('vendedor-select').innerHTML = vends.map(v => `<option value="${v}">${v}</option>`).join('');
 
-                const anoSel = parseInt(document.getElementById('ano-select').value);
-                const mesesNoAno = [...new Set(appState.dados_comercial.filter(v => v.ano === anoSel).map(v => v.mes))];
-                document.getElementById('meses-container').innerHTML = mesesNoAno.map(m => `
-                    <label class="flex items-center text-white text-[10px] mb-1 cursor-pointer hover:bg-white/10 p-1 rounded">
-                        <input type="checkbox" value="${m}" checked onchange="applyFilters()" class="mr-2"> ${m}
-                    </label>
-                `).join('');
-
+                updateMeses();
                 applyFilters();
-            } catch (e) { showError('Falha ao ler planilhas comerciais.', e.message); }
+            } catch (e) { alert('Erro ao ler planilhas.'); }
             hideLoading();
+        }
+
+        function updateMeses() {
+            const ano = parseInt(document.getElementById('ano-select').value);
+            const meses = [...new Set(appState.dados_comercial.filter(v => v.ano === ano).map(v => v.mes))];
+            document.getElementById('meses-container').innerHTML = meses.map(m => `
+                <label class="flex items-center text-white text-[10px] mb-1 cursor-pointer hover:bg-white/10 p-1 rounded">
+                    <input type="checkbox" value="${m}" checked onchange="applyFilters()" class="mr-2"> ${m}
+                </label>
+            `).join('');
         }
 
         function applyFilters() {
@@ -357,34 +329,37 @@
                 (vend === 'Todos' || v.vendedor === vend)
             );
 
-            const mrr = f.reduce((s, v) => s + v.mrr, 0);
-            const churn = f.filter(v => v.status === 'Cancelada').reduce((s, v) => s + v.mrr, 0);
-            const upsell = f.reduce((s, v) => s + v.upgrade, 0);
-            
-            document.getElementById('kpi-mrr-conq').textContent = `R$ ${Math.round(mrr).toLocaleString('pt-BR')}`;
-            document.getElementById('kpi-mrr-net').textContent = `R$ ${Math.round(mrr - churn).toLocaleString('pt-BR')}`;
-            document.getElementById('kpi-mrr-perd').textContent = `R$ ${Math.round(churn).toLocaleString('pt-BR')}`;
-            document.getElementById('kpi-churn-pct').textContent = mrr > 0 ? `${(churn/mrr*100).toFixed(1)}%` : '0%';
-            document.getElementById('kpi-upsell').textContent = `R$ ${Math.round(upsell).toLocaleString('pt-BR')}`;
-            document.getElementById('kpi-ticket').textContent = `R$ ${Math.round(f.length > 0 ? mrr/f.length : 0).toLocaleString('pt-BR')}`;
+            const hasData = f.length > 0;
+            document.getElementById('dashboard-data-view').classList.toggle('hidden', !hasData);
+            document.getElementById('empty-view').classList.toggle('hidden', hasData);
+            document.getElementById('stats-badge').textContent = `${f.length} REGISTROS ENCONTRADOS`;
 
-            document.getElementById('tbody-detalhamento').innerHTML = f.slice(0, 30).map(v => `
-                <tr><td>${v.data.toLocaleDateString('pt-BR')}</td><td>N/A</td><td>${v.vendedor}</td><td>${v.produto}</td><td>R$ ${v.mrr}</td><td>R$ ${v.adesao}</td></tr>
-            `).join('');
+            if (hasData) {
+                const mrr = f.reduce((s, v) => s + v.mrr, 0);
+                const churn = f.filter(v => v.status === 'Cancelada').reduce((s, v) => s + v.mrr, 0);
+                const upsell = f.reduce((s, v) => s + v.upgrade, 0);
+                
+                document.getElementById('kpi-mrr-conq').textContent = `R$ ${Math.round(mrr).toLocaleString('pt-BR')}`;
+                document.getElementById('kpi-mrr-net').textContent = `R$ ${Math.round(mrr - churn).toLocaleString('pt-BR')}`;
+                document.getElementById('kpi-mrr-perd').textContent = `R$ ${Math.round(churn).toLocaleString('pt-BR')}`;
+                document.getElementById('kpi-upsell').textContent = `R$ ${Math.round(upsell).toLocaleString('pt-BR')}`;
+                document.getElementById('kpi-ticket').textContent = `R$ ${Math.round(mrr/f.length).toLocaleString('pt-BR')}`;
 
-            updateCharts(f);
+                document.getElementById('tbody-detalhamento').innerHTML = f.slice(0, 30).map(v => `
+                    <tr><td>${v.data.toLocaleDateString('pt-BR')}</td><td>N/A</td><td>${v.vendedor}</td><td>${v.produto}</td><td>R$ ${v.mrr}</td><td>R$ ${v.adesao}</td></tr>
+                `).join('');
+                updateCharts(f);
+            }
         }
 
         function updateCharts(dados) {
             appState.charts.forEach(c => c.destroy());
             appState.charts = [];
-            const meses_labels = Object.values(MESES_PT);
-            const mrr_data = meses_labels.map(m => dados.filter(v => v.mes === m).reduce((s,v)=>s+v.mrr,0));
-            
             const ctx1 = document.getElementById('chart-mrr-conq').getContext('2d');
+            const meses_labels = Object.values(MESES_PT);
             appState.charts.push(new Chart(ctx1, {
                 type: 'bar',
-                data: { labels: meses_labels, datasets: [{ label: 'MRR Conquistado', data: mrr_data, backgroundColor: '#89CFF0' }] },
+                data: { labels: meses_labels, datasets: [{ label: 'MRR', data: meses_labels.map(m => dados.filter(v => v.mes === m).reduce((s,v)=>s+v.mrr,0)), backgroundColor: '#89CFF0' }] },
                 options: { responsive: true, maintainAspectRatio: false, scales: { y: { ticks: { color: '#FFF' } }, x: { ticks: { color: '#FFF' } } } }
             }));
         }
@@ -392,17 +367,17 @@
         async function loadInadimplencia() {
             showLoading('Sincronizando Inadimplência...');
             const config = EMPRESAS[appState.empresa];
-            document.getElementById('logo-empresa-inad').src = config.logo;
             try {
                 const csv = await fetchCSV(config.contas_receber_id);
-                const rows = parseUniversalCSV(csv);
+                const rows = parseCSV(csv);
                 const hoje = new Date();
                 const inad = rows.map(r => {
-                    const dStr = r['Vencimento'] || r['Data de Vencimento'] || '';
+                    const dCol = findCol(r, ['vencimento']);
+                    const dStr = r[dCol] || '';
                     const p = dStr.split('/');
                     const data = p.length === 3 ? new Date(p[2], p[1]-1, p[0]) : new Date(NaN);
                     const dias = isNaN(data.getTime()) ? 0 : Math.floor((hoje - data)/(1000*60*60*24));
-                    return { nome: r['Nome'] || r['Cliente'] || 'N/A', valor: parseBRValue(r['Valor'] || r['Valor Aberto']), dias: dias > 0 ? dias : 0 };
+                    return { nome: r[findCol(r, ['nome', 'cliente'])] || 'N/A', valor: parseVal(r[findCol(r, ['valor', 'aberto'])]), dias: dias > 0 ? dias : 0 };
                 }).filter(i => i.dias > 0);
 
                 const total = inad.reduce((s, i) => s + i.valor, 0);
@@ -410,9 +385,9 @@
                 document.getElementById('kpi-clientes-inad').textContent = inad.length;
                 document.getElementById('kpi-repasse').textContent = `R$ ${Math.round(total*0.3).toLocaleString('pt-BR')}`;
                 document.getElementById('tbody-inadimplencia').innerHTML = inad.sort((a,b)=>b.dias-a.dias).slice(0, 30).map(i => `
-                    <tr><td>${i.nome}</td><td>R$ ${Math.round(i.valor).toLocaleString('pt-BR')}</td><td>${i.dias}</td><td>${i.dias > 90 ? '> 90' : '0-90'}</td></tr>
+                    <tr><td>${i.nome}</td><td>R$ ${Math.round(i.valor).toLocaleString('pt-BR')}</td><td>${i.dias} dias</td><td>${i.dias > 90 ? '> 90 dias' : '0-90 dias'}</td></tr>
                 `).join('');
-            } catch (e) { showError('Falha ao ler planilha de inadimplência.', e.message); }
+            } catch (e) { alert('Erro na Inadimplência.'); }
             hideLoading();
         }
 
