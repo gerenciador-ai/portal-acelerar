@@ -57,41 +57,43 @@
         td { padding: 10px 12px; border-bottom: 1px solid rgba(137, 207, 240, 0.1); }
         
         /* Loading Overlay */
-        #loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(10, 30, 46, 0.95); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 9999; display: none; }
-        .spinner { width: 50px; height: 50px; border: 5px solid #0B2A4E; border-top: 5px solid #89CFF0; border-radius: 50%; animation: spin 1s linear infinite; }
+        #loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(10, 30, 46, 0.98); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 9999; display: none; }
+        .spinner { width: 60px; height: 60px; border: 6px solid #0B2A4E; border-top: 6px solid #89CFF0; border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         
         #floating-exit { position: fixed; bottom: 20px; right: 20px; padding: 12px 20px; background-color: #E74C3C; color: #FFFFFF; border-radius: 8px; font-weight: 700; cursor: pointer; display: none; z-index: 1000; }
         .hidden { display: none !important; }
+        .error-log { color: #E74C3C; font-size: 0.8rem; margin-top: 15px; text-align: center; max-width: 80%; }
     </style>
 </head>
 <body>
     <div id="loading-overlay">
         <div class="spinner"></div>
-        <p id="loading-text" style="margin-top: 20px; color: #89CFF0; font-weight: 600; text-align: center; padding: 0 20px;">Carregando dados da Holding...</p>
-        <button id="btn-retry" class="hidden mt-4 px-6 py-2 bg-red-600 rounded text-white font-bold" onclick="location.reload()">Tentar Novamente</button>
+        <p id="loading-text" style="margin-top: 20px; color: #89CFF0; font-weight: 600; text-align: center; padding: 0 20px;">Sincronizando com Holding Acelerar...</p>
+        <div id="error-log" class="error-log"></div>
+        <button id="btn-retry" class="hidden mt-6 px-8 py-3 bg-red-600 hover:bg-red-700 rounded-lg text-white font-bold transition-all" onclick="location.reload()">🔄 Tentar Novamente</button>
     </div>
 
     <div id="login-section" class="login-container">
         <div class="login-box">
             <img src="https://raw.githubusercontent.com/gerenciador-ai/Relat-rios-Comercial/main/logo_acelerar_sidebar.png" class="logo-login" alt="Acelerar">
-            <h2>Acesso Portal</h2>
+            <h2 class="text-xl font-bold">Portal Estratégico</h2>
             <input type="email" id="email" placeholder="seu.email@empresa.com" />
             <input type="password" id="password" placeholder="Digite sua senha" />
-            <button onclick="handleLogin()">🚀 Entrar</button>
-            <div id="error-msg" class="hidden mt-4 text-red-500 text-sm font-bold text-center">❌ E-mail ou senha incorretos.</div>
+            <button onclick="handleLogin()">🚀 Entrar no Portal</button>
+            <div id="login-error" class="hidden mt-4 text-red-500 text-sm font-bold text-center">❌ E-mail ou senha incorretos.</div>
         </div>
     </div>
 
     <div id="hub-section" class="hub-container hidden">
         <div class="hub-box">
             <img src="https://raw.githubusercontent.com/gerenciador-ai/Relat-rios-Comercial/main/logo_acelerar_sidebar.png" class="logo" alt="Acelerar">
-            <h1>Bem-vindo ao Hub Holding Acelerar</h1>
+            <h1 class="text-2xl font-bold text-blue-300 mb-8">Hub Holding Acelerar</h1>
             <div class="hub-buttons">
-                <button class="hub-btn" onclick="openModule('comercial')">📊 Acessar Comercial</button>
-                <button class="hub-btn" onclick="openModule('financeiro')">💰 Acessar Financeiro</button>
+                <button class="hub-btn" onclick="openModule('comercial')">📊 Módulo Comercial</button>
+                <button class="hub-btn" onclick="openModule('financeiro')">💰 Módulo Financeiro</button>
             </div>
-            <button class="mt-8 text-red-400 font-bold underline" onclick="handleLogout()">Sair do Portal</button>
+            <button class="mt-12 text-red-400 font-bold hover:underline" onclick="handleLogout()">🚪 Sair do Portal</button>
         </div>
     </div>
 
@@ -99,42 +101,44 @@
         <div class="dashboard-header">
             <img src="https://raw.githubusercontent.com/gerenciador-ai/Relat-rios-Comercial/main/logo_acelerar_sidebar.png" class="logo" alt="Acelerar">
             <div class="flex gap-4">
-                <button onclick="switchPage('comercial')" id="btn-comercial">📊 Comercial</button>
+                <button onclick="switchPage('comercial')" id="btn-comercial" class="bg-blue-900">📊 Comercial</button>
                 <button onclick="switchPage('inadimplencia')" id="btn-inadimplencia">📋 Inadimplência</button>
-                <button onclick="returnToHub()">← Voltar ao Hub</button>
+                <button onclick="returnToHub()" class="opacity-70 hover:opacity-100">← Hub</button>
             </div>
         </div>
 
         <div class="dashboard-wrapper">
             <div class="sidebar">
-                <h3>👤 Usuário</h3>
-                <p id="user-display" style="color: #89CFF0; font-weight: 600; font-size: 0.8rem;"></p>
-                <h3>🏢 Empresa</h3>
-                <select id="empresa-select" onchange="changeEmpresa()">
+                <h3 class="text-blue-400 font-bold">👤 USUÁRIO</h3>
+                <p id="user-display" class="text-white text-xs mb-6 truncate"></p>
+                <h3 class="text-blue-400 font-bold">🏢 EMPRESA</h3>
+                <select id="empresa-select" onchange="changeEmpresa()" class="mb-6">
                     <option value="VMC Tech">VMC Tech</option>
                     <option value="Victec">Victec</option>
                 </select>
                 <div id="filtros-comercial">
-                    <h3>🔍 Filtros</h3>
-                    <label class="text-xs font-bold block mb-1">📅 ANO</label>
+                    <h3 class="text-blue-400 font-bold">🔍 FILTROS</h3>
+                    <label class="text-[10px] font-bold block mb-1 opacity-60">📅 ANO</label>
                     <select id="ano-select" onchange="applyFilters()">
                         <option value="2024">2024</option>
                         <option value="2025">2025</option>
                         <option value="2026" selected>2026</option>
                     </select>
-                    <label class="text-xs font-bold block mb-1">📅 MESES</label>
-                    <div id="meses-container" class="max-height-40 overflow-y-auto mb-4 bg-gray-800 p-2 rounded"></div>
-                    <label class="text-xs font-bold block mb-1">📦 PRODUTO</label>
+                    <label class="text-[10px] font-bold block mb-1 opacity-60">📅 MESES</label>
+                    <div id="meses-container" class="max-h-32 overflow-y-auto mb-4 bg-blue-900/30 p-2 rounded border border-blue-400/20"></div>
+                    <label class="text-[10px] font-bold block mb-1 opacity-60">📦 PRODUTO</label>
                     <select id="produto-select" onchange="applyFilters()"></select>
-                    <label class="text-xs font-bold block mb-1">👤 VENDEDOR</label>
+                    <label class="text-[10px] font-bold block mb-1 opacity-60">👤 VENDEDOR</label>
                     <select id="vendedor-select" onchange="applyFilters()"></select>
                 </div>
             </div>
 
             <div class="main-content">
                 <div id="page-comercial">
-                    <img id="logo-empresa" src="" style="width: 150px; margin-bottom: 20px;">
-                    <h1 id="titulo-comercial" class="text-2xl font-bold mb-8">📊 Resumo Comercial</h1>
+                    <div class="flex items-center gap-6 mb-8">
+                        <img id="logo-empresa" src="" style="width: 140px;">
+                        <h1 id="titulo-comercial" class="text-2xl font-bold text-blue-300">Resumo Comercial</h1>
+                    </div>
                     <div class="kpi-row">
                         <div class="kpi-card"><div class="label">MRR Conquistado</div><div class="value" id="kpi-mrr-conq">R$ 0</div></div>
                         <div class="kpi-card"><div class="label">MRR Ativo (Net)</div><div class="value" id="kpi-mrr-net">R$ 0</div></div>
@@ -149,14 +153,16 @@
                     <div class="table-container">
                         <table id="table-detalhamento">
                             <thead><tr><th>Data</th><th>Cliente</th><th>Vendedor</th><th>Produto</th><th>MRR</th><th>Adesão</th></tr></thead>
-                            <tbody id="tbody-detalhamento"></tbody>
+                            <tbody id="tbody-detalhamento" class="text-xs"></tbody>
                         </table>
                     </div>
                 </div>
 
                 <div id="page-inadimplencia" class="hidden">
-                    <img id="logo-empresa-inad" src="" style="width: 150px; margin-bottom: 20px;">
-                    <h1 id="titulo-inadimplencia" class="text-2xl font-bold mb-8">📋 Inadimplência</h1>
+                    <div class="flex items-center gap-6 mb-8">
+                        <img id="logo-empresa-inad" src="" style="width: 140px;">
+                        <h1 id="titulo-inadimplencia" class="text-2xl font-bold text-blue-300">Inadimplência</h1>
+                    </div>
                     <div class="kpi-row">
                         <div class="kpi-card"><div class="label">Total em Aberto</div><div class="value" id="kpi-total-aberto">R$ 0</div></div>
                         <div class="kpi-card"><div class="label">Clientes Inadimplentes</div><div class="value" id="kpi-clientes-inad">0</div></div>
@@ -165,7 +171,7 @@
                     <div class="table-container">
                         <table id="table-inadimplencia">
                             <thead><tr><th>Cliente</th><th>Valor Total</th><th>Atraso (Dias)</th><th>Faixa</th></tr></thead>
-                            <tbody id="tbody-inadimplencia"></tbody>
+                            <tbody id="tbody-inadimplencia" class="text-xs"></tbody>
                         </table>
                     </div>
                 </div>
@@ -201,69 +207,36 @@
         function showLoading(text) {
             document.getElementById('loading-overlay').style.display = 'flex';
             document.getElementById('loading-text').textContent = text;
+            document.getElementById('error-log').innerHTML = '';
             document.getElementById('btn-retry').classList.add('hidden');
         }
 
         function hideLoading() { document.getElementById('loading-overlay').style.display = 'none'; }
 
-        function showError(text) {
-            document.getElementById('loading-text').innerHTML = `<span class="text-red-500">❌ ERRO:</span> ${text}`;
+        function showError(text, details = '') {
+            document.getElementById('loading-text').innerHTML = `<span class="text-red-500">❌ ERRO CRÍTICO</span>`;
+            document.getElementById('error-log').innerHTML = `${text}<br><span class="opacity-50 text-[10px]">${details}</span>`;
             document.getElementById('btn-retry').classList.remove('hidden');
         }
 
-        async function handleLogin() {
-            const email = document.getElementById('email').value.toLowerCase().trim();
-            const senha = document.getElementById('password').value.trim();
-            if (senha !== SENHA_MESTRA) { alert('Senha incorreta!'); return; }
-            
-            showLoading('Autenticando...');
+        async function fetchCSV(id, gid = '0') {
+            const url = `https://docs.google.com/spreadsheets/d/${id}/export?format=csv&gid=${gid}`;
             try {
-                const csv = await axios.get(`https://docs.google.com/spreadsheets/d/${USUARIOS_SHEET_ID}/export?format=csv`);
-                const rows = parseUniversalCSV(csv.data);
-                const autorizados = rows.map(r => String(r['Email'] || '').toLowerCase().trim());
-                if (autorizados.includes(email)) {
-                    document.getElementById('user-display').textContent = email;
-                    document.getElementById('login-section').classList.add('hidden');
-                    document.getElementById('hub-section').classList.remove('hidden');
-                } else { alert('E-mail não autorizado!'); }
-            } catch (e) { showError('Erro ao validar usuários. Verifique se a planilha de usuários está publicada como CSV.'); }
-            hideLoading();
-        }
-
-        function handleLogout() { location.reload(); }
-
-        function openModule(m) {
-            if (m === 'comercial') {
-                document.getElementById('hub-section').classList.add('hidden');
-                document.getElementById('dashboard-section').classList.remove('hidden');
-                document.getElementById('floating-exit').style.display = 'block';
-                loadDashboard();
-            } else { alert('Em breve!'); }
-        }
-
-        function returnToHub() {
-            document.getElementById('dashboard-section').classList.add('hidden');
-            document.getElementById('hub-section').classList.remove('hidden');
-            document.getElementById('floating-exit').style.display = 'none';
-        }
-
-        function switchPage(p) {
-            appState.page = p;
-            document.getElementById('page-comercial').classList.toggle('hidden', p !== 'comercial');
-            document.getElementById('page-inadimplencia').classList.toggle('hidden', p !== 'inadimplencia');
-            if (p === 'inadimplencia') loadInadimplencia(); else loadDashboard();
+                const res = await axios.get(url, { timeout: 15000 });
+                return res.data;
+            } catch (e) {
+                // Tenta via Proxy se falhar direto
+                const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
+                const resProxy = await axios.get(proxyUrl, { timeout: 15000 });
+                return resProxy.data;
+            }
         }
 
         function parseUniversalCSV(csv) {
-            if (!csv) return [];
+            if (!csv || csv.length < 5) return [];
             const lines = csv.split(/\r?\n/).filter(l => l.trim() !== '');
-            if (lines.length < 1) return [];
-            
-            // Detecta separador (vírgula ou ponto e vírgula)
-            const firstLine = lines[0];
-            const separator = firstLine.includes(';') ? ';' : ',';
-            
-            const headers = firstLine.split(separator).map(h => h.trim().replace(/^"|"$/g, ''));
+            const separator = lines[0].includes(';') ? ';' : ',';
+            const headers = lines[0].split(separator).map(h => h.trim().replace(/^"|"$/g, ''));
             return lines.slice(1).map(line => {
                 const values = line.split(separator).map(v => v.trim().replace(/^"|"$/g, ''));
                 const row = {};
@@ -279,29 +252,70 @@
             return parseFloat(s) || 0;
         }
 
+        async function handleLogin() {
+            const email = document.getElementById('email').value.toLowerCase().trim();
+            const senha = document.getElementById('password').value.trim();
+            if (senha !== SENHA_MESTRA) { alert('Senha mestra incorreta!'); return; }
+            
+            showLoading('Validando acesso...');
+            try {
+                const csv = await fetchCSV(USUARIOS_SHEET_ID);
+                const rows = parseUniversalCSV(csv);
+                const autorizados = rows.map(r => String(r['Email'] || '').toLowerCase().trim());
+                if (autorizados.includes(email)) {
+                    document.getElementById('user-display').textContent = email;
+                    document.getElementById('login-section').classList.add('hidden');
+                    document.getElementById('hub-section').classList.remove('hidden');
+                } else { alert('E-mail não autorizado na Holding!'); }
+            } catch (e) { showError('Falha ao conectar com Banco de Usuários.', e.message); }
+            hideLoading();
+        }
+
+        function handleLogout() { location.reload(); }
+
+        function openModule(m) {
+            if (m === 'comercial') {
+                document.getElementById('hub-section').classList.add('hidden');
+                document.getElementById('dashboard-section').classList.remove('hidden');
+                document.getElementById('floating-exit').style.display = 'block';
+                loadDashboard();
+            } else { alert('Módulo em desenvolvimento.'); }
+        }
+
+        function returnToHub() {
+            document.getElementById('dashboard-section').classList.add('hidden');
+            document.getElementById('hub-section').classList.remove('hidden');
+            document.getElementById('floating-exit').style.display = 'none';
+        }
+
+        function switchPage(p) {
+            appState.page = p;
+            document.getElementById('page-comercial').classList.toggle('hidden', p !== 'comercial');
+            document.getElementById('page-inadimplencia').classList.toggle('hidden', p !== 'inadimplencia');
+            if (p === 'inadimplencia') loadInadimplencia(); else loadDashboard();
+        }
+
         async function loadDashboard() {
-            showLoading(`Lendo dados de ${appState.empresa}...`);
+            showLoading(`Sincronizando ${appState.empresa}...`);
             const config = EMPRESAS[appState.empresa];
             document.getElementById('logo-empresa').src = config.logo;
-            document.getElementById('titulo-comercial').textContent = `📊 Comercial - ${appState.empresa}`;
+            document.getElementById('titulo-comercial').textContent = `Comercial - ${appState.empresa}`;
 
             try {
-                const [resV, resC] = await Promise.all([
-                    axios.get(`https://docs.google.com/spreadsheets/d/${config.vendas_id}/export?format=csv&gid=${config.vendas_gid}`),
-                    axios.get(`https://docs.google.com/spreadsheets/d/${config.cancelados_id}/export?format=csv&gid=${config.cancelados_gid}`)
+                const [csvV, csvC] = await Promise.all([
+                    fetchCSV(config.vendas_id, config.vendas_gid),
+                    fetchCSV(config.cancelados_id, config.cancelados_gid)
                 ]);
 
-                const vendasRaw = parseUniversalCSV(resV.data);
-                const canceladosRaw = parseUniversalCSV(resC.data);
+                const vRaw = parseUniversalCSV(csvV);
+                const cRaw = parseUniversalCSV(csvC);
 
-                appState.dados_comercial = vendasRaw.map(r => {
-                    const dataStr = r['Data de Ativação'] || r['Data'] || '';
-                    const p = dataStr.split('/');
+                appState.dados_comercial = vRaw.map(r => {
+                    const dStr = r['Data de Ativação'] || r['Data'] || '';
+                    const p = dStr.split('/');
                     const data = p.length === 3 ? new Date(p[2], p[1]-1, p[0]) : new Date(NaN);
-                    
-                    // Lógica de Churn Simplificada
                     const cnpj = String(r['CNPJ do Cliente'] || '').replace(/\D/g, '');
-                    const isCanc = canceladosRaw.some(c => String(c['CNPJ do Cliente'] || c['CNPJ'] || '').replace(/\D/g, '') === cnpj && (c['Data de Ativação'] === dataStr));
+                    const isCanc = cRaw.some(c => String(c['CNPJ do Cliente'] || c['CNPJ'] || '').replace(/\D/g, '') === cnpj && (c['Data de Ativação'] === dStr));
 
                     return {
                         data, vendedor: r['Vendedor'] || 'N/A', produto: r['Qual produto?'] || 'N/A',
@@ -312,7 +326,7 @@
                     };
                 }).filter(v => !isNaN(v.data.getTime()));
 
-                // Preenche filtros
+                // Filtros
                 const prods = ['Todos', ...new Set(appState.dados_comercial.map(v => v.produto))];
                 const vends = ['Todos', ...new Set(appState.dados_comercial.map(v => v.vendedor))];
                 document.getElementById('produto-select').innerHTML = prods.map(p => `<option value="${p}">${p}</option>`).join('');
@@ -321,13 +335,13 @@
                 const anoSel = parseInt(document.getElementById('ano-select').value);
                 const mesesNoAno = [...new Set(appState.dados_comercial.filter(v => v.ano === anoSel).map(v => v.mes))];
                 document.getElementById('meses-container').innerHTML = mesesNoAno.map(m => `
-                    <label class="flex items-center text-white text-xs mb-1 cursor-pointer">
+                    <label class="flex items-center text-white text-[10px] mb-1 cursor-pointer hover:bg-white/10 p-1 rounded">
                         <input type="checkbox" value="${m}" checked onchange="applyFilters()" class="mr-2"> ${m}
                     </label>
                 `).join('');
 
                 applyFilters();
-            } catch (e) { showError('Falha ao ler planilhas. Verifique se estão publicadas como CSV e os IDs estão corretos.'); }
+            } catch (e) { showError('Falha ao ler planilhas comerciais.', e.message); }
             hideLoading();
         }
 
@@ -343,7 +357,6 @@
                 (vend === 'Todos' || v.vendedor === vend)
             );
 
-            // KPIs
             const mrr = f.reduce((s, v) => s + v.mrr, 0);
             const churn = f.filter(v => v.status === 'Cancelada').reduce((s, v) => s + v.mrr, 0);
             const upsell = f.reduce((s, v) => s + v.upgrade, 0);
@@ -355,8 +368,7 @@
             document.getElementById('kpi-upsell').textContent = `R$ ${Math.round(upsell).toLocaleString('pt-BR')}`;
             document.getElementById('kpi-ticket').textContent = `R$ ${Math.round(f.length > 0 ? mrr/f.length : 0).toLocaleString('pt-BR')}`;
 
-            // Table
-            document.getElementById('tbody-detalhamento').innerHTML = f.slice(0, 50).map(v => `
+            document.getElementById('tbody-detalhamento').innerHTML = f.slice(0, 30).map(v => `
                 <tr><td>${v.data.toLocaleDateString('pt-BR')}</td><td>N/A</td><td>${v.vendedor}</td><td>${v.produto}</td><td>R$ ${v.mrr}</td><td>R$ ${v.adesao}</td></tr>
             `).join('');
 
@@ -366,26 +378,28 @@
         function updateCharts(dados) {
             appState.charts.forEach(c => c.destroy());
             appState.charts = [];
+            const meses_labels = Object.values(MESES_PT);
+            const mrr_data = meses_labels.map(m => dados.filter(v => v.mes === m).reduce((s,v)=>s+v.mrr,0));
+            
             const ctx1 = document.getElementById('chart-mrr-conq').getContext('2d');
-            const m1 = new Chart(ctx1, {
+            appState.charts.push(new Chart(ctx1, {
                 type: 'bar',
-                data: { labels: Object.values(MESES_PT), datasets: [{ label: 'MRR', data: Object.values(MESES_PT).map(m => dados.filter(v => v.mes === m).reduce((s,v)=>s+v.mrr,0)), backgroundColor: '#0B2A4E' }] },
-                options: { responsive: true, maintainAspectRatio: false }
-            });
-            appState.charts.push(m1);
+                data: { labels: meses_labels, datasets: [{ label: 'MRR Conquistado', data: mrr_data, backgroundColor: '#89CFF0' }] },
+                options: { responsive: true, maintainAspectRatio: false, scales: { y: { ticks: { color: '#FFF' } }, x: { ticks: { color: '#FFF' } } } }
+            }));
         }
 
         async function loadInadimplencia() {
-            showLoading('Lendo Inadimplência...');
+            showLoading('Sincronizando Inadimplência...');
             const config = EMPRESAS[appState.empresa];
             document.getElementById('logo-empresa-inad').src = config.logo;
             try {
-                const res = await axios.get(`https://docs.google.com/spreadsheets/d/${config.contas_receber_id}/export?format=csv`);
-                const rows = parseUniversalCSV(res.data);
+                const csv = await fetchCSV(config.contas_receber_id);
+                const rows = parseUniversalCSV(csv);
                 const hoje = new Date();
                 const inad = rows.map(r => {
-                    const d_str = r['Vencimento'] || r['Data de Vencimento'] || '';
-                    const p = d_str.split('/');
+                    const dStr = r['Vencimento'] || r['Data de Vencimento'] || '';
+                    const p = dStr.split('/');
                     const data = p.length === 3 ? new Date(p[2], p[1]-1, p[0]) : new Date(NaN);
                     const dias = isNaN(data.getTime()) ? 0 : Math.floor((hoje - data)/(1000*60*60*24));
                     return { nome: r['Nome'] || r['Cliente'] || 'N/A', valor: parseBRValue(r['Valor'] || r['Valor Aberto']), dias: dias > 0 ? dias : 0 };
@@ -395,10 +409,10 @@
                 document.getElementById('kpi-total-aberto').textContent = `R$ ${Math.round(total).toLocaleString('pt-BR')}`;
                 document.getElementById('kpi-clientes-inad').textContent = inad.length;
                 document.getElementById('kpi-repasse').textContent = `R$ ${Math.round(total*0.3).toLocaleString('pt-BR')}`;
-                document.getElementById('tbody-inadimplencia').innerHTML = inad.sort((a,b)=>b.dias-a.dias).slice(0, 50).map(i => `
+                document.getElementById('tbody-inadimplencia').innerHTML = inad.sort((a,b)=>b.dias-a.dias).slice(0, 30).map(i => `
                     <tr><td>${i.nome}</td><td>R$ ${Math.round(i.valor).toLocaleString('pt-BR')}</td><td>${i.dias}</td><td>${i.dias > 90 ? '> 90' : '0-90'}</td></tr>
                 `).join('');
-            } catch (e) { showError('Erro na Inadimplência. Verifique a planilha.'); }
+            } catch (e) { showError('Falha ao ler planilha de inadimplência.', e.message); }
             hideLoading();
         }
 
