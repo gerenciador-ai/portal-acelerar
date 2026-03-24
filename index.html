@@ -12,89 +12,66 @@
         * { font-family: 'Inter', sans-serif; }
         body { background-color: #0A1E2E; color: #FFFFFF; margin: 0; padding: 0; }
         
-        /* Login Container */
-        .login-container { display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; background-color: #0A1E2E; }
+        /* Containers */
+        .login-container, .hub-container { display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; background-color: #0A1E2E; }
         .login-box { background: rgba(11, 42, 78, 0.8); border: 1px solid #89CFF0; border-radius: 20px; padding: 40px; width: 100%; max-width: 400px; box-shadow: 0 8px 32px rgba(137, 207, 240, 0.1); }
         .login-box h2 { color: #89CFF0; text-align: center; margin-bottom: 30px; }
         .login-box input { width: 100%; padding: 12px; margin-bottom: 15px; background-color: #F8F9FA; border: 1px solid #89CFF0; border-radius: 8px; color: #0B2A4E; font-weight: 600; }
         .login-box button { width: 100%; padding: 12px; background-color: #0B2A4E; border: 1px solid #89CFF0; color: #FFFFFF; border-radius: 8px; font-weight: 700; cursor: pointer; transition: all 0.3s ease; }
         .login-box button:hover { background-color: #89CFF0; color: #0B2A4E; }
-        .login-box .error { color: #E74C3C; font-size: 0.9rem; margin-top: 10px; }
-        .logo-login { width: 200px; margin: 0 auto 30px; }
         
-        /* Hub Container */
-        .hub-container { display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; background-color: #0A1E2E; padding: 20px; }
+        /* Hub */
         .hub-box { text-align: center; }
         .hub-box .logo { width: 250px; margin-bottom: 40px; }
         .hub-box h1 { color: #89CFF0; margin-bottom: 30px; font-size: 2rem; }
         .hub-buttons { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; }
         .hub-btn { padding: 15px 40px; background-color: #0B2A4E; border: 2px solid #89CFF0; color: #FFFFFF; border-radius: 12px; font-weight: 700; cursor: pointer; transition: all 0.3s ease; font-size: 1rem; }
         .hub-btn:hover { background-color: #89CFF0; color: #0B2A4E; transform: translateY(-2px); box-shadow: 0 0 15px rgba(137, 207, 240, 0.4); }
-        .logout-btn { padding: 10px 20px; background-color: transparent; border: 1px solid #E74C3C; color: #E74C3C; border-radius: 8px; cursor: pointer; font-size: 0.9rem; margin-top: 20px; }
-        .logout-btn:hover { background-color: #E74C3C; color: #FFFFFF; }
         
-        /* Dashboard Container */
+        /* Dashboard */
         .dashboard-container { display: none; background-color: #0A1E2E; min-height: 100vh; }
         .dashboard-header { display: flex; justify-content: space-between; align-items: center; padding: 20px 40px; background-color: #0B2A4E; border-bottom: 1px solid #89CFF0; }
         .dashboard-header .logo { width: 150px; }
-        .dashboard-header .nav-buttons { display: flex; gap: 10px; }
         .dashboard-header button { padding: 8px 15px; background-color: transparent; border: 1px solid #89CFF0; color: #FFFFFF; border-radius: 6px; cursor: pointer; font-weight: 600; transition: all 0.3s ease; }
         .dashboard-header button:hover { background-color: #89CFF0; color: #0B2A4E; }
         
-        /* Sidebar */
+        /* Sidebar & Main */
         .dashboard-wrapper { display: flex; }
         .sidebar { width: 250px; background-color: #0B2A4E; padding: 20px; border-right: 1px solid #89CFF0; overflow-y: auto; height: calc(100vh - 80px); }
         .sidebar h3 { color: #89CFF0; margin-top: 20px; margin-bottom: 15px; font-size: 0.9rem; text-transform: uppercase; }
         .sidebar select, .sidebar input { width: 100%; padding: 8px; margin-bottom: 10px; background-color: #F8F9FA; border: 1px solid #89CFF0; border-radius: 6px; color: #0B2A4E; font-weight: 600; }
-        .sidebar label { display: block; color: #FFFFFF; margin-bottom: 5px; font-weight: 600; font-size: 0.9rem; }
-        
-        /* Main Content */
         .main-content { flex: 1; padding: 40px; overflow-y: auto; height: calc(100vh - 80px); }
-        .main-content h1 { color: #89CFF0; margin-bottom: 30px; }
-        .main-content h2 { color: #89CFF0; margin-top: 30px; margin-bottom: 20px; font-size: 1.3rem; }
         
-        /* KPI Cards */
+        /* KPIs */
         .kpi-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px; }
         .kpi-card { background: rgba(11, 42, 78, 0.8); border: 1px solid #89CFF0; border-radius: 12px; padding: 20px; text-align: center; }
-        .kpi-card.churn { border: 2px solid #E74C3C; }
         .kpi-card .label { color: #FFFFFF; font-weight: 600; font-size: 0.9rem; margin-bottom: 10px; }
         .kpi-card .value { color: #89CFF0; font-size: 1.8rem; font-weight: 700; }
-        .kpi-card.churn .value { color: #E74C3C; }
-        .kpi-card .delta { color: #89CFF0; font-size: 0.85rem; margin-top: 5px; }
-        .kpi-card.churn .delta { color: #E74C3C; }
         
-        /* Charts */
-        .chart-container { background: rgba(11, 42, 78, 0.8); border: 1px solid #89CFF0; border-radius: 12px; padding: 20px; margin-bottom: 30px; position: relative; height: 350px; }
-        .chart-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 20px; margin-bottom: 30px; }
-        
-        /* Table */
-        .table-container { background: rgba(11, 42, 78, 0.8); border: 1px solid #89CFF0; border-radius: 12px; padding: 20px; margin-bottom: 30px; overflow-x: auto; }
-        .table-container table { width: 100%; border-collapse: collapse; }
-        .table-container th { background-color: #0B2A4E; color: #89CFF0; padding: 12px; text-align: left; font-weight: 700; border-bottom: 2px solid #89CFF0; }
-        .table-container td { padding: 10px 12px; border-bottom: 1px solid rgba(137, 207, 240, 0.2); color: #FFFFFF; }
-        .table-container tr:hover { background-color: rgba(137, 207, 240, 0.1); }
+        /* Charts & Tables */
+        .chart-container { background: rgba(11, 42, 78, 0.8); border: 1px solid #89CFF0; border-radius: 12px; padding: 20px; margin-bottom: 30px; height: 350px; }
+        .chart-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 20px; }
+        .table-container { background: rgba(11, 42, 78, 0.8); border: 1px solid #89CFF0; border-radius: 12px; padding: 20px; overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; }
+        th { background-color: #0B2A4E; color: #89CFF0; padding: 12px; text-align: left; border-bottom: 2px solid #89CFF0; }
+        td { padding: 10px 12px; border-bottom: 1px solid rgba(137, 207, 240, 0.1); }
         
         /* Loading Overlay */
-        #loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(10, 30, 46, 0.9); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 9999; display: none; }
+        #loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(10, 30, 46, 0.95); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 9999; display: none; }
         .spinner { width: 50px; height: 50px; border: 5px solid #0B2A4E; border-top: 5px solid #89CFF0; border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         
-        /* Floating Exit Button */
-        #floating-exit { position: fixed; bottom: 20px; right: 20px; padding: 12px 20px; background-color: #E74C3C; color: #FFFFFF; border: none; border-radius: 8px; cursor: pointer; font-weight: 700; display: none; z-index: 1000; box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3); }
-        #floating-exit:hover { background-color: #C0392B; }
-        
-        /* Hidden */
+        #floating-exit { position: fixed; bottom: 20px; right: 20px; padding: 12px 20px; background-color: #E74C3C; color: #FFFFFF; border-radius: 8px; font-weight: 700; cursor: pointer; display: none; z-index: 1000; }
         .hidden { display: none !important; }
     </style>
 </head>
 <body>
-    <!-- LOADING OVERLAY -->
     <div id="loading-overlay">
         <div class="spinner"></div>
-        <p id="loading-text" style="margin-top: 20px; color: #89CFF0; font-weight: 600;">Carregando dados da Holding...</p>
+        <p id="loading-text" style="margin-top: 20px; color: #89CFF0; font-weight: 600; text-align: center; padding: 0 20px;">Carregando dados da Holding...</p>
+        <button id="btn-retry" class="hidden mt-4 px-6 py-2 bg-red-600 rounded text-white font-bold" onclick="location.reload()">Tentar Novamente</button>
     </div>
 
-    <!-- LOGIN SECTION -->
     <div id="login-section" class="login-container">
         <div class="login-box">
             <img src="https://raw.githubusercontent.com/gerenciador-ai/Relat-rios-Comercial/main/logo_acelerar_sidebar.png" class="logo-login" alt="Acelerar">
@@ -102,11 +79,10 @@
             <input type="email" id="email" placeholder="seu.email@empresa.com" />
             <input type="password" id="password" placeholder="Digite sua senha" />
             <button onclick="handleLogin()">🚀 Entrar</button>
-            <div id="error-msg" class="error hidden">❌ E-mail ou senha incorretos.</div>
+            <div id="error-msg" class="hidden mt-4 text-red-500 text-sm font-bold text-center">❌ E-mail ou senha incorretos.</div>
         </div>
     </div>
 
-    <!-- HUB SECTION -->
     <div id="hub-section" class="hub-container hidden">
         <div class="hub-box">
             <img src="https://raw.githubusercontent.com/gerenciador-ai/Relat-rios-Comercial/main/logo_acelerar_sidebar.png" class="logo" alt="Acelerar">
@@ -115,214 +91,80 @@
                 <button class="hub-btn" onclick="openModule('comercial')">📊 Acessar Comercial</button>
                 <button class="hub-btn" onclick="openModule('financeiro')">💰 Acessar Financeiro</button>
             </div>
-            <button class="logout-btn" onclick="handleLogout()">🚪 Sair do Portal</button>
+            <button class="mt-8 text-red-400 font-bold underline" onclick="handleLogout()">Sair do Portal</button>
         </div>
     </div>
 
-    <!-- DASHBOARD SECTION -->
     <div id="dashboard-section" class="dashboard-container">
-        <!-- Header -->
         <div class="dashboard-header">
             <img src="https://raw.githubusercontent.com/gerenciador-ai/Relat-rios-Comercial/main/logo_acelerar_sidebar.png" class="logo" alt="Acelerar">
-            <div class="nav-buttons">
+            <div class="flex gap-4">
                 <button onclick="switchPage('comercial')" id="btn-comercial">📊 Comercial</button>
                 <button onclick="switchPage('inadimplencia')" id="btn-inadimplencia">📋 Inadimplência</button>
                 <button onclick="returnToHub()">← Voltar ao Hub</button>
             </div>
         </div>
 
-        <!-- Main Content -->
         <div class="dashboard-wrapper">
-            <!-- Sidebar -->
             <div class="sidebar">
                 <h3>👤 Usuário</h3>
-                <p id="user-display" style="color: #89CFF0; font-weight: 600;"></p>
-                
+                <p id="user-display" style="color: #89CFF0; font-weight: 600; font-size: 0.8rem;"></p>
                 <h3>🏢 Empresa</h3>
                 <select id="empresa-select" onchange="changeEmpresa()">
                     <option value="VMC Tech">VMC Tech</option>
                     <option value="Victec">Victec</option>
                 </select>
-
                 <div id="filtros-comercial">
                     <h3>🔍 Filtros</h3>
-                    <label>📅 Ano</label>
+                    <label class="text-xs font-bold block mb-1">📅 ANO</label>
                     <select id="ano-select" onchange="applyFilters()">
                         <option value="2024">2024</option>
                         <option value="2025">2025</option>
                         <option value="2026" selected>2026</option>
                     </select>
-
-                    <label>📅 Meses</label>
-                    <div id="meses-container" style="max-height: 150px; overflow-y: auto;"></div>
-
-                    <label>📦 Produto</label>
-                    <select id="produto-select" onchange="applyFilters()">
-                        <option value="Todos">Todos</option>
-                    </select>
-
-                    <label>👤 Vendedor</label>
-                    <select id="vendedor-select" onchange="applyFilters()">
-                        <option value="Todos">Todos</option>
-                    </select>
-
-                    <label>🎧 SDR</label>
-                    <select id="sdr-select" onchange="applyFilters()">
-                        <option value="Todos">Todos</option>
-                    </select>
+                    <label class="text-xs font-bold block mb-1">📅 MESES</label>
+                    <div id="meses-container" class="max-height-40 overflow-y-auto mb-4 bg-gray-800 p-2 rounded"></div>
+                    <label class="text-xs font-bold block mb-1">📦 PRODUTO</label>
+                    <select id="produto-select" onchange="applyFilters()"></select>
+                    <label class="text-xs font-bold block mb-1">👤 VENDEDOR</label>
+                    <select id="vendedor-select" onchange="applyFilters()"></select>
                 </div>
             </div>
 
-            <!-- Main Content -->
             <div class="main-content">
-                <!-- COMERCIAL PAGE -->
                 <div id="page-comercial">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
-                        <div>
-                            <img id="logo-empresa" src="https://raw.githubusercontent.com/gerenciador-ai/Relat-rios-Comercial/main/logo_vmctech.png" style="width: 150px; margin-bottom: 15px;">
-                            <h1 id="titulo-comercial">📊 Resumo Comercial - VMC Tech</h1>
-                        </div>
-                    </div>
-
-                    <!-- KPIs -->
+                    <img id="logo-empresa" src="" style="width: 150px; margin-bottom: 20px;">
+                    <h1 id="titulo-comercial" class="text-2xl font-bold mb-8">📊 Resumo Comercial</h1>
                     <div class="kpi-row">
-                        <div class="kpi-card">
-                            <div class="label">MRR Conquistado</div>
-                            <div class="value" id="kpi-mrr-conq">R$ 0</div>
-                        </div>
-                        <div class="kpi-card">
-                            <div class="label">MRR Ativo (Net)</div>
-                            <div class="value" id="kpi-mrr-net">R$ 0</div>
-                        </div>
-                        <div class="kpi-card churn">
-                            <div class="label">MRR Perdido (Churn)</div>
-                            <div class="value" id="kpi-mrr-perd">R$ 0</div>
-                            <div class="delta" id="kpi-churn-pct">0%</div>
-                        </div>
-                        <div class="kpi-card">
-                            <div class="label">Total de Upsell</div>
-                            <div class="value" id="kpi-upsell">R$ 0</div>
-                            <div class="delta" id="kpi-upsell-qty">0 eventos</div>
-                        </div>
-                        <div class="kpi-card">
-                            <div class="label">Ticket Médio</div>
-                            <div class="value" id="kpi-ticket">R$ 0</div>
-                        </div>
+                        <div class="kpi-card"><div class="label">MRR Conquistado</div><div class="value" id="kpi-mrr-conq">R$ 0</div></div>
+                        <div class="kpi-card"><div class="label">MRR Ativo (Net)</div><div class="value" id="kpi-mrr-net">R$ 0</div></div>
+                        <div class="kpi-card" style="border-color: #E74C3C;"><div class="label">MRR Perdido (Churn)</div><div class="value" id="kpi-mrr-perd" style="color: #E74C3C;">R$ 0</div><div id="kpi-churn-pct" class="text-xs text-red-400 mt-1">0%</div></div>
+                        <div class="kpi-card"><div class="label">Total Upsell</div><div class="value" id="kpi-upsell">R$ 0</div></div>
+                        <div class="kpi-card"><div class="label">Ticket Médio</div><div class="value" id="kpi-ticket">R$ 0</div></div>
                     </div>
-
-                    <div class="kpi-row">
-                        <div class="kpi-card">
-                            <div class="label">Adesão Total</div>
-                            <div class="value" id="kpi-adesao">R$ 0</div>
-                        </div>
-                        <div class="kpi-card">
-                            <div class="label">Clientes Fechados</div>
-                            <div class="value" id="kpi-cl-fech">0</div>
-                        </div>
-                        <div class="kpi-card">
-                            <div class="label">Clientes Cancelados</div>
-                            <div class="value" id="kpi-cl-canc">0</div>
-                        </div>
-                        <div class="kpi-card">
-                            <div class="label">Total Base Ativa</div>
-                            <div class="value" id="kpi-base-ativa">0</div>
-                        </div>
-                    </div>
-
-                    <!-- Charts -->
-                    <h2>📈 Evolução Mensal</h2>
-                    <div class="chart-grid">
+                    <div class="chart-grid mb-8">
                         <div class="chart-container"><canvas id="chart-mrr-conq"></canvas></div>
                         <div class="chart-container"><canvas id="chart-upsell"></canvas></div>
-                        <div class="chart-container"><canvas id="chart-churn"></canvas></div>
                     </div>
-
-                    <!-- Metas -->
-                    <h2>🎯 Performance vs. Metas</h2>
-                    <div class="chart-grid">
-                        <div class="chart-container"><canvas id="chart-meta-mrr"></canvas></div>
-                        <div class="chart-container"><canvas id="chart-meta-contratos"></canvas></div>
-                    </div>
-
-                    <!-- Rankings -->
-                    <h2>🏆 Rankings de Performance Comercial</h2>
-                    <h3 style="color: #89CFF0; margin-top: 20px;">👤 Vendedores</h3>
-                    <div class="chart-grid">
-                        <div class="chart-container"><canvas id="chart-rank-vend-mrr"></canvas></div>
-                        <div class="chart-container"><canvas id="chart-rank-vend-cont"></canvas></div>
-                    </div>
-
-                    <h3 style="color: #89CFF0; margin-top: 20px;">🎧 SDRs</h3>
-                    <div class="chart-grid">
-                        <div class="chart-container"><canvas id="chart-rank-sdr-mrr"></canvas></div>
-                        <div class="chart-container"><canvas id="chart-rank-sdr-cont"></canvas></div>
-                    </div>
-
-                    <!-- Detalhamento -->
-                    <h2>📋 Detalhamento</h2>
                     <div class="table-container">
                         <table id="table-detalhamento">
-                            <thead>
-                                <tr>
-                                    <th>Data</th>
-                                    <th>Cliente</th>
-                                    <th>Vendedor</th>
-                                    <th>SDR</th>
-                                    <th>Produto</th>
-                                    <th>Status</th>
-                                    <th>MRR</th>
-                                    <th>Upgrade</th>
-                                    <th>Adesão</th>
-                                </tr>
-                            </thead>
+                            <thead><tr><th>Data</th><th>Cliente</th><th>Vendedor</th><th>Produto</th><th>MRR</th><th>Adesão</th></tr></thead>
                             <tbody id="tbody-detalhamento"></tbody>
                         </table>
                     </div>
                 </div>
 
-                <!-- INADIMPLÊNCIA PAGE -->
                 <div id="page-inadimplencia" class="hidden">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
-                        <div>
-                            <img id="logo-empresa-inad" src="https://raw.githubusercontent.com/gerenciador-ai/Relat-rios-Comercial/main/logo_vmctech.png" style="width: 150px; margin-bottom: 15px;">
-                            <h1 id="titulo-inadimplencia">📋 Inadimplência - VMC Tech</h1>
-                        </div>
-                    </div>
-
-                    <!-- KPIs Inadimplência -->
+                    <img id="logo-empresa-inad" src="" style="width: 150px; margin-bottom: 20px;">
+                    <h1 id="titulo-inadimplencia" class="text-2xl font-bold mb-8">📋 Inadimplência</h1>
                     <div class="kpi-row">
-                        <div class="kpi-card">
-                            <div class="label">Total em Aberto</div>
-                            <div class="value" id="kpi-total-aberto">R$ 0</div>
-                        </div>
-                        <div class="kpi-card">
-                            <div class="label">Clientes Inadimplentes</div>
-                            <div class="value" id="kpi-clientes-inad">0</div>
-                        </div>
-                        <div class="kpi-card">
-                            <div class="label">Repasse Sittax (30%)</div>
-                            <div class="value" id="kpi-repasse">R$ 0</div>
-                        </div>
+                        <div class="kpi-card"><div class="label">Total em Aberto</div><div class="value" id="kpi-total-aberto">R$ 0</div></div>
+                        <div class="kpi-card"><div class="label">Clientes Inadimplentes</div><div class="value" id="kpi-clientes-inad">0</div></div>
+                        <div class="kpi-card"><div class="label">Repasse Sittax (30%)</div><div class="value" id="kpi-repasse">R$ 0</div></div>
                     </div>
-
-                    <!-- Aging Chart -->
-                    <h2>📊 Clientes por Faixa de Atraso</h2>
-                    <div class="chart-container" style="height: 400px;">
-                        <canvas id="chart-aging"></canvas>
-                    </div>
-
-                    <!-- Tabela Inadimplência -->
-                    <h2>👥 Resumo por Cliente</h2>
                     <div class="table-container">
                         <table id="table-inadimplencia">
-                            <thead>
-                                <tr>
-                                    <th>Cliente</th>
-                                    <th>Valor Total</th>
-                                    <th>Mensalidades em Atraso</th>
-                                    <th>Faixa de Atraso</th>
-                                </tr>
-                            </thead>
+                            <thead><tr><th>Cliente</th><th>Valor Total</th><th>Atraso (Dias)</th><th>Faixa</th></tr></thead>
                             <tbody id="tbody-inadimplencia"></tbody>
                         </table>
                     </div>
@@ -331,153 +173,72 @@
         </div>
     </div>
 
-    <!-- Floating Exit Button -->
     <button id="floating-exit" onclick="handleLogout()">🚪 Sair</button>
 
     <script>
-        // ============================================
-        // CONFIGURAÇÕES E CONSTANTES
-        // ============================================
         const SENHA_MESTRA = 'Acelerar@2026';
         const USUARIOS_SHEET_ID = '15FsHefIdRzwUGm6FcpQQF-qiOtPwYHd-v70MwErOAMk';
-        
         const EMPRESAS = {
             'VMC Tech': {
-                vendas_id: '1df7wNT1XQaiVK38vNdjbQudXkeH-lHTZWoYQ9gikZ0M',
-                vendas_gid: '1202307787',
-                cancelados_id: '1GDU6qVJ9Gf9C9lwHx2KwOiTltyeUPWhD_y3ODUczuTw',
-                cancelados_gid: '606807719',
+                vendas_id: '1df7wNT1XQaiVK38vNdjbQudXkeH-lHTZWoYQ9gikZ0M', vendas_gid: '1202307787',
+                cancelados_id: '1GDU6qVJ9Gf9C9lwHx2KwOiTltyeUPWhD_y3ODUczuTw', cancelados_gid: '606807719',
                 contas_receber_id: '1Nqmn2c9p0QFu8LFIqFQ0EBxA8klHFUsVjAW15la-Fjg',
                 logo: 'https://raw.githubusercontent.com/gerenciador-ai/Relat-rios-Comercial/main/logo_vmctech.png'
             },
             'Victec': {
-                vendas_id: '1o0RJI58HW-NLX97Jab4YpKiM4b8_kIw2o11EL8iMgCo',
-                vendas_gid: '0',
-                cancelados_id: '1-eXWcie9mPwtWOiQDDiPlwrDmexvXeeQ4FAIDPEQ9c4',
-                cancelados_gid: '0',
+                vendas_id: '1o0RJI58HW-NLX97Jab4YpKiM4b8_kIw2o11EL8iMgCo', vendas_gid: '0',
+                cancelados_id: '1-eXWcie9mPwtWOiQDDiPlwrDmexvXeeQ4FAIDPEQ9c4', cancelados_gid: '0',
                 contas_receber_id: '1Y28LP_ZPqWKMjXqf88ahzaDET_DneOYhxuNOmyinxus',
                 logo: 'https://raw.githubusercontent.com/gerenciador-ai/Relat-rios-Comercial/main/logo_victec.png'
             }
         };
+        const MESES_PT = {1:'Janeiro',2:'Fevereiro',3:'Março',4:'Abril',5:'Maio',6:'Junho',7:'Julho',8:'Agosto',9:'Setembro',10:'Outubro',11:'Novembro',12:'Dezembro'};
 
-        const CORES = {
-            primary: '#0B2A4E',
-            secondary: '#89CFF0',
-            text: '#FFFFFF',
-            bg: '#0A1E2E',
-            churn: '#E74C3C'
-        };
-
-        const MESES_PT = {
-            1: 'Janeiro', 2: 'Fevereiro', 3: 'Março', 4: 'Abril', 5: 'Maio', 6: 'Junho',
-            7: 'Julho', 8: 'Agosto', 9: 'Setembro', 10: 'Outubro', 11: 'Novembro', 12: 'Dezembro'
-        };
-
-        // ============================================
-        // ESTADO GLOBAL
-        // ============================================
         let appState = {
-            usuario_logado: false,
-            email_usuario: null,
-            empresa: 'VMC Tech',
-            page: 'comercial',
-            dados_comercial: null,
-            dados_inadimplencia: null,
-            filtros: {
-                ano: 2026,
-                meses: [],
-                produto: 'Todos',
-                vendedor: 'Todos',
-                sdr: 'Todos'
-            },
-            charts: []
+            empresa: 'VMC Tech', page: 'comercial', dados_comercial: [], charts: []
         };
 
-        // ============================================
-        // UTILITÁRIOS
-        // ============================================
         function showLoading(text) {
             document.getElementById('loading-overlay').style.display = 'flex';
             document.getElementById('loading-text').textContent = text;
+            document.getElementById('btn-retry').classList.add('hidden');
         }
 
-        function hideLoading() {
-            document.getElementById('loading-overlay').style.display = 'none';
+        function hideLoading() { document.getElementById('loading-overlay').style.display = 'none'; }
+
+        function showError(text) {
+            document.getElementById('loading-text').innerHTML = `<span class="text-red-500">❌ ERRO:</span> ${text}`;
+            document.getElementById('btn-retry').classList.remove('hidden');
         }
 
-        function clearCharts() {
-            appState.charts.forEach(chart => chart.destroy());
-            appState.charts = [];
-        }
-
-        // ============================================
-        // FUNÇÕES DE AUTENTICAÇÃO
-        // ============================================
         async function handleLogin() {
             const email = document.getElementById('email').value.toLowerCase().trim();
             const senha = document.getElementById('password').value.trim();
-            const errorMsg = document.getElementById('error-msg');
-
-            if (!email || !senha) {
-                errorMsg.classList.remove('hidden');
-                errorMsg.textContent = '❌ Preencha todos os campos.';
-                return;
-            }
-
-            if (senha !== SENHA_MESTRA) {
-                errorMsg.classList.remove('hidden');
-                errorMsg.textContent = '❌ Senha incorreta.';
-                return;
-            }
-
+            if (senha !== SENHA_MESTRA) { alert('Senha incorreta!'); return; }
+            
             showLoading('Autenticando...');
             try {
-                const usuarios = await loadData(USUARIOS_SHEET_ID);
-                const emailsAutorizados = usuarios.map(u => String(u.Email || '').toLowerCase().trim());
-                
-                if (!emailsAutorizados.includes(email)) {
-                    errorMsg.classList.remove('hidden');
-                    errorMsg.textContent = '❌ E-mail não autorizado.';
-                    hideLoading();
-                    return;
-                }
-
-                appState.usuario_logado = true;
-                appState.email_usuario = email;
-                document.getElementById('user-display').textContent = email;
-                
-                document.getElementById('login-section').classList.add('hidden');
-                document.getElementById('hub-section').classList.remove('hidden');
-                errorMsg.classList.add('hidden');
-            } catch (error) {
-                console.error('Erro login:', error);
-                errorMsg.classList.remove('hidden');
-                errorMsg.textContent = '❌ Erro ao conectar. Verifique sua internet.';
-            }
+                const csv = await axios.get(`https://docs.google.com/spreadsheets/d/${USUARIOS_SHEET_ID}/export?format=csv`);
+                const rows = parseUniversalCSV(csv.data);
+                const autorizados = rows.map(r => String(r['Email'] || '').toLowerCase().trim());
+                if (autorizados.includes(email)) {
+                    document.getElementById('user-display').textContent = email;
+                    document.getElementById('login-section').classList.add('hidden');
+                    document.getElementById('hub-section').classList.remove('hidden');
+                } else { alert('E-mail não autorizado!'); }
+            } catch (e) { showError('Erro ao validar usuários. Verifique se a planilha de usuários está publicada como CSV.'); }
             hideLoading();
         }
 
-        function handleLogout() {
-            appState.usuario_logado = false;
-            document.getElementById('login-section').classList.remove('hidden');
-            document.getElementById('hub-section').classList.add('hidden');
-            document.getElementById('dashboard-section').classList.add('hidden');
-            document.getElementById('floating-exit').style.display = 'none';
-            clearCharts();
-        }
+        function handleLogout() { location.reload(); }
 
-        function openModule(module) {
-            if (module === 'comercial') {
-                appState.page = 'comercial';
+        function openModule(m) {
+            if (m === 'comercial') {
                 document.getElementById('hub-section').classList.add('hidden');
                 document.getElementById('dashboard-section').classList.remove('hidden');
-                document.getElementById('page-comercial').classList.remove('hidden');
-                document.getElementById('page-inadimplencia').classList.add('hidden');
                 document.getElementById('floating-exit').style.display = 'block';
                 loadDashboard();
-            } else {
-                alert('Módulo Financeiro em desenvolvimento.');
-            }
+            } else { alert('Em breve!'); }
         }
 
         function returnToHub() {
@@ -486,331 +247,165 @@
             document.getElementById('floating-exit').style.display = 'none';
         }
 
-        function switchPage(page) {
-            appState.page = page;
-            if (page === 'comercial') {
-                document.getElementById('page-comercial').classList.remove('hidden');
-                document.getElementById('page-inadimplencia').classList.add('hidden');
-                loadDashboard();
-            } else {
-                document.getElementById('page-comercial').classList.add('hidden');
-                document.getElementById('page-inadimplencia').classList.remove('hidden');
-                loadInadimplencia();
-            }
+        function switchPage(p) {
+            appState.page = p;
+            document.getElementById('page-comercial').classList.toggle('hidden', p !== 'comercial');
+            document.getElementById('page-inadimplencia').classList.toggle('hidden', p !== 'inadimplencia');
+            if (p === 'inadimplencia') loadInadimplencia(); else loadDashboard();
         }
 
-        // ============================================
-        // DATA LOADING
-        // ============================================
-        async function loadData(sheetId, gid = null) {
-            try {
-                const url = gid && gid !== '0' 
-                    ? `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv&gid=${gid}`
-                    : `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv`;
-                
-                const response = await axios.get(url, { timeout: 10000 });
-                const csvData = response.data;
-                
-                // Parser CSV simples (considerando vírgula como separador)
-                const lines = csvData.split(/\r?\n/);
-                if (lines.length < 2) return [];
-
-                const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, ''));
-                const data = [];
-
-                for (let i = 1; i < lines.length; i++) {
-                    if (!lines[i]) continue;
-                    // Regex para lidar com vírgulas dentro de aspas
-                    const values = lines[i].match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g) || lines[i].split(',');
-                    const row = {};
-                    headers.forEach((header, index) => {
-                        row[header] = (values[index] || '').trim().replace(/^"|"$/g, '');
-                    });
-                    data.push(row);
-                }
-                return data;
-            } catch (error) {
-                console.error(`Erro ao carregar ${sheetId}:`, error);
-                return [];
-            }
+        function parseUniversalCSV(csv) {
+            if (!csv) return [];
+            const lines = csv.split(/\r?\n/).filter(l => l.trim() !== '');
+            if (lines.length < 1) return [];
+            
+            // Detecta separador (vírgula ou ponto e vírgula)
+            const firstLine = lines[0];
+            const separator = firstLine.includes(';') ? ';' : ',';
+            
+            const headers = firstLine.split(separator).map(h => h.trim().replace(/^"|"$/g, ''));
+            return lines.slice(1).map(line => {
+                const values = line.split(separator).map(v => v.trim().replace(/^"|"$/g, ''));
+                const row = {};
+                headers.forEach((h, i) => { if(h) row[h] = values[i] || ''; });
+                return row;
+            });
         }
 
-        function parseCurrency(value) {
-            if (!value) return 0;
-            if (typeof value === 'number') return value;
-            let s = String(value).replace(/[R$\s]/g, '');
-            if (s.includes(',')) {
-                s = s.replace(/\./g, '').replace(',', '.');
-            }
+        function parseBRValue(val) {
+            if (!val) return 0;
+            let s = String(val).replace(/[R$\s]/g, '');
+            if (s.includes(',')) s = s.replace(/\./g, '').replace(',', '.');
             return parseFloat(s) || 0;
         }
 
-        async function processarVendas(empresa) {
-            const config = EMPRESAS[empresa];
-            const df_v = await loadData(config.vendas_id, config.vendas_gid);
-            const df_c = await loadData(config.cancelados_id, config.cancelados_gid);
-            
-            if (df_v.length === 0) return [];
-
-            // Mapeamento de colunas (baseado no comercial.py original)
-            let vendas = df_v.map(row => {
-                const dataStr = row['Data de Ativação'] || '';
-                const parts = dataStr.split('/');
-                let data = new Date(NaN);
-                if (parts.length === 3) {
-                    data = new Date(parts[2], parts[1]-1, parts[0]); // Formato DD/MM/YYYY
-                }
-
-                return {
-                    vendedor: row['Vendedor'] || 'N/A',
-                    sdr: row['SDR'] || 'N/A',
-                    cliente: row['Cliente'] || 'N/A',
-                    cnpj: String(row['CNPJ do Cliente'] || '').replace(/\D/g, ''),
-                    produto: row['Qual produto?'] || 'Sittax Simples',
-                    mrr: parseCurrency(row['Mensalidade - Simples']),
-                    adesao: parseCurrency(row['Adesão - Simples']) + parseCurrency(row['Adesão - Recupera']),
-                    upgrade: parseCurrency(row['Aumento da mensalidade']),
-                    data: data,
-                    status: 'Confirmada',
-                    data_cancelamento: null
-                };
-            }).filter(v => !isNaN(v.data.getTime()));
-
-            // Adiciona campos de tempo
-            vendas.forEach(v => {
-                v.ano = v.data.getFullYear();
-                v.mes_num = v.data.getMonth() + 1;
-                v.mes_nome = MESES_PT[v.mes_num];
-            });
-
-            // Lógica de Churn (CNPJ + Data Ativação)
-            if (df_c.length > 0) {
-                df_c.forEach(row => {
-                    const cnpj_c = String(row['CNPJ do Cliente'] || row['CNPJ'] || '').replace(/\D/g, '');
-                    const data_ativ_c_str = row['Data de Ativação'] || '';
-                    const parts = data_ativ_c_str.split('/');
-                    if (parts.length === 3) {
-                        const data_ativ_c = new Date(parts[2], parts[1]-1, parts[0]);
-                        const v_idx = vendas.findIndex(v => v.cnpj === cnpj_c && v.data.getTime() === data_ativ_c.getTime());
-                        if (v_idx !== -1) {
-                            vendas[v_idx].status = 'Cancelada';
-                        }
-                    }
-                });
-            }
-
-            return vendas;
-        }
-
-        // ============================================
-        // RENDERIZAÇÃO
-        // ============================================
         async function loadDashboard() {
-            showLoading(`Carregando Comercial ${appState.empresa}...`);
-            const vendas = await processarVendas(appState.empresa);
-            appState.dados_comercial = vendas;
+            showLoading(`Lendo dados de ${appState.empresa}...`);
+            const config = EMPRESAS[appState.empresa];
+            document.getElementById('logo-empresa').src = config.logo;
+            document.getElementById('titulo-comercial').textContent = `📊 Comercial - ${appState.empresa}`;
 
-            if (vendas.length === 0) {
-                alert('Aviso: Nenhuma venda encontrada para esta empresa. Verifique se as planilhas estão publicadas.');
-                hideLoading();
-                return;
-            }
+            try {
+                const [resV, resC] = await Promise.all([
+                    axios.get(`https://docs.google.com/spreadsheets/d/${config.vendas_id}/export?format=csv&gid=${config.vendas_gid}`),
+                    axios.get(`https://docs.google.com/spreadsheets/d/${config.cancelados_id}/export?format=csv&gid=${config.cancelados_gid}`)
+                ]);
 
-            // Popula Filtros (SDR, Vendedor, Produto)
-            const produtos = ['Todos', ...new Set(vendas.map(v => v.produto))];
-            const vendedores = ['Todos', ...new Set(vendas.map(v => v.vendedor))];
-            const sdrs = ['Todos', ...new Set(vendas.map(v => v.sdr))];
+                const vendasRaw = parseUniversalCSV(resV.data);
+                const canceladosRaw = parseUniversalCSV(resC.data);
 
-            document.getElementById('produto-select').innerHTML = produtos.map(p => `<option value="${p}">${p}</option>`).join('');
-            document.getElementById('vendedor-select').innerHTML = vendedores.map(v => `<option value="${v}">${v}</option>`).join('');
-            document.getElementById('sdr-select').innerHTML = sdrs.map(s => `<option value="${s}">${s}</option>`).join('');
+                appState.dados_comercial = vendasRaw.map(r => {
+                    const dataStr = r['Data de Ativação'] || r['Data'] || '';
+                    const p = dataStr.split('/');
+                    const data = p.length === 3 ? new Date(p[2], p[1]-1, p[0]) : new Date(NaN);
+                    
+                    // Lógica de Churn Simplificada
+                    const cnpj = String(r['CNPJ do Cliente'] || '').replace(/\D/g, '');
+                    const isCanc = canceladosRaw.some(c => String(c['CNPJ do Cliente'] || c['CNPJ'] || '').replace(/\D/g, '') === cnpj && (c['Data de Ativação'] === dataStr));
 
-            // Popula Meses do Ano Selecionado
-            const anoSel = parseInt(document.getElementById('ano-select').value);
-            const mesesNoAno = [...new Set(vendas.filter(v => v.ano === anoSel).map(v => v.mes_nome))];
-            const mesContainer = document.getElementById('meses-container');
-            mesContainer.innerHTML = mesesNoAno.map(m => `
-                <label style="display: flex; align-items: center; margin-bottom: 5px;">
-                    <input type="checkbox" name="mes-checkbox" value="${m}" checked onchange="applyFilters()">
-                    <span style="margin-left: 8px;">${m}</span>
-                </label>
-            `).join('');
+                    return {
+                        data, vendedor: r['Vendedor'] || 'N/A', produto: r['Qual produto?'] || 'N/A',
+                        mrr: parseBRValue(r['Mensalidade - Simples']), upgrade: parseBRValue(r['Aumento da mensalidade']),
+                        adesao: parseBRValue(r['Adesão - Simples']) + parseBRValue(r['Adesão - Recupera']),
+                        status: isCanc ? 'Cancelada' : 'Confirmada',
+                        ano: data.getFullYear(), mes: MESES_PT[data.getMonth()+1]
+                    };
+                }).filter(v => !isNaN(v.data.getTime()));
 
-            applyFilters();
+                // Preenche filtros
+                const prods = ['Todos', ...new Set(appState.dados_comercial.map(v => v.produto))];
+                const vends = ['Todos', ...new Set(appState.dados_comercial.map(v => v.vendedor))];
+                document.getElementById('produto-select').innerHTML = prods.map(p => `<option value="${p}">${p}</option>`).join('');
+                document.getElementById('vendedor-select').innerHTML = vends.map(v => `<option value="${v}">${v}</option>`).join('');
+
+                const anoSel = parseInt(document.getElementById('ano-select').value);
+                const mesesNoAno = [...new Set(appState.dados_comercial.filter(v => v.ano === anoSel).map(v => v.mes))];
+                document.getElementById('meses-container').innerHTML = mesesNoAno.map(m => `
+                    <label class="flex items-center text-white text-xs mb-1 cursor-pointer">
+                        <input type="checkbox" value="${m}" checked onchange="applyFilters()" class="mr-2"> ${m}
+                    </label>
+                `).join('');
+
+                applyFilters();
+            } catch (e) { showError('Falha ao ler planilhas. Verifique se estão publicadas como CSV e os IDs estão corretos.'); }
             hideLoading();
         }
 
         function applyFilters() {
             const ano = parseInt(document.getElementById('ano-select').value);
-            const produto = document.getElementById('produto-select').value;
-            const vendedor = document.getElementById('vendedor-select').value;
-            const sdr = document.getElementById('sdr-select').value;
-            const mesesChecked = Array.from(document.querySelectorAll('input[name="mes-checkbox"]:checked')).map(cb => cb.value);
+            const prod = document.getElementById('produto-select').value;
+            const vend = document.getElementById('vendedor-select').value;
+            const meses = Array.from(document.querySelectorAll('#meses-container input:checked')).map(i => i.value);
 
-            let filtrados = appState.dados_comercial.filter(v => 
-                v.ano === ano &&
-                mesesChecked.includes(v.mes_nome) &&
-                (produto === 'Todos' || v.produto === produto) &&
-                (vendedor === 'Todos' || v.vendedor === vendedor) &&
-                (sdr === 'Todos' || v.sdr === sdr)
+            const f = appState.dados_comercial.filter(v => 
+                v.ano === ano && meses.includes(v.mes) &&
+                (prod === 'Todos' || v.produto === prod) &&
+                (vend === 'Todos' || v.vendedor === vend)
             );
 
-            updateKPIs(filtrados);
-            updateCharts(filtrados, ano);
-            updateTable(filtrados);
-        }
-
-        function updateKPIs(dados) {
-            const mrr_conq = dados.reduce((s, v) => s + v.mrr, 0);
-            const mrr_perd = dados.filter(v => v.status === 'Cancelada').reduce((s, v) => s + v.mrr, 0);
-            const mrr_net = mrr_conq - mrr_perd;
-            const upsell = dados.reduce((s, v) => s + v.upgrade, 0);
-            const upsell_q = dados.filter(v => v.upgrade > 0).length;
-            const adesao = dados.reduce((s, v) => s + v.adesao, 0);
-            const cl_fech = dados.length;
-            const cl_canc = dados.filter(v => v.status === 'Cancelada').length;
-            const tkt = cl_fech > 0 ? mrr_conq / cl_fech : 0;
-            const base = appState.dados_comercial.filter(v => v.status === 'Confirmada').length;
-
-            document.getElementById('kpi-mrr-conq').textContent = `R$ ${Math.round(mrr_conq).toLocaleString('pt-BR')}`;
-            document.getElementById('kpi-mrr-net').textContent = `R$ ${Math.round(mrr_net).toLocaleString('pt-BR')}`;
-            document.getElementById('kpi-mrr-perd').textContent = `R$ ${Math.round(mrr_perd).toLocaleString('pt-BR')}`;
-            document.getElementById('kpi-churn-pct').textContent = mrr_conq > 0 ? `-${(mrr_perd/mrr_conq*100).toFixed(1)}%` : '0%';
-            document.getElementById('kpi-upsell').textContent = `R$ ${Math.round(upsell).toLocaleString('pt-BR')}`;
-            document.getElementById('kpi-upsell-qty').textContent = `${upsell_q} eventos`;
-            document.getElementById('kpi-ticket').textContent = `R$ ${Math.round(tkt).toLocaleString('pt-BR')}`;
-            document.getElementById('kpi-adesao').textContent = `R$ ${Math.round(adesao).toLocaleString('pt-BR')}`;
-            document.getElementById('kpi-cl-fech').textContent = cl_fech;
-            document.getElementById('kpi-cl-canc').textContent = cl_canc;
-            document.getElementById('kpi-base-ativa').textContent = base;
-        }
-
-        function updateCharts(dados, ano) {
-            clearCharts();
+            // KPIs
+            const mrr = f.reduce((s, v) => s + v.mrr, 0);
+            const churn = f.filter(v => v.status === 'Cancelada').reduce((s, v) => s + v.mrr, 0);
+            const upsell = f.reduce((s, v) => s + v.upgrade, 0);
             
-            // Agrupamento por mês para evolução
-            const meses_labels = Object.values(MESES_PT);
-            const mrr_evo = meses_labels.map(m => dados.filter(v => v.mes_nome === m).reduce((s, v) => s + v.mrr, 0));
-            const upsell_evo = meses_labels.map(m => dados.filter(v => v.mes_nome === m).reduce((s, v) => s + v.upgrade, 0));
-            const churn_evo = meses_labels.map(m => dados.filter(v => v.mes_nome === m && v.status === 'Cancelada').reduce((s, v) => s + v.mrr, 0));
+            document.getElementById('kpi-mrr-conq').textContent = `R$ ${Math.round(mrr).toLocaleString('pt-BR')}`;
+            document.getElementById('kpi-mrr-net').textContent = `R$ ${Math.round(mrr - churn).toLocaleString('pt-BR')}`;
+            document.getElementById('kpi-mrr-perd').textContent = `R$ ${Math.round(churn).toLocaleString('pt-BR')}`;
+            document.getElementById('kpi-churn-pct').textContent = mrr > 0 ? `${(churn/mrr*100).toFixed(1)}%` : '0%';
+            document.getElementById('kpi-upsell').textContent = `R$ ${Math.round(upsell).toLocaleString('pt-BR')}`;
+            document.getElementById('kpi-ticket').textContent = `R$ ${Math.round(f.length > 0 ? mrr/f.length : 0).toLocaleString('pt-BR')}`;
 
-            const config = (id, label, data, color) => {
-                const ctx = document.getElementById(id).getContext('2d');
-                const chart = new Chart(ctx, {
-                    type: 'bar',
-                    data: {
-                        labels: meses_labels,
-                        datasets: [{ label: label, data: data, backgroundColor: color, borderRadius: 5 }]
-                    },
-                    options: { 
-                        responsive: true, maintainAspectRatio: false,
-                        plugins: { legend: { labels: { color: '#FFF' } } },
-                        scales: { y: { ticks: { color: '#FFF' }, grid: { color: 'rgba(255,255,255,0.1)' } }, x: { ticks: { color: '#FFF' } } }
-                    }
-                });
-                appState.charts.push(chart);
-            };
+            // Table
+            document.getElementById('tbody-detalhamento').innerHTML = f.slice(0, 50).map(v => `
+                <tr><td>${v.data.toLocaleDateString('pt-BR')}</td><td>N/A</td><td>${v.vendedor}</td><td>${v.produto}</td><td>R$ ${v.mrr}</td><td>R$ ${v.adesao}</td></tr>
+            `).join('');
 
-            config('chart-mrr-conq', 'MRR Conquistado', mrr_evo, CORES.primary);
-            config('chart-upsell', 'Upsell', upsell_evo, CORES.secondary);
-            config('chart-churn', 'Churn', churn_evo, CORES.churn);
-
-            // Rankings
-            const rank = (id, field, title) => {
-                const map = {};
-                dados.forEach(v => { map[v[field]] = (map[v[field]] || 0) + v.mrr; });
-                const sorted = Object.entries(map).sort((a,b) => b[1]-a[1]).slice(0,5);
-                
-                const ctx = document.getElementById(id).getContext('2d');
-                const chart = new Chart(ctx, {
-                    type: 'bar',
-                    data: {
-                        labels: sorted.map(s => s[0]),
-                        datasets: [{ label: title, data: sorted.map(s => s[1]), backgroundColor: CORES.secondary }]
-                    },
-                    options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
-                });
-                appState.charts.push(chart);
-            };
-
-            rank('chart-rank-vend-mrr', 'vendedor', 'MRR por Vendedor');
-            rank('chart-rank-sdr-mrr', 'sdr', 'MRR por SDR');
+            updateCharts(f);
         }
 
-        function updateTable(dados) {
-            const tbody = document.getElementById('tbody-detalhamento');
-            tbody.innerHTML = dados.sort((a,b) => b.data - a.data).map(v => `
-                <tr>
-                    <td>${v.data.toLocaleDateString('pt-BR')}</td>
-                    <td>${v.cliente}</td>
-                    <td>${v.vendedor}</td>
-                    <td>${v.sdr}</td>
-                    <td>${v.produto}</td>
-                    <td>${v.status}</td>
-                    <td>R$ ${Math.round(v.mrr).toLocaleString('pt-BR')}</td>
-                    <td>R$ ${Math.round(v.upgrade).toLocaleString('pt-BR')}</td>
-                    <td>R$ ${Math.round(v.adesao).toLocaleString('pt-BR')}</td>
-                </tr>
-            `).join('');
+        function updateCharts(dados) {
+            appState.charts.forEach(c => c.destroy());
+            appState.charts = [];
+            const ctx1 = document.getElementById('chart-mrr-conq').getContext('2d');
+            const m1 = new Chart(ctx1, {
+                type: 'bar',
+                data: { labels: Object.values(MESES_PT), datasets: [{ label: 'MRR', data: Object.values(MESES_PT).map(m => dados.filter(v => v.mes === m).reduce((s,v)=>s+v.mrr,0)), backgroundColor: '#0B2A4E' }] },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+            appState.charts.push(m1);
         }
 
         async function loadInadimplencia() {
-            showLoading('Carregando Inadimplência...');
+            showLoading('Lendo Inadimplência...');
             const config = EMPRESAS[appState.empresa];
-            const df = await loadData(config.contas_receber_id);
-            
-            if (df.length === 0) {
-                alert('Planilha de Inadimplência não encontrada ou vazia.');
-                hideLoading();
-                return;
-            }
+            document.getElementById('logo-empresa-inad').src = config.logo;
+            try {
+                const res = await axios.get(`https://docs.google.com/spreadsheets/d/${config.contas_receber_id}/export?format=csv`);
+                const rows = parseUniversalCSV(res.data);
+                const hoje = new Date();
+                const inad = rows.map(r => {
+                    const d_str = r['Vencimento'] || r['Data de Vencimento'] || '';
+                    const p = d_str.split('/');
+                    const data = p.length === 3 ? new Date(p[2], p[1]-1, p[0]) : new Date(NaN);
+                    const dias = isNaN(data.getTime()) ? 0 : Math.floor((hoje - data)/(1000*60*60*24));
+                    return { nome: r['Nome'] || r['Cliente'] || 'N/A', valor: parseBRValue(r['Valor'] || r['Valor Aberto']), dias: dias > 0 ? dias : 0 };
+                }).filter(i => i.dias > 0);
 
-            const hoje = new Date();
-            const inad = df.map(row => {
-                const v_str = row['Valor'] || row['Valor Aberto'] || '0';
-                const d_str = row['Vencimento'] || row['Data de Vencimento'] || '';
-                const parts = d_str.split('/');
-                let data = new Date(NaN);
-                if (parts.length === 3) data = new Date(parts[2], parts[1]-1, parts[0]);
-
-                const dias = isNaN(data.getTime()) ? 0 : Math.floor((hoje - data) / (1000*60*60*24));
-                return {
-                    cliente: row['Nome'] || row['Cliente'] || 'N/A',
-                    valor: parseCurrency(v_str),
-                    atraso: dias > 0 ? dias : 0
-                };
-            }).filter(i => i.atraso > 0);
-
-            const total = inad.reduce((s, i) => s + i.valor, 0);
-            document.getElementById('kpi-total-aberto').textContent = `R$ ${Math.round(total).toLocaleString('pt-BR')}`;
-            document.getElementById('kpi-clientes-inad').textContent = inad.length;
-            document.getElementById('kpi-repasse').textContent = `R$ ${Math.round(total * 0.3).toLocaleString('pt-BR')}`;
-
-            const tbody = document.getElementById('tbody-inadimplencia');
-            tbody.innerHTML = inad.sort((a,b) => b.atraso - a.atraso).map(i => `
-                <tr>
-                    <td>${i.cliente}</td>
-                    <td>R$ ${Math.round(i.valor).toLocaleString('pt-BR')}</td>
-                    <td>${i.atraso}</td>
-                    <td>${i.atraso > 90 ? '> 90 dias' : i.atraso > 60 ? '61-90 dias' : '0-60 dias'}</td>
-                </tr>
-            `).join('');
-            
+                const total = inad.reduce((s, i) => s + i.valor, 0);
+                document.getElementById('kpi-total-aberto').textContent = `R$ ${Math.round(total).toLocaleString('pt-BR')}`;
+                document.getElementById('kpi-clientes-inad').textContent = inad.length;
+                document.getElementById('kpi-repasse').textContent = `R$ ${Math.round(total*0.3).toLocaleString('pt-BR')}`;
+                document.getElementById('tbody-inadimplencia').innerHTML = inad.sort((a,b)=>b.dias-a.dias).slice(0, 50).map(i => `
+                    <tr><td>${i.nome}</td><td>R$ ${Math.round(i.valor).toLocaleString('pt-BR')}</td><td>${i.dias}</td><td>${i.dias > 90 ? '> 90' : '0-90'}</td></tr>
+                `).join('');
+            } catch (e) { showError('Erro na Inadimplência. Verifique a planilha.'); }
             hideLoading();
         }
 
-        async function changeEmpresa() {
+        function changeEmpresa() {
             appState.empresa = document.getElementById('empresa-select').value;
-            document.getElementById('logo-empresa').src = EMPRESAS[appState.empresa].logo;
-            document.getElementById('logo-empresa-inad').src = EMPRESAS[appState.empresa].logo;
-            document.getElementById('titulo-comercial').textContent = `📊 Resumo Comercial - ${appState.empresa}`;
             if (appState.page === 'comercial') loadDashboard(); else loadInadimplencia();
         }
-
-        // Inicialização
-        document.addEventListener('DOMContentLoaded', () => {
-            console.log('Portal Acelerar Iniciado');
-        });
     </script>
 </body>
 </html>
