@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hub Holding Acelerar - Portal Estratégico (V12.0)</title>
+    <title>Hub Holding Acelerar - Portal Estratégico (V12.1)</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios@1.6.0/dist/axios.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -27,7 +27,6 @@
         .dashboard-header .nav-tabs button.active { background-color: #89CFF0; color: #0B2A4E; }
         .dashboard-wrapper { display: flex; min-height: calc(100vh - 50px); }
         
-        /* Sidebar Retrátil */
         .sidebar { width: 220px; background-color: #0B2A4E; padding: 15px; border-right: 1px solid rgba(137, 207, 240, 0.2); flex-shrink: 0; overflow-y: auto; height: calc(100vh - 50px); position: sticky; top: 50px; transition: width 0.3s ease; overflow-x: hidden; }
         .sidebar.collapsed { width: 0; padding: 0; border: none; }
         .sidebar h3 { color: #89CFF0; margin-top: 15px; margin-bottom: 8px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; white-space: nowrap; }
@@ -48,7 +47,6 @@
         .spinner { width: 30px; height: 30px; border: 3px solid rgba(137, 207, 240, 0.1); border-top: 3px solid #89CFF0; border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         
-        /* Ranking Bars */
         .ranking-card { background: rgba(11, 42, 78, 0.4); border: 1px solid rgba(137, 207, 240, 0.2); border-radius: 8px; padding: 12px; }
         .ranking-card h4 { color: #89CFF0; font-size: 0.75rem; font-weight: 800; margin-bottom: 12px; text-transform: uppercase; border-bottom: 1px solid rgba(137, 207, 240, 0.2); padding-bottom: 4px; }
         .bar-container { position: relative; width: 100%; height: 24px; background: rgba(255,255,255,0.05); border-radius: 4px; margin-bottom: 8px; overflow: hidden; }
@@ -209,7 +207,8 @@
         };
         
         const FIELDS = { 
-            SDR: 110777789, 
+            VENDEDOR_REAL: 110777788, // Campo Vendedor
+            SDR_REAL: 110777789,      // Campo SDR
             MRR: 110778108,        
             PRODUTO: 111431860,    
             UPSELL: 111433407,     
@@ -261,7 +260,7 @@
         }
 
         async function loadData() {
-            const cacheKey = `acelerar_v12_0_${appState.empresa}`;
+            const cacheKey = `acelerar_v12_1_${appState.empresa}`;
             const cacheTimeKey = `${cacheKey}_time`;
             const cached = localStorage.getItem(cacheKey);
             const cachedTime = localStorage.getItem(cacheTimeKey);
@@ -301,23 +300,24 @@
                 } else if (prodNorm.includes("recupera")) { adesao = valAdesaoR; }
                 else { mrr = valMRR; adesao = valAdesaoS; }
 
-                const propSDR = getProp(FIELDS.SDR);
-                const sdr = propSDR ? (propSDR.ObjectValueName || propSDR.ValueName || propSDR.Value || 'N/A') : 'N/A';
+                // MAPEAMENTO DINÂMICO POR CARGO
+                const vendedor = getProp(FIELDS.VENDEDOR_REAL)?.UserValueName || 'N/A';
+                const sdr = getProp(FIELDS.SDR_REAL)?.UserValueName || 'N/A';
 
                 let dateStr = type === 'Venda' ? (getProp(FIELDS.DATA_ATIVACAO)?.DateTimeValue || d.FinishDate || d.CreateDate || '') : (getProp(FIELDS.DATA_CANCELAMENTO)?.DateTimeValue || d.FinishDate || d.CreateDate || '');
                 const date = new Date(dateStr);
 
                 return {
                     id: d.Id, cliente: d.Title, cnpj: d.Contact?.CNPJ || d.Contact?.CPF || 'N/A',
-                    contactId: d.ContactId, data: date, vendedor: d.Owner?.Name || 'N/A', sdr: sdr,
+                    contactId: d.ContactId, data: date, vendedor: vendedor, sdr: sdr,
                     mrr: mrr, upsell: upsell, adesao: adesao, produto: produto, status: type, 
                     estagio: d.Stage?.Name || '', ano: date.getFullYear(), mes: MESES_PT[date.getMonth()+1]
                 };
             };
 
             appState.raw_data = [...vendas.map(d => mapDeal(d, 'Venda')), ...churn.map(d => mapDeal(d, 'Churn'))];
-            localStorage.setItem(`acelerar_v12_0_${appState.empresa}`, JSON.stringify(appState.raw_data));
-            localStorage.setItem(`acelerar_v12_0_${appState.empresa}_time`, new Date().getTime().toString());
+            localStorage.setItem(`acelerar_v12_1_${appState.empresa}`, JSON.stringify(appState.raw_data));
+            localStorage.setItem(`acelerar_v12_1_${appState.empresa}_time`, new Date().getTime().toString());
             renderDashboard();
             hideLoading();
         }
@@ -326,7 +326,7 @@
             const anos = [...new Set(appState.raw_data.map(d => d.ano))].sort((a,b) => b-a);
             document.getElementById('ano-select').innerHTML = anos.map(a => `<option value="${a}">${a}</option>`).join('');
             const prods = ['Todos', ...new Set(appState.raw_data.map(d => d.produto))];
-            const vends = ['Todos', ...new Set(appState.raw_data.map(d => d.vendedor))];
+            const vends = ['Todos', ...new Set(appState.raw_data.map(d => d.vendedor))].filter(v => v !== 'N/A');
             const sdrs = ['Todos', ...new Set(appState.raw_data.map(d => d.sdr))].filter(s => s !== 'N/A');
             document.getElementById('produto-select').innerHTML = prods.map(p => `<option value="${p}">${p}</option>`).join('');
             document.getElementById('vendedor-select').innerHTML = vends.map(v => `<option value="${v}">${v}</option>`).join('');
