@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hub Holding Acelerar - Portal Estratégico (V13.5)</title>
+    <title>Hub Holding Acelerar - Portal Estratégico (V13.6)</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios@1.6.0/dist/axios.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -52,14 +52,12 @@
         .ranking-card { background: rgba(11, 42, 78, 0.4); border: 1px solid rgba(137, 207, 240, 0.2); border-radius: 8px; padding: 12px; overflow-y: auto; }
         .ranking-card h4 { color: #89CFF0; font-size: 0.75rem; font-weight: 800; margin-bottom: 12px; text-transform: uppercase; border-bottom: 1px solid rgba(137, 207, 240, 0.2); padding-bottom: 4px; }
         
-        /* Ajuste do Funil e Barras (V13.5) */
         .bar-container { position: relative; width: 100%; height: 24px; background: rgba(255,255,255,0.05); border-radius: 4px; margin-bottom: 8px; display: flex; align-items: center; }
         .bar-fill { height: 100%; background: linear-gradient(90deg, #0B2A4E, #89CFF0); border-radius: 4px; transition: width 0.5s ease; position: absolute; left: 0; top: 0; }
         .bar-content { position: relative; width: 100%; display: flex; align-items: center; padding: 0 10px; z-index: 10; pointer-events: none; gap: 8px; }
         .bar-label { font-size: 0.75rem; font-weight: 700; color: #FFFFFF; text-shadow: 1px 1px 2px rgba(0,0,0,0.8); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .bar-value { font-size: 0.75rem; font-weight: 800; color: #89CFF0; text-shadow: 1px 1px 2px rgba(0,0,0,0.8); }
         
-        /* Funil de SDRs Centrado */
         .funnel-row { display: flex; justify-content: center; width: 100%; margin-bottom: 8px; }
         .funnel-bar { height: 24px; background: #2980B9; border-radius: 4px; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 0 10px; position: relative; transition: width 0.5s ease; }
         .funnel-label { font-size: 0.7rem; font-weight: 700; color: #FFFFFF; text-shadow: 1px 1px 2px rgba(0,0,0,0.8); white-space: nowrap; }
@@ -77,13 +75,13 @@
         
         .churn-badge { font-size: 0.6rem; background: rgba(231, 76, 60, 0.2); color: #E74C3C; padding: 1px 4px; border-radius: 4px; font-weight: 800; margin-top: 2px; display: inline-block; }
 
-        /* Lista de Calor Estratégica */
         .geo-list-container { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; height: 100%; }
         .geo-list { background: rgba(0,0,0,0.2); border-radius: 6px; padding: 8px; overflow-y: auto; }
         .geo-item { padding: 6px 10px; border-radius: 4px; margin-bottom: 4px; cursor: pointer; transition: 0.2s; border: 1px solid transparent; }
         .geo-item:hover { background: rgba(137, 207, 240, 0.1); border-color: rgba(137, 207, 240, 0.3); }
         .geo-item.active { background: #89CFF0; color: #0B2A4E; }
         .geo-item.active span { color: #0B2A4E !important; }
+        .geo-item.active .text-val { color: #0B2A4E !important; }
     </style>
 </head>
 <body>
@@ -159,7 +157,6 @@
             </div>
 
             <div class="main-content">
-                <!-- PAINEL 1: RESULTADOS (PERFORMANCE) -->
                 <div id="page-performance" style="display: none;">
                     <div class="flex items-center gap-3 mb-4">
                         <img id="logo-empresa-perf" src="" style="width: 80px;">
@@ -213,7 +210,6 @@
                     </div>
                 </div>
 
-                <!-- PAINEL 2: DESEMPENHO DO TIME -->
                 <div id="page-desempenho" style="display: none;">
                     <div class="flex items-center gap-3 mb-6">
                         <img id="logo-empresa-des" src="" style="width: 80px;">
@@ -257,7 +253,6 @@
                     </div>
                 </div>
 
-                <!-- PAINEL 3: INADIMPLÊNCIA -->
                 <div id="page-inadimplencia" style="display: none;">
                     <h1 class="text-md font-bold text-blue-300 mb-4">📋 Inadimplência Comercial</h1>
                     <div class="kpi-row">
@@ -340,7 +335,7 @@
         async function forceSync() { await loadData(true); }
 
         async function loadData(forceDealsOnly = false) {
-            const cacheKey = `acelerar_v13_5_${appState.empresa}`;
+            const cacheKey = `acelerar_v13_6_${appState.empresa}`;
             const cacheTimeKey = `${cacheKey}_time`;
             const cached = localStorage.getItem(cacheKey);
             const cachedTime = localStorage.getItem(cacheTimeKey);
@@ -376,7 +371,7 @@
             ];
 
             if (fullSync) {
-                promises.push(fetchPloomes(`Contacts?$select=Id,Name,CNPJ,CPF,City,State&$top=2000`));
+                promises.push(fetchPloomes(`Contacts?$select=Id,Name,CNPJ,CPF,City,State&$expand=City,State&$top=2000`));
             }
 
             const results = await Promise.all(promises);
@@ -384,9 +379,13 @@
             const churn = results[1];
             
             if (fullSync) {
-                appState.contacts = results[2].map(c => ({ id: c.Id, name: c.Name, cnpj: c.CNPJ || c.CPF, cidade: c.City?.Name, estado: c.State?.ShortName }));
+                appState.contacts = results[2].map(c => ({ 
+                    id: c.Id, name: c.Name, cnpj: c.CNPJ || c.CPF, 
+                    cidade: c.City?.Name, 
+                    estado: c.State?.Short || (c.City?.State?.Short) || 'NI' 
+                }));
             } else {
-                const cached = JSON.parse(localStorage.getItem(`acelerar_v13_5_${appState.empresa}`));
+                const cached = JSON.parse(localStorage.getItem(`acelerar_v13_6_${appState.empresa}`));
                 appState.contacts = cached ? cached.contacts : [];
             }
 
@@ -419,8 +418,8 @@
 
             appState.raw_data = [...vendas.map(d => mapDeal(d, 'Venda')), ...churn.map(d => mapDeal(d, 'Churn'))];
             
-            localStorage.setItem(`acelerar_v13_5_${appState.empresa}`, JSON.stringify({ deals: appState.raw_data, contacts: appState.contacts }));
-            localStorage.setItem(`acelerar_v13_5_${appState.empresa}_time`, new Date().getTime().toString());
+            localStorage.setItem(`acelerar_v13_6_${appState.empresa}`, JSON.stringify({ deals: appState.raw_data, contacts: appState.contacts }));
+            localStorage.setItem(`acelerar_v13_6_${appState.empresa}_time`, new Date().getTime().toString());
             
             document.getElementById('cache-info').textContent = `Sinc: ${new Date().toLocaleString('pt-BR')}`;
             renderDashboard();
@@ -560,12 +559,11 @@
             const topSdr = renderRank('rank-sdr-mrr', sdrData, 'val', true);
             renderRank('rank-ciclo-venda', vendData, 'ciclo', false, true);
             
-            // Funil de SDRs (V13.5 - Agrupado e Completo)
             const funilSdr = sdrData.sort((a,b) => b.vol - a.vol);
             const maxVol = funilSdr.length > 0 ? funilSdr[0].vol : 1;
             document.getElementById('rank-funil-sdr').innerHTML = funilSdr.map((r) => {
                 const pct = (r.vol / maxVol) * 100;
-                return `<div class="funnel-row"><div class="funnel-bar" style="width: ${Math.max(30, pct)}%;"><span class="funnel-label">${r.name}</span><span class="funnel-value">(${r.vol})</span></div></div>`;
+                return `<div class="funnel-row"><div class="funnel-bar" style="width: ${Math.max(30, pct)}%;"><span class="funnel-label">${r.name} (${r.vol})</span></div></div>`;
             }).join('') || '<p class="text-[7px] opacity-30">Sem dados</p>';
 
             if (topVend) { document.getElementById('mvp-vendedor-name').textContent = topVend.name; document.getElementById('mvp-vendedor-val').textContent = `R$ ${Math.round(topVend.val).toLocaleString('pt-BR')}`; }
@@ -581,8 +579,13 @@
 
             appState.contacts.forEach(c => {
                 const uf = c.estado || 'NI';
-                // Filtro por empresa: Victec foca no RJ
-                if (appState.empresa === 'Victec' && uf !== 'RJ' && !fechadosIds.has(c.id)) return;
+                if (uf === 'NI') return;
+
+                // Filtro por empresa: Victec foca no RJ, VMC Tech é Nacional
+                if (appState.empresa === 'Victec' && uf !== 'RJ') {
+                    // Se for Victec e não for RJ, só mostra se tiver contrato fechado (exceções)
+                    if (!fechadosIds.has(c.id)) return;
+                }
 
                 if (!geoMap[uf]) geoMap[uf] = { total: 0, fechados: 0, cidades: {} };
                 geoMap[uf].total++;
@@ -597,10 +600,10 @@
             const sortedStates = Object.entries(geoMap).sort((a,b) => b[1].total - a[1].total);
             stateList.innerHTML = sortedStates.map(([uf, data]) => `
                 <div class="geo-item ${appState.activeState === uf ? 'active' : ''}" onclick="selectGeoState('${uf}')">
-                    <div class="flex justify-between text-[10px] font-bold"><span>${uf}</span><span>${data.total} Clientes</span></div>
-                    <div class="text-[7px] opacity-60">${data.fechados} Fechados (${((data.fechados/data.total)*100).toFixed(1)}%)</div>
+                    <div class="flex justify-between text-[10px] font-bold"><span>${uf}</span><span class="text-val">${data.total} Clientes</span></div>
+                    <div class="text-[7px] opacity-60 text-val">${data.fechados} Fechados (${((data.fechados/data.total)*100).toFixed(1)}%)</div>
                 </div>
-            `).join('') || '<p class="text-center opacity-30 mt-10 text-[9px]">Sem dados para esta empresa</p>';
+            `).join('') || '<p class="text-center opacity-30 mt-10 text-[9px]">Sem dados geográficos</p>';
 
             if (appState.activeState && geoMap[appState.activeState]) {
                 const data = geoMap[appState.activeState];
