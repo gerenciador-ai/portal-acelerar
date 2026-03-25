@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hub Holding Acelerar - Portal Estratégico (V13.2)</title>
+    <title>Hub Holding Acelerar - Portal Estratégico (V13.3)</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios@1.6.0/dist/axios.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -67,11 +67,12 @@
         .mvp-card .value { font-size: 0.9rem; font-weight: 700; color: #89CFF0; }
         
         .churn-badge { font-size: 0.6rem; background: rgba(231, 76, 60, 0.2); color: #E74C3C; padding: 1px 4px; border-radius: 4px; font-weight: 800; margin-top: 2px; display: inline-block; }
-        
-        /* Gauge Styles */
-        .gauge-container { position: relative; height: 180px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        .gauge-label { position: absolute; bottom: 30px; font-size: 1.5rem; font-weight: 800; color: #FFF; }
-        .gauge-title { font-size: 0.65rem; font-weight: 800; color: #89CFF0; text-transform: uppercase; margin-bottom: 10px; text-align: center; }
+
+        /* Mapa de Calor */
+        #mapa-brasil { width: 100%; height: 350px; background: rgba(11, 42, 78, 0.4); border-radius: 8px; border: 1px solid rgba(137, 207, 240, 0.2); position: relative; }
+        .estado-item { fill: #0B2A4E; stroke: #89CFF0; stroke-width: 0.5; cursor: pointer; transition: fill 0.3s; }
+        .estado-item:hover { fill: #89CFF0; }
+        .map-legend { position: absolute; bottom: 10px; right: 10px; font-size: 0.6rem; background: rgba(0,0,0,0.5); padding: 5px; border-radius: 4px; }
     </style>
 </head>
 <body>
@@ -227,15 +228,23 @@
                     </div>
 
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
-                        <div class="ranking-card" style="height: 350px;">
-                            <h4>🚀 Ciclo Médio de Venda (Dias)</h4>
-                            <div class="h-[280px]"><canvas id="chart-radar-ciclo"></canvas></div>
-                        </div>
-                        <div class="ranking-card" style="height: 350px;">
-                            <h4>🔥 Termômetro de Atividade (Novos Negócios)</h4>
-                            <div class="grid grid-cols-2 gap-4 mt-4" id="gauges-container">
-                                <!-- Gauges serão injetados aqui -->
+                        <div class="ranking-card"><h4>🚀 Ciclo Médio de Venda (Dias)</h4><div id="rank-ciclo-venda"></div></div>
+                        <div class="ranking-card"><h4>🔥 Funil de SDRs (Novos Negócios)</h4><div id="rank-funil-sdr"></div></div>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                        <div class="ranking-card" style="height: 450px;">
+                            <div class="flex justify-between items-center mb-2">
+                                <h4>🌍 Mapa de Calor (Clientes)</h4>
+                                <button onclick="resetMap()" id="btn-reset-map" class="text-[8px] bg-blue-500 px-2 py-1 rounded hidden">Voltar para Brasil</button>
                             </div>
+                            <div id="mapa-brasil">
+                                <!-- SVG Mapa Brasil injetado via JS -->
+                            </div>
+                        </div>
+                        <div class="ranking-card" style="height: 450px; overflow-y: auto;">
+                            <h4 id="geo-detail-title">Concentração por Estado</h4>
+                            <div id="geo-detail-list"></div>
                         </div>
                     </div>
                 </div>
@@ -280,7 +289,7 @@
         };
         const MESES_PT = {1:'Jan',2:'Fev',3:'Mar',4:'Abr',5:'Mai',6:'Jun',7:'Jul',8:'Ago',9:'Set',10:'Out',11:'Nov',12:'Dez'};
 
-        let appState = { empresa: 'VMC Tech', page: 'performance', raw_data: [], charts: {} };
+        let appState = { empresa: 'VMC Tech', page: 'performance', raw_data: [], contacts: [], geoState: 'Brasil', charts: {} };
 
         function toggleSidebar() { document.getElementById('sidebar').classList.toggle('collapsed'); }
         function showLoading(t) { document.getElementById('loading-overlay').style.display = 'flex'; document.getElementById('loading-text').textContent = t; }
@@ -321,13 +330,26 @@
         }
 
         async function loadData() {
-            const cacheKey = `acelerar_v13_2_${appState.empresa}`;
+            const cacheKey = `acelerar_v13_3_${appState.empresa}`;
             const cacheTimeKey = `${cacheKey}_time`;
             const cached = localStorage.getItem(cacheKey);
             const cachedTime = localStorage.getItem(cacheTimeKey);
-            if (cached && cachedTime && (new Date().getTime() - parseInt(cachedTime) < 300000)) { 
-                appState.raw_data = JSON.parse(cached);
-                document.getElementById('cache-info').textContent = `Sinc: ${new Date(parseInt(cachedTime)).toLocaleString('pt-BR')}`;
+            
+            // Lógica de cache: 24h ou até o próximo dia às 8h
+            const now = new Date();
+            const lastSync = cachedTime ? new Date(parseInt(cachedTime)) : null;
+            let needsSync = !cached || !lastSync;
+            if (lastSync) {
+                const diffHours = (now - lastSync) / (1000 * 60 * 60);
+                if (diffHours > 24) needsSync = true;
+                if (lastSync.getDate() !== now.getDate() && now.getHours() >= 8) needsSync = true;
+            }
+
+            if (!needsSync) { 
+                const data = JSON.parse(cached);
+                appState.raw_data = data.deals;
+                appState.contacts = data.contacts;
+                document.getElementById('cache-info').textContent = `Sinc: ${lastSync.toLocaleString('pt-BR')}`;
                 renderDashboard();
             } else { await refreshData(); }
         }
@@ -335,9 +357,10 @@
         async function refreshData() {
             showLoading(`Sincronizando Ploomes...`);
             const config = PIPELINES[appState.empresa];
-            const [vendas, churn] = await Promise.all([
+            const [vendas, churn, contacts] = await Promise.all([
                 fetchPloomes(`Deals?$filter=PipelineId eq ${config.vendas} and StatusId eq 2&$expand=OtherProperties,Owner,Contact&$top=2000`),
-                fetchPloomes(`Deals?$filter=PipelineId eq ${config.churn}&$expand=OtherProperties,Owner,Stage,Contact&$top=2000`)
+                fetchPloomes(`Deals?$filter=PipelineId eq ${config.churn}&$expand=OtherProperties,Owner,Stage,Contact&$top=2000`),
+                fetchPloomes(`Contacts?$select=Id,Name,CNPJ,CPF,City,State&$top=2000`)
             ]);
 
             const mapDeal = (d, type) => {
@@ -347,18 +370,9 @@
                 let produto = propProduto ? (propProduto.ObjectValueName || propProduto.ValueName || propProduto.Value || "") : "";
                 if (!produto || produto === "") produto = "Sittax Simples";
 
-                let mrr = 0, adesao = 0, upsell = 0;
-                const valMRR = sanitizeVal(getProp(FIELDS.MRR)?.DecimalValue);
-                const valAdesaoS = sanitizeVal(getProp(FIELDS.ADESAO_S)?.DecimalValue);
-                const valUpsell = sanitizeVal(getProp(FIELDS.UPSELL)?.DecimalValue);
-                const valAdesaoR = sanitizeVal(getProp(FIELDS.ADESAO_R)?.DecimalValue);
-
-                const prodNorm = produto.toLowerCase();
-                if (prodNorm.includes("simples")) {
-                    if (valMRR > 0 || valAdesaoS > 0) { mrr = valMRR; adesao = valAdesaoS; }
-                    else if (valUpsell > 0) { upsell = valUpsell; }
-                } else if (prodNorm.includes("recupera")) { adesao = valAdesaoR; }
-                else { mrr = valMRR; adesao = valAdesaoS; }
+                let mrr = sanitizeVal(getProp(FIELDS.MRR)?.DecimalValue);
+                let adesao = sanitizeVal(getProp(FIELDS.ADESAO_S)?.DecimalValue) || sanitizeVal(getProp(FIELDS.ADESAO_R)?.DecimalValue);
+                let upsell = sanitizeVal(getProp(FIELDS.UPSELL)?.DecimalValue);
 
                 const vendedor = getProp(FIELDS.VENDEDOR_REAL)?.UserValueName || 'N/A';
                 const sdr = getProp(FIELDS.SDR_REAL)?.UserValueName || 'N/A';
@@ -377,8 +391,10 @@
             };
 
             appState.raw_data = [...vendas.map(d => mapDeal(d, 'Venda')), ...churn.map(d => mapDeal(d, 'Churn'))];
-            localStorage.setItem(`acelerar_v13_2_${appState.empresa}`, JSON.stringify(appState.raw_data));
-            localStorage.setItem(`acelerar_v13_2_${appState.empresa}_time`, new Date().getTime().toString());
+            appState.contacts = contacts.map(c => ({ id: c.Id, name: c.Name, cnpj: c.CNPJ || c.CPF, cidade: c.City?.Name, estado: c.State?.ShortName }));
+            
+            localStorage.setItem(`acelerar_v13_3_${appState.empresa}`, JSON.stringify({ deals: appState.raw_data, contacts: appState.contacts }));
+            localStorage.setItem(`acelerar_v13_3_${appState.empresa}_time`, new Date().getTime().toString());
             renderDashboard();
             hideLoading();
         }
@@ -415,9 +431,6 @@
             const sdr = document.getElementById('sdr-select').value;
             const mesesSelecionados = Array.from(document.querySelectorAll('#meses-container input:checked')).map(i => i.value);
 
-            const vendasMap = {};
-            appState.raw_data.filter(d => d.status === 'Venda').forEach(v => { if (v.contactId) vendasMap[v.contactId] = { mrr: v.mrr, vend: v.vendedor, sdr: v.sdr }; });
-
             const f = appState.raw_data.filter(d => 
                 d.ano === ano && mesesSelecionados.includes(d.mes) &&
                 (prod === 'Todos' || d.produto === prod) &&
@@ -425,6 +438,9 @@
                 (sdr === 'Todos' || d.sdr === sdr)
             );
 
+            // Match de MRR Perdido via ContactId
+            const vendasMap = {};
+            appState.raw_data.filter(d => d.status === 'Venda').forEach(v => { if (v.contactId) vendasMap[v.contactId] = { mrr: v.mrr, vend: v.vendedor, sdr: v.sdr }; });
             f.forEach(d => {
                 if (d.status === 'Churn' && d.estagio === 'Cancelado' && d.mrr === 0) {
                     const original = vendasMap[d.contactId];
@@ -462,6 +478,7 @@
 
             updateCharts(f, mesesSelecionados);
             updateRankings(f);
+            renderMap();
         }
 
         function updateCharts(f, mesesEixo) {
@@ -474,7 +491,6 @@
             };
             const chartOptions = { responsive: true, maintainAspectRatio: false, scales: { y: { ticks: { color: '#FFF', font: { size: 8 } } }, x: { type: 'category', ticks: { color: '#FFF', font: { size: 8 } } } }, plugins: { legend: { labels: { color: '#FFF', font: { size: 9 } } } } };
             
-            // Performance Charts
             let accMrr = 0, accContratos = 0;
             const mrrData = meses_labels.map(m => { accMrr += f.filter(d => d.mes === m && d.status === 'Venda').reduce((s,d) => s + d.mrr, 0); return accMrr; });
             const contratosData = meses_labels.map(m => { accContratos += f.filter(d => d.mes === m && d.status === 'Venda').length; return accContratos; });
@@ -486,72 +502,6 @@
             renderChart('chart-evolucao-mrr', 'bar', { labels: meses_labels, datasets: [{ label: 'MRR Mensal', data: evolData('mrr', 'Venda'), backgroundColor: '#89CFF0' }] }, chartOptions);
             renderChart('chart-evolucao-upsell', 'bar', { labels: meses_labels, datasets: [{ label: 'Upsell Mensal', data: evolData('upsell', null), backgroundColor: '#89CFF0' }] }, chartOptions);
             renderChart('chart-evolucao-churn', 'bar', { labels: meses_labels, datasets: [{ label: 'Churn Mensal', data: evolData('mrr', 'Churn'), backgroundColor: '#E74C3C' }] }, chartOptions);
-
-            // Radar Chart: Ciclo de Venda
-            const vends = [...new Set(f.filter(d => d.status === 'Venda').map(d => d.vendedor))].filter(v => v !== 'N/A');
-            const cicloData = vends.map(v => {
-                const deals = f.filter(d => d.vendedor === v && d.status === 'Venda');
-                return deals.length > 0 ? Math.round(deals.reduce((s,d) => s + d.ciclo, 0) / deals.length) : 0;
-            });
-            renderChart('chart-radar-ciclo', 'radar', {
-                labels: vends,
-                datasets: [{
-                    label: 'Ciclo Médio (Dias)',
-                    data: cicloData,
-                    backgroundColor: 'rgba(137, 207, 240, 0.2)',
-                    borderColor: '#89CFF0',
-                    pointBackgroundColor: '#89CFF0',
-                    borderWidth: 2
-                }]
-            }, {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    r: {
-                        angleLines: { color: 'rgba(255,255,255,0.1)' },
-                        grid: { color: 'rgba(255,255,255,0.1)' },
-                        pointLabels: { color: '#FFF', font: { size: 9 } },
-                        ticks: { display: false }
-                    }
-                },
-                plugins: { legend: { display: false } }
-            });
-
-            // Termômetro Gauges: SDRs
-            const sdrs = [...new Set(f.filter(d => d.status === 'Venda').map(d => d.sdr))].filter(s => s !== 'N/A');
-            const gaugesContainer = document.getElementById('gauges-container');
-            if (gaugesContainer) {
-                gaugesContainer.innerHTML = sdrs.slice(0, 4).map((s, i) => `
-                    <div class="gauge-container">
-                        <div class="gauge-title">${s}</div>
-                        <canvas id="gauge-sdr-${i}"></canvas>
-                        <div class="gauge-label" id="gauge-val-sdr-${i}">0</div>
-                    </div>
-                `).join('');
-                
-                sdrs.slice(0, 4).forEach((s, i) => {
-                    const vol = f.filter(d => d.sdr === s && d.status === 'Venda').length;
-                    const meta = 20; // Meta exemplo
-                    const pct = Math.min(100, (vol / meta) * 100);
-                    const color = pct < 40 ? '#E74C3C' : (pct < 80 ? '#F1C40F' : '#27AE60');
-                    
-                    renderChart(`gauge-sdr-${i}`, 'doughnut', {
-                        datasets: [{
-                            data: [vol, Math.max(0, meta - vol)],
-                            backgroundColor: [color, 'rgba(255,255,255,0.05)'],
-                            borderWidth: 0,
-                            circumference: 180,
-                            rotation: 270,
-                            cutout: '80%'
-                        }]
-                    }, {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: { legend: { display: false }, tooltip: { enabled: false } }
-                    });
-                    document.getElementById(`gauge-val-sdr-${i}`).textContent = vol;
-                });
-            }
         }
 
         function updateRankings(f) {
@@ -559,29 +509,102 @@
                 const map = {};
                 f.filter(d => d.status === 'Venda').forEach(d => {
                     const k = d[key]; if (k === 'N/A' || !k) return;
-                    if (!map[k]) map[k] = { name: k, val: 0, vol: 0 };
-                    map[k].val += d.mrr; map[k].vol += 1;
+                    if (!map[k]) map[k] = { name: k, val: 0, vol: 0, ciclo: 0 };
+                    map[k].val += d.mrr; map[k].vol += 1; map[k].ciclo += d.ciclo;
                 });
                 return Object.values(map);
             };
-            const renderRank = (id, data, sortKey, isMoeda) => {
-                const sorted = data.sort((a,b) => b[sortKey] - a[sortKey]).slice(0, 5);
+            const renderRank = (id, data, sortKey, isMoeda, isCiclo) => {
+                const sorted = data.sort((a,b) => isCiclo ? a[sortKey] - b[sortKey] : b[sortKey] - a[sortKey]).slice(0, 5);
                 const maxVal = sorted.length > 0 ? sorted[0][sortKey] : 1;
                 const container = document.getElementById(id);
                 if (!container) return;
                 container.innerHTML = sorted.map((r, i) => {
-                    const pct = (r[sortKey] / maxVal) * 100;
-                    const displayVal = isMoeda ? 'R$ '+Math.round(r.val).toLocaleString('pt-BR') : r.vol;
+                    const pct = isCiclo ? 100 : (r[sortKey] / maxVal) * 100;
+                    const val = isCiclo ? Math.round(r.ciclo / r.vol) : r[sortKey];
+                    const displayVal = isMoeda ? 'R$ '+Math.round(val).toLocaleString('pt-BR') : (isCiclo ? val + ' dias' : val);
                     return `<div class="bar-container"><div class="bar-fill" style="width: ${pct}%"></div><span class="bar-label">${i+1}. ${r.name}</span><span class="bar-value">${displayVal}</span></div>`;
                 }).join('') || '<p class="text-[7px] opacity-30">Sem dados</p>';
                 return sorted[0];
             };
+            
             const vendData = getRank('vendedor'), sdrData = getRank('sdr');
             const topVend = renderRank('rank-vend-mrr', vendData, 'val', true);
             const topSdr = renderRank('rank-sdr-mrr', sdrData, 'val', true);
+            renderRank('rank-ciclo-venda', vendData, 'ciclo', false, true);
+            
+            // Funil de SDRs (Novos Negócios)
+            const funilSdr = sdrData.sort((a,b) => b.vol - a.vol).slice(0, 5);
+            const maxVol = funilSdr.length > 0 ? funilSdr[0].vol : 1;
+            document.getElementById('rank-funil-sdr').innerHTML = funilSdr.map((r, i) => {
+                const pct = (r.vol / maxVol) * 100;
+                return `<div class="bar-container" style="margin-left: ${(100-pct)/2}%"><div class="bar-fill" style="width: ${pct}%; background: #2980B9;"></div><span class="bar-label">${r.name}</span><span class="bar-value">${r.vol}</span></div>`;
+            }).join('') || '<p class="text-[7px] opacity-30">Sem dados</p>';
+
             if (topVend) { document.getElementById('mvp-vendedor-name').textContent = topVend.name; document.getElementById('mvp-vendedor-val').textContent = `R$ ${Math.round(topVend.val).toLocaleString('pt-BR')}`; }
             if (topSdr) { document.getElementById('mvp-sdr-name').textContent = topSdr.name; document.getElementById('mvp-sdr-val').textContent = `R$ ${Math.round(topSdr.val).toLocaleString('pt-BR')}`; }
         }
+
+        function renderMap() {
+            const container = document.getElementById('mapa-brasil');
+            const detailList = document.getElementById('geo-detail-list');
+            const detailTitle = document.getElementById('geo-detail-title');
+            
+            const fechadosIds = new Set(appState.raw_data.filter(d => d.status === 'Venda').map(d => d.contactId));
+            const geoMap = {};
+            appState.contacts.forEach(c => {
+                const uf = c.estado || 'NI';
+                if (!geoMap[uf]) geoMap[uf] = { total: 0, fechados: 0, cidades: {} };
+                geoMap[uf].total++;
+                if (fechadosIds.has(c.id)) geoMap[uf].fechados++;
+                
+                const cid = c.cidade || 'Não Informada';
+                if (!geoMap[uf].cidades[cid]) geoMap[uf].cidades[cid] = { total: 0, fechados: 0 };
+                geoMap[uf].cidades[cid].total++;
+                if (fechadosIds.has(c.id)) geoMap[uf].cidades[cid].fechados++;
+            });
+
+            const states = ['AC','AL','AP','AM','BA','CE','DF','ES','GO','MA','MT','MS','MG','PA','PB','PR','PE','PI','RJ','RN','RS','RO','RR','SC','SP','SE','TO'];
+            
+            if (appState.geoState === 'Brasil') {
+                document.getElementById('btn-reset-map').classList.add('hidden');
+                detailTitle.textContent = "Concentração por Estado";
+                const sortedStates = Object.entries(geoMap).sort((a,b) => b[1].total - a[1].total);
+                detailList.innerHTML = sortedStates.map(([uf, data]) => `
+                    <div class="mb-2 p-2 bg-white/5 rounded cursor-pointer hover:bg-white/10" onclick="selectState('${uf}')">
+                        <div class="flex justify-between text-[10px] font-bold"><span>${uf}</span><span>${data.total} Clientes</span></div>
+                        <div class="w-full bg-black/30 h-1.5 rounded mt-1"><div class="bg-blue-400 h-full rounded" style="width: ${(data.fechados/data.total)*100}%"></div></div>
+                        <div class="text-[7px] mt-1 opacity-50">${data.fechados} Contratos Fechados (${((data.fechados/data.total)*100).toFixed(1)}%)</div>
+                    </div>
+                `).join('');
+                
+                // SVG Simplificado do Brasil
+                container.innerHTML = `<svg viewBox="0 0 500 500" class="w-full h-full">
+                    ${states.map((uf, i) => {
+                        const data = geoMap[uf] || { total: 0 };
+                        const opacity = data.total > 0 ? 0.3 + (data.total / 100) : 0.1;
+                        return `<rect x="${(i%5)*80+50}" y="${Math.floor(i/5)*80+50}" width="60" height="60" rx="5" class="estado-item" fill="rgba(137,207,240,${opacity})" onclick="selectState('${uf}')" />
+                                <text x="${(i%5)*80+80}" y="${Math.floor(i/5)*80+85}" text-anchor="middle" fill="#FFF" font-size="12" font-weight="bold" pointer-events="none">${uf}</text>`;
+                    }).join('')}
+                </svg>`;
+            } else {
+                document.getElementById('btn-reset-map').classList.remove('hidden');
+                detailTitle.textContent = `Municípios em ${appState.geoState}`;
+                const data = geoMap[appState.geoState] || { cidades: {} };
+                const sortedCidades = Object.entries(data.cidades).sort((a,b) => b[1].total - a[1].total);
+                detailList.innerHTML = sortedCidades.map(([cid, d]) => `
+                    <div class="mb-2 p-2 bg-white/5 rounded">
+                        <div class="flex justify-between text-[10px] font-bold"><span>${cid}</span><span>${d.total} Clientes</span></div>
+                        <div class="w-full bg-black/30 h-1.5 rounded mt-1"><div class="bg-green-500 h-full rounded" style="width: ${(d.fechados/d.total)*100}%"></div></div>
+                        <div class="text-[7px] mt-1 opacity-50">${d.fechados} Fechados / ${d.total - d.fechados} Inexplorados</div>
+                    </div>
+                `).join('');
+                container.innerHTML = `<div class="flex items-center justify-center h-full text-blue-300 font-bold">Foco: ${appState.geoState}</div>`;
+            }
+        }
+
+        function selectState(uf) { appState.geoState = uf; renderMap(); }
+        function resetMap() { appState.geoState = 'Brasil'; renderMap(); }
 
         function exportTable(id, name) {
             let csv = [];
