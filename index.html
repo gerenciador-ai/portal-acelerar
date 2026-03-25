@@ -3,10 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hub Holding Acelerar - Portal Estratégico (V13.8)</title>
+    <title>Hub Holding Acelerar - Portal Estratégico (V13.9)</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios@1.6.0/dist/axios.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/plotly.js/2.26.0/plotly.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         * { font-family: 'Inter', sans-serif; }
@@ -253,7 +254,7 @@
                         <div class="ranking-card" style="max-height: 350px;"><h4>🔥 Funil de SDRs (Novos Negócios)</h4><div id="rank-funil-sdr" class="flex flex-col items-center"></div></div>
                     </div>
 
-                    <!-- SEÇÃO DE AUDITORIA DE CONVERSÃO (HEATMAPS EMPILHADOS V13.8) -->
+                    <!-- SEÇÃO DE AUDITORIA DE CONVERSÃO (HEATMAPS EMPILHADOS V13.9) -->
                     <div class="grid grid-cols-1 gap-4 mb-4">
                         <div class="partnership-viz">
                             <h4 class="flex justify-between items-center">
@@ -368,7 +369,7 @@
         async function forceSync() { await loadData(true); }
 
         async function loadData(forceDealsOnly = false) {
-            const cacheKey = `acelerar_v13_8_${appState.empresa}`;
+            const cacheKey = `acelerar_v13_9_${appState.empresa}`;
             const cacheTimeKey = `${cacheKey}_time`;
             const cached = localStorage.getItem(cacheKey);
             const cachedTime = localStorage.getItem(cacheTimeKey);
@@ -418,7 +419,7 @@
                     estado: c.State?.Short || (c.City?.State?.Short) || 'NI' 
                 }));
             } else {
-                const cached = JSON.parse(localStorage.getItem(`acelerar_v13_8_${appState.empresa}`));
+                const cached = JSON.parse(localStorage.getItem(`acelerar_v13_9_${appState.empresa}`));
                 appState.contacts = cached ? cached.contacts : [];
             }
 
@@ -451,8 +452,8 @@
 
             appState.raw_data = [...vendas.map(d => mapDeal(d, 'Venda')), ...churn.map(d => mapDeal(d, 'Churn'))];
             
-            localStorage.setItem(`acelerar_v13_8_${appState.empresa}`, JSON.stringify({ deals: appState.raw_data, contacts: appState.contacts }));
-            localStorage.setItem(`acelerar_v13_8_${appState.empresa}_time`, new Date().getTime().toString());
+            localStorage.setItem(`acelerar_v13_9_${appState.empresa}`, JSON.stringify({ deals: appState.raw_data, contacts: appState.contacts }));
+            localStorage.setItem(`acelerar_v13_9_${appState.empresa}_time`, new Date().getTime().toString());
             
             document.getElementById('cache-info').textContent = `Sinc: ${new Date().toLocaleString('pt-BR')}`;
             renderDashboard();
@@ -497,6 +498,16 @@
                 (vend === 'Todos' || d.vendedor === vend) &&
                 (sdr === 'Todos' || d.sdr === sdr)
             );
+
+            // Cruzamento inteligente de valores para Churn (MRR Perdido)
+            const vendasMap = {};
+            appState.raw_data.filter(d => d.status === 'Venda' && d.statusId === 2).forEach(v => { if (v.contactId) vendasMap[v.contactId] = { mrr: v.mrr, vend: v.vendedor, sdr: v.sdr }; });
+            f.forEach(d => {
+                if (d.status === 'Churn' && d.estagio === 'Cancelado' && d.mrr === 0) {
+                    const original = vendasMap[d.contactId];
+                    if (original) { d.mrr = original.mrr; d.vendedor_orig = original.vend; d.sdr_orig = original.sdr; }
+                }
+            });
 
             const f_vendas_ganhas = f.filter(d => d.status === 'Venda' && d.statusId === 2);
             const mrrConq = f_vendas_ganhas.reduce((s, d) => s + d.mrr, 0);
@@ -626,7 +637,6 @@
                 html += '<th class="total-cell">TOTAL</th></tr>';
                 
                 const maxVal = Math.max(...Object.values(matrix), 1);
-                const sdrTotals = {};
                 const vendTotals = {};
                 let grandTotal = 0;
 
