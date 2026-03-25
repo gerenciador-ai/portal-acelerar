@@ -283,7 +283,10 @@
 
                 const date = new Date(d.FinishDate || d.CreateDate || '');
                 return {
-                    id: d.Id, cliente: d.Title, data: date,
+                    id: d.Id, 
+                    cliente: d.Title, 
+                    contactId: d.ContactId,
+                    data: date,
                     vendedor: d.Owner?.Name || 'N/A',
                     sdr: getProp(FIELDS.SDR)?.ObjectValueName || getProp(FIELDS.SDR)?.ValueName || getProp(FIELDS.SDR)?.Value || 'N/A',
                     mrr: mrr,
@@ -335,6 +338,12 @@
             const sdr = document.getElementById('sdr-select').value;
             const mesesSelecionados = Array.from(document.querySelectorAll('#meses-container input:checked')).map(i => i.value);
 
+            // Mapa de Vendas para buscar o MRR original pelo ContactId
+            const vendasMap = {};
+            appState.raw_data.filter(d => d.status === 'Venda').forEach(v => {
+                if (v.contactId) vendasMap[v.contactId] = v.mrr;
+            });
+
             const f = appState.raw_data.filter(d => 
                 d.ano === ano && mesesSelecionados.includes(d.mes) &&
                 (prod === 'Todos' || d.produto === prod) &&
@@ -342,12 +351,20 @@
                 (sdr === 'Todos' || d.sdr === sdr)
             );
 
+            // Cruzamento para Churn: se o MRR estiver vazio, busca na venda do mesmo cliente
+            f.forEach(d => {
+                if (d.status === 'Churn' && d.estagio === 'Cancelado' && d.mrr === 0) {
+                    d.mrr = vendasMap[d.contactId] || 0;
+                }
+            });
+
             const mrrConq = f.filter(d => d.status === 'Venda').reduce((s, d) => s + d.mrr, 0);
-            const churn = f.filter(d => d.status === 'Churn' && d.estagio === 'Cancelado').reduce((s, d) => s + d.mrr, 0);
+            const f_churn = f.filter(d => d.status === 'Churn' && d.estagio === 'Cancelado' && d.mrr > 0);
+            const churn = f_churn.reduce((s, d) => s + d.mrr, 0);
             const upsell = f.reduce((s, d) => s + d.upsell, 0);
             const adesao = f.reduce((s, d) => s + d.adesao, 0);
             const fechados = f.filter(d => d.status === 'Venda').length;
-            const cancelados = f.filter(d => d.status === 'Churn' && d.estagio === 'Cancelado').length;
+            const cancelados = f_churn.length;
 
             document.getElementById('kpi-mrr-conq').textContent = `R$ ${Math.round(mrrConq).toLocaleString('pt-BR')}`;
             document.getElementById('kpi-mrr-perd').textContent = `R$ ${Math.round(churn).toLocaleString('pt-BR')}`;
