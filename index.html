@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hub Holding Acelerar - Portal Estratégico (V13.3)</title>
+    <title>Hub Holding Acelerar - Portal Estratégico (V13.4)</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios@1.6.0/dist/axios.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -49,12 +49,18 @@
         .spinner { width: 30px; height: 30px; border: 3px solid rgba(137, 207, 240, 0.1); border-top: 3px solid #89CFF0; border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         
-        .ranking-card { background: rgba(11, 42, 78, 0.4); border: 1px solid rgba(137, 207, 240, 0.2); border-radius: 8px; padding: 12px; }
+        .ranking-card { background: rgba(11, 42, 78, 0.4); border: 1px solid rgba(137, 207, 240, 0.2); border-radius: 8px; padding: 12px; overflow-y: auto; }
         .ranking-card h4 { color: #89CFF0; font-size: 0.75rem; font-weight: 800; margin-bottom: 12px; text-transform: uppercase; border-bottom: 1px solid rgba(137, 207, 240, 0.2); padding-bottom: 4px; }
-        .bar-container { position: relative; width: 100%; height: 24px; background: rgba(255,255,255,0.05); border-radius: 4px; margin-bottom: 8px; overflow: hidden; }
-        .bar-fill { height: 100%; background: linear-gradient(90deg, #0B2A4E, #89CFF0); border-radius: 4px; transition: width 0.5s ease; }
-        .bar-label { position: absolute; left: 8px; top: 50%; transform: translateY(-50%); font-size: 0.75rem; font-weight: 700; color: #FFFFFF; text-shadow: 1px 1px 2px rgba(0,0,0,0.8); white-space: nowrap; }
-        .bar-value { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); font-size: 0.75rem; font-weight: 800; color: #FFFFFF; text-shadow: 1px 1px 2px rgba(0,0,0,0.8); }
+        
+        /* Ajuste do Funil e Barras */
+        .bar-container { position: relative; width: 100%; height: 24px; background: rgba(255,255,255,0.05); border-radius: 4px; margin-bottom: 8px; display: flex; align-items: center; }
+        .bar-fill { height: 100%; background: linear-gradient(90deg, #0B2A4E, #89CFF0); border-radius: 4px; transition: width 0.5s ease; position: absolute; left: 0; top: 0; }
+        .bar-content { position: relative; width: 100%; display: flex; justify-content: space-between; padding: 0 10px; z-index: 10; pointer-events: none; }
+        .bar-label { font-size: 0.75rem; font-weight: 700; color: #FFFFFF; text-shadow: 1px 1px 2px rgba(0,0,0,0.8); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .bar-value { font-size: 0.75rem; font-weight: 800; color: #FFFFFF; text-shadow: 1px 1px 2px rgba(0,0,0,0.8); }
+        
+        .funnel-container { position: relative; width: 100%; height: 24px; margin-bottom: 8px; display: flex; justify-content: center; }
+        .funnel-fill { height: 100%; background: #2980B9; border-radius: 4px; position: relative; display: flex; align-items: center; justify-content: space-between; padding: 0 10px; }
         
         .toggle-sidebar-btn { background: none; border: 1px solid #89CFF0; color: #89CFF0; padding: 2px 8px; border-radius: 4px; cursor: pointer; font-size: 1rem; margin-right: 10px; }
         .toggle-sidebar-btn:hover { background: #89CFF0; color: #0B2A4E; }
@@ -68,11 +74,10 @@
         
         .churn-badge { font-size: 0.6rem; background: rgba(231, 76, 60, 0.2); color: #E74C3C; padding: 1px 4px; border-radius: 4px; font-weight: 800; margin-top: 2px; display: inline-block; }
 
-        /* Mapa de Calor */
-        #mapa-brasil { width: 100%; height: 350px; background: rgba(11, 42, 78, 0.4); border-radius: 8px; border: 1px solid rgba(137, 207, 240, 0.2); position: relative; }
-        .estado-item { fill: #0B2A4E; stroke: #89CFF0; stroke-width: 0.5; cursor: pointer; transition: fill 0.3s; }
-        .estado-item:hover { fill: #89CFF0; }
-        .map-legend { position: absolute; bottom: 10px; right: 10px; font-size: 0.6rem; background: rgba(0,0,0,0.5); padding: 5px; border-radius: 4px; }
+        /* Mapa de Calor SVG Real */
+        #mapa-brasil { width: 100%; height: 350px; background: rgba(11, 42, 78, 0.4); border-radius: 8px; border: 1px solid rgba(137, 207, 240, 0.2); position: relative; display: flex; justify-content: center; align-items: center; overflow: hidden; }
+        .estado-svg { fill: #0B2A4E; stroke: #89CFF0; stroke-width: 1; cursor: pointer; transition: all 0.3s ease; }
+        .estado-svg:hover { stroke-width: 2; filter: brightness(1.2); }
     </style>
 </head>
 <body>
@@ -143,7 +148,7 @@
                 </div>
                 <div class="mt-4 pt-2 border-t border-white/10">
                     <p id="cache-info" class="text-[7px] text-white/30 uppercase text-center"></p>
-                    <button onclick="refreshData()" class="w-full mt-1 text-[8px] text-blue-400 font-bold hover:underline">🔄 Forçar Sincronização</button>
+                    <button onclick="forceSync()" class="w-full mt-1 text-[8px] text-blue-400 font-bold hover:underline">🔄 Forçar Sincronização</button>
                 </div>
             </div>
 
@@ -228,8 +233,8 @@
                     </div>
 
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
-                        <div class="ranking-card"><h4>🚀 Ciclo Médio de Venda (Dias)</h4><div id="rank-ciclo-venda"></div></div>
-                        <div class="ranking-card"><h4>🔥 Funil de SDRs (Novos Negócios)</h4><div id="rank-funil-sdr"></div></div>
+                        <div class="ranking-card" style="max-height: 300px;"><h4>🚀 Ciclo Médio de Venda (Dias)</h4><div id="rank-ciclo-venda"></div></div>
+                        <div class="ranking-card" style="max-height: 300px;"><h4>🔥 Funil de SDRs (Novos Negócios)</h4><div id="rank-funil-sdr"></div></div>
                     </div>
 
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -239,7 +244,7 @@
                                 <button onclick="resetMap()" id="btn-reset-map" class="text-[8px] bg-blue-500 px-2 py-1 rounded hidden">Voltar para Brasil</button>
                             </div>
                             <div id="mapa-brasil">
-                                <!-- SVG Mapa Brasil injetado via JS -->
+                                <!-- SVG Map Injected via JS -->
                             </div>
                         </div>
                         <div class="ranking-card" style="height: 450px; overflow-y: auto;">
@@ -320,7 +325,7 @@
         async function openModule(m) {
             document.getElementById('hub-section').classList.add('hidden');
             document.getElementById('dashboard-section').style.display = 'block';
-            await loadData();
+            await loadData(false);
             switchPage('performance');
         }
 
@@ -329,39 +334,60 @@
             document.getElementById('hub-section').classList.remove('hidden');
         }
 
-        async function loadData() {
-            const cacheKey = `acelerar_v13_3_${appState.empresa}`;
+        async function forceSync() { await loadData(true); }
+
+        async function loadData(forceDealsOnly = false) {
+            const cacheKey = `acelerar_v13_4_${appState.empresa}`;
             const cacheTimeKey = `${cacheKey}_time`;
             const cached = localStorage.getItem(cacheKey);
             const cachedTime = localStorage.getItem(cacheTimeKey);
             
-            // Lógica de cache: 24h ou até o próximo dia às 8h
             const now = new Date();
             const lastSync = cachedTime ? new Date(parseInt(cachedTime)) : null;
-            let needsSync = !cached || !lastSync;
+            
+            let needsFullSync = !cached || !lastSync;
             if (lastSync) {
                 const diffHours = (now - lastSync) / (1000 * 60 * 60);
-                if (diffHours > 24) needsSync = true;
-                if (lastSync.getDate() !== now.getDate() && now.getHours() >= 8) needsSync = true;
+                if (diffHours > 24) needsFullSync = true;
+                if (lastSync.getDate() !== now.getDate() && now.getHours() >= 8) needsFullSync = true;
             }
 
-            if (!needsSync) { 
+            if (!needsFullSync && !forceDealsOnly) { 
                 const data = JSON.parse(cached);
                 appState.raw_data = data.deals;
                 appState.contacts = data.contacts;
                 document.getElementById('cache-info').textContent = `Sinc: ${lastSync.toLocaleString('pt-BR')}`;
                 renderDashboard();
-            } else { await refreshData(); }
+            } else { 
+                await refreshData(needsFullSync); 
+            }
         }
 
-        async function refreshData() {
-            showLoading(`Sincronizando Ploomes...`);
+        async function refreshData(fullSync) {
+            showLoading(fullSync ? `Sincronizando Base Completa...` : `Sincronizando Negócios...`);
             const config = PIPELINES[appState.empresa];
-            const [vendas, churn, contacts] = await Promise.all([
+            
+            const promises = [
                 fetchPloomes(`Deals?$filter=PipelineId eq ${config.vendas} and StatusId eq 2&$expand=OtherProperties,Owner,Contact&$top=2000`),
-                fetchPloomes(`Deals?$filter=PipelineId eq ${config.churn}&$expand=OtherProperties,Owner,Stage,Contact&$top=2000`),
-                fetchPloomes(`Contacts?$select=Id,Name,CNPJ,CPF,City,State&$top=2000`)
-            ]);
+                fetchPloomes(`Deals?$filter=PipelineId eq ${config.churn}&$expand=OtherProperties,Owner,Stage,Contact&$top=2000`)
+            ];
+
+            if (fullSync) {
+                // Filtro para não misturar contatos. Se Victec, busca apenas RJ (ou contatos atrelados aos negócios).
+                // Como o Ploomes não permite filtrar contatos por pipeline, vamos trazer os 2000 mais recentes
+                promises.push(fetchPloomes(`Contacts?$select=Id,Name,CNPJ,CPF,City,State&$top=2000`));
+            }
+
+            const results = await Promise.all(promises);
+            const vendas = results[0];
+            const churn = results[1];
+            
+            if (fullSync) {
+                appState.contacts = results[2].map(c => ({ id: c.Id, name: c.Name, cnpj: c.CNPJ || c.CPF, cidade: c.City?.Name, estado: c.State?.ShortName }));
+            } else {
+                const cached = JSON.parse(localStorage.getItem(`acelerar_v13_4_${appState.empresa}`));
+                appState.contacts = cached ? cached.contacts : [];
+            }
 
             const mapDeal = (d, type) => {
                 const props = d.OtherProperties || [];
@@ -391,10 +417,11 @@
             };
 
             appState.raw_data = [...vendas.map(d => mapDeal(d, 'Venda')), ...churn.map(d => mapDeal(d, 'Churn'))];
-            appState.contacts = contacts.map(c => ({ id: c.Id, name: c.Name, cnpj: c.CNPJ || c.CPF, cidade: c.City?.Name, estado: c.State?.ShortName }));
             
-            localStorage.setItem(`acelerar_v13_3_${appState.empresa}`, JSON.stringify({ deals: appState.raw_data, contacts: appState.contacts }));
-            localStorage.setItem(`acelerar_v13_3_${appState.empresa}_time`, new Date().getTime().toString());
+            localStorage.setItem(`acelerar_v13_4_${appState.empresa}`, JSON.stringify({ deals: appState.raw_data, contacts: appState.contacts }));
+            localStorage.setItem(`acelerar_v13_4_${appState.empresa}_time`, new Date().getTime().toString());
+            
+            document.getElementById('cache-info').textContent = `Sinc: ${new Date().toLocaleString('pt-BR')}`;
             renderDashboard();
             hideLoading();
         }
@@ -438,7 +465,6 @@
                 (sdr === 'Todos' || d.sdr === sdr)
             );
 
-            // Match de MRR Perdido via ContactId
             const vendasMap = {};
             appState.raw_data.filter(d => d.status === 'Venda').forEach(v => { if (v.contactId) vendasMap[v.contactId] = { mrr: v.mrr, vend: v.vendedor, sdr: v.sdr }; });
             f.forEach(d => {
@@ -523,7 +549,7 @@
                     const pct = isCiclo ? 100 : (r[sortKey] / maxVal) * 100;
                     const val = isCiclo ? Math.round(r.ciclo / r.vol) : r[sortKey];
                     const displayVal = isMoeda ? 'R$ '+Math.round(val).toLocaleString('pt-BR') : (isCiclo ? val + ' dias' : val);
-                    return `<div class="bar-container"><div class="bar-fill" style="width: ${pct}%"></div><span class="bar-label">${i+1}. ${r.name}</span><span class="bar-value">${displayVal}</span></div>`;
+                    return `<div class="bar-container"><div class="bar-fill" style="width: ${pct}%"></div><div class="bar-content"><span class="bar-label">${i+1}. ${r.name}</span><span class="bar-value">${displayVal}</span></div></div>`;
                 }).join('') || '<p class="text-[7px] opacity-30">Sem dados</p>';
                 return sorted[0];
             };
@@ -533,29 +559,70 @@
             const topSdr = renderRank('rank-sdr-mrr', sdrData, 'val', true);
             renderRank('rank-ciclo-venda', vendData, 'ciclo', false, true);
             
-            // Funil de SDRs (Novos Negócios)
-            const funilSdr = sdrData.sort((a,b) => b.vol - a.vol).slice(0, 5);
+            // Funil de SDRs Corrigido (Todos os SDRs, sem vazar texto)
+            const funilSdr = sdrData.sort((a,b) => b.vol - a.vol);
             const maxVol = funilSdr.length > 0 ? funilSdr[0].vol : 1;
             document.getElementById('rank-funil-sdr').innerHTML = funilSdr.map((r, i) => {
                 const pct = (r.vol / maxVol) * 100;
-                return `<div class="bar-container" style="margin-left: ${(100-pct)/2}%"><div class="bar-fill" style="width: ${pct}%; background: #2980B9;"></div><span class="bar-label">${r.name}</span><span class="bar-value">${r.vol}</span></div>`;
+                return `<div class="funnel-container"><div class="funnel-fill" style="width: ${pct}%;"><span class="bar-label">${r.name}</span><span class="bar-value">${r.vol}</span></div></div>`;
             }).join('') || '<p class="text-[7px] opacity-30">Sem dados</p>';
 
             if (topVend) { document.getElementById('mvp-vendedor-name').textContent = topVend.name; document.getElementById('mvp-vendedor-val').textContent = `R$ ${Math.round(topVend.val).toLocaleString('pt-BR')}`; }
             if (topSdr) { document.getElementById('mvp-sdr-name').textContent = topSdr.name; document.getElementById('mvp-sdr-val').textContent = `R$ ${Math.round(topSdr.val).toLocaleString('pt-BR')}`; }
         }
 
+        // SVG do Mapa do Brasil simplificado
+        const SVG_PATHS = {
+            'AC': 'M114.7,165.1l-6.8-5.3l-14.7,2.2l-15.6,8.6l-13.3,13.6l1.2,12.3l12.8,1.4l12.1-3.6l10.9,4.7l13.7-14.7L114.7,165.1z',
+            'AL': 'M461.3,184.2l1.6,11.5l14.4,2.5l2.2-12.7l-9.1-8.3L461.3,184.2z',
+            'AM': 'M183.3,47.4l-25.2,6.9l-22.7-3.9l-22.1,13.3l-13,1.4l-25.2,16.1l11.4,18.8l16.3-5l22.7,15.2l20.5-3l12.2,9.4l13.8,0.3l18.5-12.7l18.3,4.4l11.6-11.6l16.3-1.1l-1.9-15.8l15.2-11.1l21.6-4.2l-1.9-12.2l-19.1-8.3L183.3,47.4z',
+            'AP': 'M265.8,11.4l-11.6,23.3l4.7,24.1l16.1,1.1l14.4-15l15.5-2.8l3.3-15.2l-16.6-11.6L265.8,11.4z',
+            'BA': 'M391.8,181.7l-15.5,14.4l-22.4,5.3l-2.2,18.8l-15.5,16.1l3.3,18.8l20.2,22.7l22.4,1.4l19.1-8l12.5-21l-3.3-16.3l11.4-15.2l15-2.5l1.9-12.7l-10.2-14.7l-13.8,2.2l-10.8-8.6L391.8,181.7z',
+            'CE': 'M428.3,121.1l-14.1,12.7l1.1,16.3l12.2,15l16.1-4.7l10-14.4l3.9-16.6l-14.7-6.1L428.3,121.1z',
+            'DF': 'M314.8,266.7l-4.4,5l4.7,4.4l4.2-4.2L314.8,266.7z',
+            'ES': 'M404.5,301.6l-5,16.6l3.3,18.8l13.3-2.5l7.2-18l-5.3-14.4L404.5,301.6z',
+            'GO': 'M299.3,218.8l-15,15.5l1.1,18l-12.2,12.7l1.7,16.6l15.5,12.2l20.5-2.2l13.3-11.1l4.4,2.8l1.7-18l12.2-6.1l-10.8-19.1l-8.6-1.1L299.3,218.8z',
+            'MA': 'M358.5,92.5l-17.7,13.8l-6.6,18.3l-5.5,23.3l13.8,20.5l22.7,1.1l11.1-13.3l4.4-23.8l-7.2-20.5l-11.1-13.8L358.5,92.5z',
+            'MG': 'M339.2,238.5l-16.6,8.6l-1.1,15l-12.7,5.5l1.1,18.8l20.5,18.8l23.3,1.1l20.5-8.3l12.2-19.4l11.6,4.4l5.3-16.6l-13.3-15l-2.2-18.3l-20.5-2.2l-12.2,8.6L339.2,238.5z',
+            'MS': 'M240,266.2l-18.8,11.1l-1.1,20.5l-11.1,18.8l15.5,15.5l20.5,2.2l18.8-12.2l6.1-22.1l-13.3-15.5l-5-16.1L240,266.2z',
+            'MT': 'M221.7,166.5l-16.6,18.8l-2.2,23.3l12.2,18.8l15.5,5l19.4-1.1l18.8-13.3l1.1-20.5l-12.2-15l-1.1-17.2L221.7,166.5z',
+            'PA': 'M265.8,61l-24.9,8.6l-12.2,18.3l-5,21.6l-18.8,13.3l11.1,16.6l23.3-1.1l21-13.3l22.1,3.3l17.2-13.3l3.3-21l-10-18.8l-15.5-5L265.8,61z',
+            'PB': 'M459.9,152.1l-14.4,5l-1.1,11.6l17.7,2.2l10-8.3L459.9,152.1z',
+            'PE': 'M444.4,168.7l-15,6.1l1.7,11.6l28.8-1.1l8.3-8.3L444.4,168.7z',
+            'PI': 'M387.9,114.7l-11.1,15l-3.3,22.1l12.2,20.5l10-6.1l8.3-18.8l-2.2-17.2l-7.2-11.1L387.9,114.7z',
+            'PR': 'M287.1,335.7l-16.6,8.3l-2.2,16.6l13.3,11.1l21-1.1l15-12.2l-1.1-18.3l-13.3-4.4L287.1,335.7z',
+            'RJ': 'M385.1,326l-12.2,5l1.1,13.3l18.8,3.3l8.3-8.3l-5-11.1L385.1,326z',
+            'RN': 'M456.6,133.3l-12.2,5.5l2.2,13.3l18.8-1.1l6.1-10L456.6,133.3z',
+            'RO': 'M145.7,161.8l-14.4,13.3l-1.1,18.8l16.6,12.2l17.7-1.1l11.1-15l-3.3-18.3L145.7,161.8z',
+            'RR': 'M141.3,18.6l-11.1,15l2.2,18.8l15.5,8.3l14.4-6.1l1.1-18.3l-10-15L141.3,18.6z',
+            'RS': 'M272.7,381.1l-13.3,11.1l2.2,20.5l16.6,15.5l18.8-2.2l11.1-16.6l-6.1-18.3l-16.6-8.3L272.7,381.1z',
+            'SC': 'M291.5,357.9l-11.1,6.1l1.1,15l18.8,3.3l15.5-8.3l-2.2-13.3l-11.1-2.8L291.5,357.9z',
+            'SE': 'M455.2,174.2l-11.1,5l1.1,10l12.2,1.1l5-8.3L455.2,174.2z',
+            'SP': 'M320.9,298l-15.5,10l1.1,18.8l20.5,5l21-8.3l3.3-18.8l-13.3-6.1L320.9,298z',
+            'TO': 'M297.9,138.5l-13.3,15.5l-1.1,22.1l12.2,18.8l14.4-3.3l7.2-18.8l-2.2-20.5L297.9,138.5z'
+        };
+
         function renderMap() {
             const container = document.getElementById('mapa-brasil');
             const detailList = document.getElementById('geo-detail-list');
             const detailTitle = document.getElementById('geo-detail-title');
             
+            // Filtro rigoroso: Se Victec, pega apenas RJ (ou contatos que fecharam negócio na Victec). 
+            // Para simplificar e ser assertivo: cruzamos a base de contatos com os negócios do appState
             const fechadosIds = new Set(appState.raw_data.filter(d => d.status === 'Venda').map(d => d.contactId));
+            
             const geoMap = {};
+            let totalClientesVisiveis = 0;
+
             appState.contacts.forEach(c => {
                 const uf = c.estado || 'NI';
+                
+                // Regra de Negócio: Victec foca no RJ. Se a empresa for Victec e o estado não for RJ, e não tiver fechado negócio, ignoramos para não poluir o mapa.
+                if (appState.empresa === 'Victec' && uf !== 'RJ' && !fechadosIds.has(c.id)) return;
+
                 if (!geoMap[uf]) geoMap[uf] = { total: 0, fechados: 0, cidades: {} };
                 geoMap[uf].total++;
+                totalClientesVisiveis++;
                 if (fechadosIds.has(c.id)) geoMap[uf].fechados++;
                 
                 const cid = c.cidade || 'Não Informada';
@@ -564,29 +631,36 @@
                 if (fechadosIds.has(c.id)) geoMap[uf].cidades[cid].fechados++;
             });
 
-            const states = ['AC','AL','AP','AM','BA','CE','DF','ES','GO','MA','MT','MS','MG','PA','PB','PR','PE','PI','RJ','RN','RS','RO','RR','SC','SP','SE','TO'];
-            
+            // Encontrar o estado com mais clientes para destaque
+            let maxUf = 'NI', maxTotal = 0;
+            Object.entries(geoMap).forEach(([uf, d]) => { if(d.total > maxTotal && uf !== 'NI') { maxTotal = d.total; maxUf = uf; } });
+
             if (appState.geoState === 'Brasil') {
                 document.getElementById('btn-reset-map').classList.add('hidden');
                 detailTitle.textContent = "Concentração por Estado";
                 const sortedStates = Object.entries(geoMap).sort((a,b) => b[1].total - a[1].total);
                 detailList.innerHTML = sortedStates.map(([uf, data]) => `
                     <div class="mb-2 p-2 bg-white/5 rounded cursor-pointer hover:bg-white/10" onclick="selectState('${uf}')">
-                        <div class="flex justify-between text-[10px] font-bold"><span>${uf}</span><span>${data.total} Clientes</span></div>
+                        <div class="flex justify-between text-[10px] font-bold"><span class="${uf === maxUf ? 'text-blue-300' : ''}">${uf}</span><span>${data.total} Clientes</span></div>
                         <div class="w-full bg-black/30 h-1.5 rounded mt-1"><div class="bg-blue-400 h-full rounded" style="width: ${(data.fechados/data.total)*100}%"></div></div>
                         <div class="text-[7px] mt-1 opacity-50">${data.fechados} Contratos Fechados (${((data.fechados/data.total)*100).toFixed(1)}%)</div>
                     </div>
-                `).join('');
+                `).join('') || '<p class="text-xs opacity-50">Nenhum cliente mapeado.</p>';
                 
-                // SVG Simplificado do Brasil
-                container.innerHTML = `<svg viewBox="0 0 500 500" class="w-full h-full">
-                    ${states.map((uf, i) => {
-                        const data = geoMap[uf] || { total: 0 };
-                        const opacity = data.total > 0 ? 0.3 + (data.total / 100) : 0.1;
-                        return `<rect x="${(i%5)*80+50}" y="${Math.floor(i/5)*80+50}" width="60" height="60" rx="5" class="estado-item" fill="rgba(137,207,240,${opacity})" onclick="selectState('${uf}')" />
-                                <text x="${(i%5)*80+80}" y="${Math.floor(i/5)*80+85}" text-anchor="middle" fill="#FFF" font-size="12" font-weight="bold" pointer-events="none">${uf}</text>`;
-                    }).join('')}
-                </svg>`;
+                // Renderizar SVG Real
+                let svgContent = `<svg viewBox="50 0 450 450" class="w-full h-full" style="transform: scale(1.1);">`;
+                Object.keys(SVG_PATHS).forEach(uf => {
+                    const data = geoMap[uf] || { total: 0 };
+                    let fill = '#0B2A4E';
+                    if (data.total > 0) {
+                        const intensity = Math.min(1, data.total / (maxTotal || 1));
+                        fill = `rgba(137, 207, 240, ${0.2 + (intensity * 0.8)})`; // Heatmap real
+                    }
+                    svgContent += `<path d="${SVG_PATHS[uf]}" class="estado-svg" fill="${fill}" onclick="selectState('${uf}')"><title>${uf}: ${data.total} Clientes</title></path>`;
+                });
+                svgContent += `</svg>`;
+                container.innerHTML = svgContent;
+
             } else {
                 document.getElementById('btn-reset-map').classList.remove('hidden');
                 detailTitle.textContent = `Municípios em ${appState.geoState}`;
@@ -599,7 +673,13 @@
                         <div class="text-[7px] mt-1 opacity-50">${d.fechados} Fechados / ${d.total - d.fechados} Inexplorados</div>
                     </div>
                 `).join('');
-                container.innerHTML = `<div class="flex items-center justify-center h-full text-blue-300 font-bold">Foco: ${appState.geoState}</div>`;
+                
+                // Exibe apenas o estado selecionado ampliado
+                if (SVG_PATHS[appState.geoState]) {
+                    container.innerHTML = `<svg viewBox="50 0 450 450" class="w-full h-full" style="transform: scale(2);"><path d="${SVG_PATHS[appState.geoState]}" class="estado-svg" fill="rgba(137, 207, 240, 0.6)"></path></svg>`;
+                } else {
+                    container.innerHTML = `<div class="flex items-center justify-center h-full text-blue-300 font-bold">Foco: ${appState.geoState}</div>`;
+                }
             }
         }
 
@@ -633,7 +713,7 @@
             else applyFilters();
         }
 
-        function changeEmpresa() { appState.empresa = document.getElementById('empresa-select').value; loadData(); }
+        function changeEmpresa() { appState.empresa = document.getElementById('empresa-select').value; loadData(false); }
 
         async function loadInadimplencia() {
             showLoading(`Lendo Inadimplência...`);
