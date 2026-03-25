@@ -122,7 +122,7 @@
                         <div class="kpi-card"><div class="label">Ticket Médio</div><div class="value" id="kpi-ticket">R$ 0</div></div>
                         <div class="kpi-card"><div class="label">Adesão Total</div><div class="value" id="kpi-adesao">R$ 0</div></div>
                         <div class="kpi-card"><div class="label">Clientes Fechados</div><div class="value" id="kpi-fechados">0</div></div>
-                        <div class="kpi-card"><div class="label">Clientes Cancelados</div><div class="value" id="kpi-cancelados">0</div></div>
+                        <div class="kpi-card"><div class="label">Clientes Cancelados</div><div class="value" id="kpi-fechados-cancelados">0</div></div>
                         <div class="kpi-card" style="border-left: 2px solid #89CFF0;"><div class="label">Carteira Ativa</div><div class="value" id="kpi-carteira" style="color: #89CFF0;">0</div></div>
                     </div>
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-3 mb-3">
@@ -245,7 +245,7 @@
             const config = PIPELINES[appState.empresa];
             const [vendas, churn] = await Promise.all([
                 fetchPloomes(`Deals?$filter=PipelineId eq ${config.vendas} and StatusId eq 2&$expand=OtherProperties,Owner&$top=2000`),
-                fetchPloomes(`Deals?$filter=PipelineId eq ${config.churn}&$expand=OtherProperties,Owner&$top=2000`)
+                fetchPloomes(`Deals?$filter=PipelineId eq ${config.churn}&$expand=OtherProperties,Owner,Stage&$top=2000`)
             ]);
 
             const mapDeal = (d, type) => {
@@ -290,7 +290,9 @@
                     upsell: upsell,
                     adesao: adesao,
                     produto: produto,
-                    status: type, ano: date.getFullYear(), mes: MESES_PT[date.getMonth()+1], mesNum: date.getMonth()+1
+                    status: type, 
+                    estagio: d.Stage?.Name || '',
+                    ano: date.getFullYear(), mes: MESES_PT[date.getMonth()+1], mesNum: date.getMonth()+1
                 };
             };
 
@@ -318,7 +320,6 @@
             const ano = parseInt(document.getElementById('ano-select').value);
             const mesesReais = [...new Set(appState.raw_data.filter(d => d.ano === ano).map(d => d.mes))];
             
-            // CORREÇÃO CRÍTICA: Marcar como 'checked' apenas os meses que realmente possuem dados
             document.getElementById('meses-container').innerHTML = Object.values(MESES_PT).map(m => `
                 <label class="flex items-center text-white mb-1 cursor-pointer hover:bg-white/10 p-1 rounded ${mesesReais.includes(m) ? '' : 'hidden'}">
                     <input type="checkbox" value="${m}" ${mesesReais.includes(m) ? 'checked' : ''} onchange="applyFilters()" class="mr-2"> ${m}
@@ -342,11 +343,11 @@
             );
 
             const mrrConq = f.filter(d => d.status === 'Venda').reduce((s, d) => s + d.mrr, 0);
-            const churn = f.filter(d => d.status === 'Churn').reduce((s, d) => s + d.mrr, 0);
+            const churn = f.filter(d => d.status === 'Churn' && d.estagio === 'Cancelado').reduce((s, d) => s + d.mrr, 0);
             const upsell = f.reduce((s, d) => s + d.upsell, 0);
             const adesao = f.reduce((s, d) => s + d.adesao, 0);
             const fechados = f.filter(d => d.status === 'Venda').length;
-            const cancelados = f.filter(d => d.status === 'Churn').length;
+            const cancelados = f.filter(d => d.status === 'Churn' && d.estagio === 'Cancelado').length;
 
             document.getElementById('kpi-mrr-conq').textContent = `R$ ${Math.round(mrrConq).toLocaleString('pt-BR')}`;
             document.getElementById('kpi-mrr-perd').textContent = `R$ ${Math.round(churn).toLocaleString('pt-BR')}`;
@@ -355,9 +356,9 @@
             document.getElementById('kpi-ticket').textContent = `R$ ${Math.round(fechados > 0 ? mrrConq/fechados : 0).toLocaleString('pt-BR')}`;
             document.getElementById('kpi-adesao').textContent = `R$ ${Math.round(adesao).toLocaleString('pt-BR')}`;
             document.getElementById('kpi-fechados').textContent = fechados;
-            document.getElementById('kpi-cancelados').textContent = cancelados;
+            document.getElementById('kpi-fechados-cancelados').textContent = cancelados;
 
-            const carteira = appState.raw_data.filter(d => d.status === 'Venda').length - appState.raw_data.filter(d => d.status === 'Churn').length;
+            const carteira = appState.raw_data.filter(d => d.status === 'Venda').length - appState.raw_data.filter(d => d.status === 'Churn' && d.estagio === 'Cancelado').length;
             document.getElementById('kpi-carteira').textContent = carteira;
 
             document.getElementById('tbody-detalhamento').innerHTML = f.sort((a,b) => b.data - a.data).slice(0, 50).map(d => `
@@ -369,7 +370,6 @@
         }
 
         function updateCharts(f, mesesEixo) {
-            // Sincronização definitiva: Garantir que o array de labels tenha apenas o que foi filtrado
             const meses_labels = Object.values(MESES_PT).filter(m => mesesEixo.includes(m));
             const config = PIPELINES[appState.empresa];
 
@@ -384,14 +384,13 @@
                 scales: {
                     y: { ticks: { color: '#FFF', font: { size: 8 } } },
                     x: { 
-                        type: 'category', // Forçar tipo categoria para respeitar o array de labels
+                        type: 'category',
                         ticks: { color: '#FFF', font: { size: 8 } } 
                     }
                 },
                 plugins: { legend: { labels: { color: '#FFF', font: { size: 9 } } } }
             };
 
-            // Gráfico MRR Acumulado
             let accMrr = 0;
             const mrrData = meses_labels.map(m => {
                 accMrr += f.filter(d => d.mes === m && d.status === 'Venda').reduce((s,d) => s + d.mrr, 0);
@@ -405,7 +404,6 @@
                 ]
             }, chartOptions);
 
-            // Gráfico Contratos Acumulados
             let accContratos = 0;
             const contratosData = meses_labels.map(m => {
                 accContratos += f.filter(d => d.mes === m && d.status === 'Venda').length;
@@ -419,8 +417,7 @@
                 ]
             }, chartOptions);
 
-            // Gráficos de Evolução
-            const evolData = (valKey, status) => meses_labels.map(m => f.filter(d => d.mes === m && (status ? d.status === status : true)).reduce((s,d) => s + d[valKey], 0));
+            const evolData = (valKey, status) => meses_labels.map(m => f.filter(d => d.mes === m && (status ? (status === 'Churn' ? (d.status === 'Churn' && d.estagio === 'Cancelado') : d.status === status) : true)).reduce((s,d) => s + d[valKey], 0));
             
             renderChart('chart-evolucao-mrr', 'bar', { labels: meses_labels, datasets: [{ label: 'MRR Mensal', data: evolData('mrr', 'Venda'), backgroundColor: '#89CFF0' }] }, chartOptions);
             renderChart('chart-evolucao-upsell', 'bar', { labels: meses_labels, datasets: [{ label: 'Upsell Mensal', data: evolData('upsell', null), backgroundColor: '#89CFF0' }] }, chartOptions);
