@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hub Holding Acelerar - Portal Estratégico (V13.0)</title>
+    <title>Hub Holding Acelerar - Portal Estratégico (V13.1)</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios@1.6.0/dist/axios.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -20,7 +20,6 @@
         .hub-btn { padding: 20px; background-color: #0B2A4E; border: 2px solid #89CFF0; color: #FFFFFF; border-radius: 12px; font-weight: 700; cursor: pointer; transition: 0.3s; min-width: 220px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 8px; }
         .hub-btn:hover { background-color: #89CFF0; color: #0B2A4E; transform: translateY(-4px); box-shadow: 0 10px 20px rgba(137, 207, 240, 0.3); }
         .hub-btn .icon { font-size: 1.5rem; }
-        .hub-btn .subtitle { font-size: 0.65rem; font-weight: 400; opacity: 0.8; }
         
         .dashboard-container { display: none; background-color: #0A1E2E; min-height: 100vh; }
         .dashboard-header { display: flex; justify-content: space-between; align-items: center; padding: 0 20px; background-color: #0B2A4E; border-bottom: 1px solid #89CFF0; position: sticky; top: 0; z-index: 100; height: 50px; }
@@ -61,12 +60,13 @@
         .toggle-sidebar-btn:hover { background: #89CFF0; color: #0B2A4E; }
         .export-btn { font-size: 0.65rem; background: #27AE60; color: white; padding: 2px 8px; border-radius: 4px; font-weight: bold; cursor: pointer; float: right; }
 
-        /* MVP Cards */
         .mvp-card { background: linear-gradient(135deg, #0B2A4E, #1a3a5e); border: 2px solid #89CFF0; border-radius: 12px; padding: 15px; text-align: center; position: relative; overflow: hidden; }
         .mvp-card::after { content: '🏆'; position: absolute; right: -10px; bottom: -10px; font-size: 4rem; opacity: 0.1; }
         .mvp-card .title { font-size: 0.65rem; font-weight: 800; color: #89CFF0; text-transform: uppercase; margin-bottom: 8px; }
         .mvp-card .name { font-size: 1.2rem; font-weight: 800; color: #FFF; margin-bottom: 4px; }
         .mvp-card .value { font-size: 0.9rem; font-weight: 700; color: #89CFF0; }
+        
+        .churn-badge { font-size: 0.6rem; background: rgba(231, 76, 60, 0.2); color: #E74C3C; padding: 1px 4px; border-radius: 4px; font-weight: 800; margin-top: 2px; display: inline-block; }
     </style>
 </head>
 <body>
@@ -86,21 +86,14 @@
         <div class="hub-box text-center">
             <img src="https://raw.githubusercontent.com/gerenciador-ai/Relat-rios-Comercial/main/logo_acelerar_sidebar.png" class="logo mx-auto" alt="Acelerar">
             <h1 class="text-lg font-bold text-blue-300 mb-10">Hub Estratégico Holding</h1>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <button class="hub-btn" onclick="openModule('performance')">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <button class="hub-btn" onclick="openModule('comercial')">
                     <span class="icon">📊</span>
-                    <span>Performance Macro</span>
-                    <span class="subtitle">Resultados, Metas e Churn</span>
+                    <span>Módulo Comercial</span>
                 </button>
-                <button class="hub-btn" onclick="openModule('desempenho')">
-                    <span class="icon">🏆</span>
-                    <span>Desempenho de Time</span>
-                    <span class="subtitle">Rankings, MVPs e Mix</span>
-                </button>
-                <button class="hub-btn" onclick="openModule('inadimplencia')">
+                <button class="hub-btn" onclick="openFinanceiro()">
                     <span class="icon">💰</span>
-                    <span>Saúde Financeira</span>
-                    <span class="subtitle">Inadimplência (Nibo API)</span>
+                    <span>Módulo Financeiro</span>
                 </button>
             </div>
             <button class="mt-16 text-red-400 font-bold underline opacity-50 hover:opacity-100 text-xs" onclick="handleLogout()">Sair do Portal</button>
@@ -114,9 +107,9 @@
                 <img src="https://raw.githubusercontent.com/gerenciador-ai/Relat-rios-Comercial/main/logo_acelerar_sidebar.png" class="logo" alt="Acelerar">
             </div>
             <div class="nav-tabs">
-                <button onclick="switchPage('performance')" id="btn-performance">📊 Performance Macro</button>
-                <button onclick="switchPage('desempenho')" id="btn-desempenho">🏆 Desempenho de Time</button>
-                <button onclick="switchPage('inadimplencia')" id="btn-inadimplencia">💰 Saúde Financeira</button>
+                <button onclick="switchPage('performance')" id="btn-performance">📊 Resultados (Performance)</button>
+                <button onclick="switchPage('desempenho')" id="btn-desempenho">🏆 Desempenho do Time</button>
+                <button onclick="switchPage('inadimplencia')" id="btn-inadimplencia">📋 Inadimplência</button>
                 <button onclick="returnToHub()" class="opacity-70">🏠 Hub</button>
                 <button onclick="handleLogout()" class="!border-red-500 !text-red-500 hover:!bg-red-500 hover:!text-white">🚪 Sair</button>
             </div>
@@ -149,19 +142,26 @@
             </div>
 
             <div class="main-content">
-                <!-- PAINEL 1: PERFORMANCE MACRO -->
+                <!-- PAINEL 1: RESULTADOS (PERFORMANCE) -->
                 <div id="page-performance" style="display: none;">
                     <div class="flex items-center gap-3 mb-4">
                         <img id="logo-empresa-perf" src="" style="width: 80px;">
-                        <h1 class="text-md font-bold text-blue-300">Performance Macro Comercial</h1>
+                        <h1 class="text-md font-bold text-blue-300">Resultados Comercial (Performance)</h1>
                     </div>
                     <div class="kpi-row">
                         <div class="kpi-card"><div class="label">MRR Conquistado</div><div class="value" id="kpi-mrr-conq">R$ 0</div></div>
-                        <div class="kpi-card" style="border-left: 2px solid #E74C3C;"><div class="label">MRR Perdido</div><div class="value" id="kpi-mrr-perd" style="color: #E74C3C;">R$ 0</div></div>
+                        <div class="kpi-card" style="border-left: 2px solid #E74C3C;">
+                            <div class="label">MRR Perdido</div>
+                            <div class="value" id="kpi-mrr-perd" style="color: #E74C3C;">R$ 0</div>
+                            <div class="churn-badge" id="badge-churn-rate">0%</div>
+                        </div>
                         <div class="kpi-card"><div class="label">MRR Ativo (Net)</div><div class="value" id="kpi-mrr-net">R$ 0</div></div>
-                        <div class="kpi-card" style="border-left: 2px solid #E74C3C;"><div class="label">Churn Rate %</div><div class="value" id="kpi-churn-rate" style="color: #E74C3C;">0%</div></div>
+                        <div class="kpi-card"><div class="label">Total Upsell</div><div class="value" id="kpi-upsell">R$ 0</div></div>
+                        <div class="kpi-card"><div class="label">Ticket Médio</div><div class="value" id="kpi-ticket">R$ 0</div></div>
                         <div class="kpi-card"><div class="label">Adesão Total</div><div class="value" id="kpi-adesao">R$ 0</div></div>
-                        <div class="kpi-card"><div class="label">Carteira Ativa</div><div class="value" id="kpi-carteira">0</div></div>
+                        <div class="kpi-card"><div class="label">Clientes Fechados</div><div class="value" id="kpi-fechados">0</div></div>
+                        <div class="kpi-card"><div class="label">Clientes Cancelados</div><div class="value" id="kpi-fechados-cancelados">0</div></div>
+                        <div class="kpi-card" style="border-left: 2px solid #89CFF0;"><div class="label">Carteira Ativa</div><div class="value" id="kpi-carteira" style="color: #89CFF0;">0</div></div>
                     </div>
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-3 mb-3">
                         <div class="chart-container"><canvas id="chart-mrr-meta"></canvas></div>
@@ -172,6 +172,7 @@
                         <div class="chart-container"><canvas id="chart-evolucao-upsell"></canvas></div>
                         <div class="chart-container"><canvas id="chart-evolucao-churn"></canvas></div>
                     </div>
+                    
                     <div class="table-container">
                         <div class="flex justify-between items-center mb-2">
                             <h4 class="text-blue-300 font-bold text-[9px] uppercase">Detalhamento de Vendas</h4>
@@ -182,15 +183,25 @@
                             <tbody id="tbody-detalhamento"></tbody>
                         </table>
                     </div>
+
+                    <div class="table-container">
+                        <div class="flex justify-between items-center mb-2">
+                            <h4 class="text-red-400 font-bold text-[9px] uppercase">Detalhamento de Cancelados</h4>
+                            <button onclick="exportTable('table-cancelados', 'cancelados')" class="export-btn" style="background: #C0392B;">📥 Exportar CSV</button>
+                        </div>
+                        <table id="table-cancelados">
+                            <thead><tr><th>Data Churn</th><th>CNPJ</th><th>Cliente</th><th>Vendedor Original</th><th>SDR Original</th><th>Produto</th><th>MRR Perdido</th></tr></thead>
+                            <tbody id="tbody-cancelados"></tbody>
+                        </table>
+                    </div>
                 </div>
 
-                <!-- PAINEL 2: DESEMPENHO DE TIME -->
+                <!-- PAINEL 2: DESEMPENHO DO TIME -->
                 <div id="page-desempenho" style="display: none;">
                     <div class="flex items-center gap-3 mb-6">
                         <img id="logo-empresa-des" src="" style="width: 80px;">
-                        <h1 class="text-md font-bold text-blue-300">Desempenho de Time & Talentos</h1>
+                        <h1 class="text-md font-bold text-blue-300">Desempenho do Time Comercial</h1>
                     </div>
-                    
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                         <div class="mvp-card" id="mvp-vendedor">
                             <div class="title">MVP Vendedor do Mês</div>
@@ -203,14 +214,12 @@
                             <div class="value" id="mvp-sdr-val">R$ 0</div>
                         </div>
                     </div>
-
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
                         <div class="ranking-card"><h4>🏆 Vendedores (MRR)</h4><div id="rank-vend-mrr"></div></div>
                         <div class="ranking-card"><h4>🏆 Vendedores (VOL)</h4><div id="rank-vend-vol"></div></div>
                         <div class="ranking-card"><h4>🏆 SDRS (MRR)</h4><div id="rank-sdr-mrr"></div></div>
                         <div class="ranking-card"><h4>🏆 SDRS (VOL)</h4><div id="rank-sdr-vol"></div></div>
                     </div>
-
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
                         <div class="chart-container" style="height: 300px;"><canvas id="chart-mix-produtos"></canvas></div>
                         <div class="chart-container" style="height: 300px;"><canvas id="chart-ciclo-venda"></canvas></div>
@@ -219,7 +228,7 @@
 
                 <!-- PAINEL 3: INADIMPLÊNCIA -->
                 <div id="page-inadimplencia" style="display: none;">
-                    <h1 class="text-md font-bold text-blue-300 mb-4">💰 Saúde Financeira (Inadimplência)</h1>
+                    <h1 class="text-md font-bold text-blue-300 mb-4">📋 Inadimplência Comercial</h1>
                     <div class="kpi-row">
                         <div class="kpi-card"><div class="label">Total em Aberto</div><div class="value" id="kpi-total-aberto">R$ 0</div></div>
                         <div class="kpi-card"><div class="label">Clientes Inadimplentes</div><div class="value" id="kpi-clientes-inad">0</div></div>
@@ -284,11 +293,13 @@
 
         function handleLogout() { location.reload(); }
 
+        function openFinanceiro() { alert('Módulo Financeiro em Construção'); }
+
         async function openModule(m) {
             document.getElementById('hub-section').classList.add('hidden');
             document.getElementById('dashboard-section').style.display = 'block';
             await loadData();
-            switchPage(m);
+            switchPage('performance');
         }
 
         function returnToHub() {
@@ -297,7 +308,7 @@
         }
 
         async function loadData() {
-            const cacheKey = `acelerar_v13_0_${appState.empresa}`;
+            const cacheKey = `acelerar_v13_1_${appState.empresa}`;
             const cacheTimeKey = `${cacheKey}_time`;
             const cached = localStorage.getItem(cacheKey);
             const cachedTime = localStorage.getItem(cacheTimeKey);
@@ -319,7 +330,6 @@
             const mapDeal = (d, type) => {
                 const props = d.OtherProperties || [];
                 const getProp = (id) => props.find(p => p.FieldId === id);
-                
                 const propProduto = getProp(FIELDS.PRODUTO);
                 let produto = propProduto ? (propProduto.ObjectValueName || propProduto.ValueName || propProduto.Value || "") : "";
                 if (!produto || produto === "") produto = "Sittax Simples";
@@ -343,8 +353,6 @@
                 const dataCriacao = new Date(d.CreateDate);
                 let dateStr = type === 'Venda' ? (getProp(FIELDS.DATA_ATIVACAO)?.DateTimeValue || d.FinishDate || d.CreateDate || '') : (getProp(FIELDS.DATA_CANCELAMENTO)?.DateTimeValue || d.FinishDate || d.CreateDate || '');
                 const dataAtivacao = new Date(dateStr);
-                
-                // Ciclo de Venda em dias
                 const ciclo = Math.max(0, Math.round((dataAtivacao - dataCriacao) / (1000 * 60 * 60 * 24)));
 
                 return {
@@ -356,8 +364,8 @@
             };
 
             appState.raw_data = [...vendas.map(d => mapDeal(d, 'Venda')), ...churn.map(d => mapDeal(d, 'Churn'))];
-            localStorage.setItem(`acelerar_v13_0_${appState.empresa}`, JSON.stringify(appState.raw_data));
-            localStorage.setItem(`acelerar_v13_0_${appState.empresa}_time`, new Date().getTime().toString());
+            localStorage.setItem(`acelerar_v13_1_${appState.empresa}`, JSON.stringify(appState.raw_data));
+            localStorage.setItem(`acelerar_v13_1_${appState.empresa}_time`, new Date().getTime().toString());
             renderDashboard();
             hideLoading();
         }
@@ -414,20 +422,29 @@
             const mrrConq = f.filter(d => d.status === 'Venda').reduce((s, d) => s + d.mrr, 0);
             const f_churn = f.filter(d => d.status === 'Churn' && d.estagio === 'Cancelado' && d.mrr > 0);
             const churn = f_churn.reduce((s, d) => s + d.mrr, 0);
+            const upsell = f.reduce((s, d) => s + d.upsell, 0);
             const adesao = f.reduce((s, d) => s + d.adesao, 0);
             const fechados = f.filter(d => d.status === 'Venda').length;
+            const cancelados = f_churn.length;
             const carteiraTotal = appState.raw_data.filter(d => d.status === 'Venda').length - appState.raw_data.filter(d => d.status === 'Churn' && d.estagio === 'Cancelado').length;
 
-            // KPIs Macro
             document.getElementById('kpi-mrr-conq').textContent = `R$ ${Math.round(mrrConq).toLocaleString('pt-BR')}`;
             document.getElementById('kpi-mrr-perd').textContent = `R$ ${Math.round(churn).toLocaleString('pt-BR')}`;
             document.getElementById('kpi-mrr-net').textContent = `R$ ${Math.round(mrrConq - churn).toLocaleString('pt-BR')}`;
-            document.getElementById('kpi-churn-rate').textContent = `${((churn / (mrrConq || 1)) * 100).toFixed(1)}%`;
+            document.getElementById('kpi-upsell').textContent = `R$ ${Math.round(upsell).toLocaleString('pt-BR')}`;
+            document.getElementById('kpi-ticket').textContent = `R$ ${Math.round(fechados > 0 ? mrrConq/fechados : 0).toLocaleString('pt-BR')}`;
             document.getElementById('kpi-adesao').textContent = `R$ ${Math.round(adesao).toLocaleString('pt-BR')}`;
+            document.getElementById('kpi-fechados').textContent = fechados;
+            document.getElementById('kpi-fechados-cancelados').textContent = cancelados;
             document.getElementById('kpi-carteira').textContent = carteiraTotal;
+            document.getElementById('badge-churn-rate').textContent = `${((churn / (mrrConq || 1)) * 100).toFixed(1)}%`;
 
             document.getElementById('tbody-detalhamento').innerHTML = f.filter(d => d.status === 'Venda').sort((a,b) => b.data - a.data).map(d => `
                 <tr><td>${d.data.toLocaleDateString('pt-BR')}</td><td>${d.cnpj}</td><td>${d.cliente}</td><td>${d.vendedor}</td><td>${d.sdr}</td><td>${d.produto}</td><td>R$ ${Math.round(d.mrr).toLocaleString('pt-BR')}</td><td>R$ ${Math.round(d.adesao).toLocaleString('pt-BR')}</td><td>R$ ${Math.round(d.upsell).toLocaleString('pt-BR')}</td></tr>
+            `).join('');
+
+            document.getElementById('tbody-cancelados').innerHTML = f_churn.sort((a,b) => b.data - a.data).map(d => `
+                <tr><td>${d.data.toLocaleDateString('pt-BR')}</td><td>${d.cnpj}</td><td>${d.cliente}</td><td>${d.vendedor_orig || 'N/A'}</td><td>${d.sdr_orig || 'N/A'}</td><td>${d.produto}</td><td>R$ ${Math.round(d.mrr).toLocaleString('pt-BR')}</td></tr>
             `).join('');
 
             updateCharts(f, mesesSelecionados);
@@ -444,7 +461,6 @@
             };
             const chartOptions = { responsive: true, maintainAspectRatio: false, scales: { y: { ticks: { color: '#FFF', font: { size: 8 } } }, x: { type: 'category', ticks: { color: '#FFF', font: { size: 8 } } } }, plugins: { legend: { labels: { color: '#FFF', font: { size: 9 } } } } };
             
-            // Performance Charts
             let accMrr = 0, accContratos = 0;
             const mrrData = meses_labels.map(m => { accMrr += f.filter(d => d.mes === m && d.status === 'Venda').reduce((s,d) => s + d.mrr, 0); return accMrr; });
             const contratosData = meses_labels.map(m => { accContratos += f.filter(d => d.mes === m && d.status === 'Venda').length; return accContratos; });
@@ -457,7 +473,6 @@
             renderChart('chart-evolucao-upsell', 'bar', { labels: meses_labels, datasets: [{ label: 'Upsell Mensal', data: evolData('upsell', null), backgroundColor: '#89CFF0' }] }, chartOptions);
             renderChart('chart-evolucao-churn', 'bar', { labels: meses_labels, datasets: [{ label: 'Churn Mensal', data: evolData('mrr', 'Churn'), backgroundColor: '#E74C3C' }] }, chartOptions);
 
-            // Desempenho Charts
             const vends = [...new Set(f.filter(d => d.status === 'Venda').map(d => d.vendedor))].filter(v => v !== 'N/A');
             const mixDataSimples = vends.map(v => f.filter(d => d.vendedor === v && d.produto.toLowerCase().includes('simples')).length);
             const mixDataRecupera = vends.map(v => f.filter(d => d.vendedor === v && d.produto.toLowerCase().includes('recupera')).length);
@@ -488,28 +503,15 @@
                 container.innerHTML = sorted.map((r, i) => {
                     const pct = (r[sortKey] / maxVal) * 100;
                     const displayVal = isMoeda ? 'R$ '+Math.round(r.val).toLocaleString('pt-BR') : r.vol;
-                    return `
-                        <div class="bar-container">
-                            <div class="bar-fill" style="width: ${pct}%"></div>
-                            <span class="bar-label">${i+1}. ${r.name}</span>
-                            <span class="bar-value">${displayVal}</span>
-                        </div>
-                    `;
+                    return `<div class="bar-container"><div class="bar-fill" style="width: ${pct}%"></div><span class="bar-label">${i+1}. ${r.name}</span><span class="bar-value">${displayVal}</span></div>`;
                 }).join('') || '<p class="text-[7px] opacity-30">Sem dados</p>';
                 return sorted[0];
             };
             const vendData = getRank('vendedor'), sdrData = getRank('sdr');
             const topVend = renderRank('rank-vend-mrr', vendData, 'val', true); renderRank('rank-vend-vol', vendData, 'vol', false);
             const topSdr = renderRank('rank-sdr-mrr', sdrData, 'val', true); renderRank('rank-sdr-vol', sdrData, 'vol', false);
-
-            if (topVend) {
-                document.getElementById('mvp-vendedor-name').textContent = topVend.name;
-                document.getElementById('mvp-vendedor-val').textContent = `R$ ${Math.round(topVend.val).toLocaleString('pt-BR')}`;
-            }
-            if (topSdr) {
-                document.getElementById('mvp-sdr-name').textContent = topSdr.name;
-                document.getElementById('mvp-sdr-val').textContent = `R$ ${Math.round(topSdr.val).toLocaleString('pt-BR')}`;
-            }
+            if (topVend) { document.getElementById('mvp-vendedor-name').textContent = topVend.name; document.getElementById('mvp-vendedor-val').textContent = `R$ ${Math.round(topVend.val).toLocaleString('pt-BR')}`; }
+            if (topSdr) { document.getElementById('mvp-sdr-name').textContent = topSdr.name; document.getElementById('mvp-sdr-val').textContent = `R$ ${Math.round(topSdr.val).toLocaleString('pt-BR')}`; }
         }
 
         function exportTable(id, name) {
