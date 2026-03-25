@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hub Holding Acelerar - Portal Estratégico (V13.1)</title>
+    <title>Hub Holding Acelerar - Portal Estratégico (V13.2)</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios@1.6.0/dist/axios.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -67,6 +67,11 @@
         .mvp-card .value { font-size: 0.9rem; font-weight: 700; color: #89CFF0; }
         
         .churn-badge { font-size: 0.6rem; background: rgba(231, 76, 60, 0.2); color: #E74C3C; padding: 1px 4px; border-radius: 4px; font-weight: 800; margin-top: 2px; display: inline-block; }
+        
+        /* Gauge Styles */
+        .gauge-container { position: relative; height: 180px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .gauge-label { position: absolute; bottom: 30px; font-size: 1.5rem; font-weight: 800; color: #FFF; }
+        .gauge-title { font-size: 0.65rem; font-weight: 800; color: #89CFF0; text-transform: uppercase; margin-bottom: 10px; text-align: center; }
     </style>
 </head>
 <body>
@@ -202,6 +207,7 @@
                         <img id="logo-empresa-des" src="" style="width: 80px;">
                         <h1 class="text-md font-bold text-blue-300">Desempenho do Time Comercial</h1>
                     </div>
+                    
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                         <div class="mvp-card" id="mvp-vendedor">
                             <div class="title">MVP Vendedor do Mês</div>
@@ -214,15 +220,23 @@
                             <div class="value" id="mvp-sdr-val">R$ 0</div>
                         </div>
                     </div>
+
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
                         <div class="ranking-card"><h4>🏆 Vendedores (MRR)</h4><div id="rank-vend-mrr"></div></div>
-                        <div class="ranking-card"><h4>🏆 Vendedores (VOL)</h4><div id="rank-vend-vol"></div></div>
                         <div class="ranking-card"><h4>🏆 SDRS (MRR)</h4><div id="rank-sdr-mrr"></div></div>
-                        <div class="ranking-card"><h4>🏆 SDRS (VOL)</h4><div id="rank-sdr-vol"></div></div>
                     </div>
-                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                        <div class="chart-container" style="height: 300px;"><canvas id="chart-mix-produtos"></canvas></div>
-                        <div class="chart-container" style="height: 300px;"><canvas id="chart-ciclo-venda"></canvas></div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+                        <div class="ranking-card" style="height: 350px;">
+                            <h4>🚀 Ciclo Médio de Venda (Dias)</h4>
+                            <div class="h-[280px]"><canvas id="chart-radar-ciclo"></canvas></div>
+                        </div>
+                        <div class="ranking-card" style="height: 350px;">
+                            <h4>🔥 Termômetro de Atividade (Novos Negócios)</h4>
+                            <div class="grid grid-cols-2 gap-4 mt-4" id="gauges-container">
+                                <!-- Gauges serão injetados aqui -->
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -292,7 +306,6 @@
         }
 
         function handleLogout() { location.reload(); }
-
         function openFinanceiro() { alert('Módulo Financeiro em Construção'); }
 
         async function openModule(m) {
@@ -308,7 +321,7 @@
         }
 
         async function loadData() {
-            const cacheKey = `acelerar_v13_1_${appState.empresa}`;
+            const cacheKey = `acelerar_v13_2_${appState.empresa}`;
             const cacheTimeKey = `${cacheKey}_time`;
             const cached = localStorage.getItem(cacheKey);
             const cachedTime = localStorage.getItem(cacheTimeKey);
@@ -364,8 +377,8 @@
             };
 
             appState.raw_data = [...vendas.map(d => mapDeal(d, 'Venda')), ...churn.map(d => mapDeal(d, 'Churn'))];
-            localStorage.setItem(`acelerar_v13_1_${appState.empresa}`, JSON.stringify(appState.raw_data));
-            localStorage.setItem(`acelerar_v13_1_${appState.empresa}_time`, new Date().getTime().toString());
+            localStorage.setItem(`acelerar_v13_2_${appState.empresa}`, JSON.stringify(appState.raw_data));
+            localStorage.setItem(`acelerar_v13_2_${appState.empresa}_time`, new Date().getTime().toString());
             renderDashboard();
             hideLoading();
         }
@@ -461,6 +474,7 @@
             };
             const chartOptions = { responsive: true, maintainAspectRatio: false, scales: { y: { ticks: { color: '#FFF', font: { size: 8 } } }, x: { type: 'category', ticks: { color: '#FFF', font: { size: 8 } } } }, plugins: { legend: { labels: { color: '#FFF', font: { size: 9 } } } } };
             
+            // Performance Charts
             let accMrr = 0, accContratos = 0;
             const mrrData = meses_labels.map(m => { accMrr += f.filter(d => d.mes === m && d.status === 'Venda').reduce((s,d) => s + d.mrr, 0); return accMrr; });
             const contratosData = meses_labels.map(m => { accContratos += f.filter(d => d.mes === m && d.status === 'Venda').length; return accContratos; });
@@ -473,16 +487,71 @@
             renderChart('chart-evolucao-upsell', 'bar', { labels: meses_labels, datasets: [{ label: 'Upsell Mensal', data: evolData('upsell', null), backgroundColor: '#89CFF0' }] }, chartOptions);
             renderChart('chart-evolucao-churn', 'bar', { labels: meses_labels, datasets: [{ label: 'Churn Mensal', data: evolData('mrr', 'Churn'), backgroundColor: '#E74C3C' }] }, chartOptions);
 
+            // Radar Chart: Ciclo de Venda
             const vends = [...new Set(f.filter(d => d.status === 'Venda').map(d => d.vendedor))].filter(v => v !== 'N/A');
-            const mixDataSimples = vends.map(v => f.filter(d => d.vendedor === v && d.produto.toLowerCase().includes('simples')).length);
-            const mixDataRecupera = vends.map(v => f.filter(d => d.vendedor === v && d.produto.toLowerCase().includes('recupera')).length);
-            renderChart('chart-mix-produtos', 'bar', { labels: vends, datasets: [{ label: 'Simples', data: mixDataSimples, backgroundColor: '#89CFF0' }, { label: 'Recupera', data: mixDataRecupera, backgroundColor: '#27AE60' }] }, { ...chartOptions, indexAxis: 'y', plugins: { title: { display: true, text: 'Mix de Produtos por Vendedor', color: '#FFF' } } });
-
             const cicloData = vends.map(v => {
                 const deals = f.filter(d => d.vendedor === v && d.status === 'Venda');
                 return deals.length > 0 ? Math.round(deals.reduce((s,d) => s + d.ciclo, 0) / deals.length) : 0;
             });
-            renderChart('chart-ciclo-venda', 'bar', { labels: vends, datasets: [{ label: 'Ciclo Médio (Dias)', data: cicloData, backgroundColor: '#F1C40F' }] }, { ...chartOptions, plugins: { title: { display: true, text: 'Ciclo Médio de Venda (Dias)', color: '#FFF' } } });
+            renderChart('chart-radar-ciclo', 'radar', {
+                labels: vends,
+                datasets: [{
+                    label: 'Ciclo Médio (Dias)',
+                    data: cicloData,
+                    backgroundColor: 'rgba(137, 207, 240, 0.2)',
+                    borderColor: '#89CFF0',
+                    pointBackgroundColor: '#89CFF0',
+                    borderWidth: 2
+                }]
+            }, {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    r: {
+                        angleLines: { color: 'rgba(255,255,255,0.1)' },
+                        grid: { color: 'rgba(255,255,255,0.1)' },
+                        pointLabels: { color: '#FFF', font: { size: 9 } },
+                        ticks: { display: false }
+                    }
+                },
+                plugins: { legend: { display: false } }
+            });
+
+            // Termômetro Gauges: SDRs
+            const sdrs = [...new Set(f.filter(d => d.status === 'Venda').map(d => d.sdr))].filter(s => s !== 'N/A');
+            const gaugesContainer = document.getElementById('gauges-container');
+            if (gaugesContainer) {
+                gaugesContainer.innerHTML = sdrs.slice(0, 4).map((s, i) => `
+                    <div class="gauge-container">
+                        <div class="gauge-title">${s}</div>
+                        <canvas id="gauge-sdr-${i}"></canvas>
+                        <div class="gauge-label" id="gauge-val-sdr-${i}">0</div>
+                    </div>
+                `).join('');
+                
+                sdrs.slice(0, 4).forEach((s, i) => {
+                    const vol = f.filter(d => d.sdr === s && d.status === 'Venda').length;
+                    const meta = 20; // Meta exemplo
+                    const pct = Math.min(100, (vol / meta) * 100);
+                    const color = pct < 40 ? '#E74C3C' : (pct < 80 ? '#F1C40F' : '#27AE60');
+                    
+                    renderChart(`gauge-sdr-${i}`, 'doughnut', {
+                        datasets: [{
+                            data: [vol, Math.max(0, meta - vol)],
+                            backgroundColor: [color, 'rgba(255,255,255,0.05)'],
+                            borderWidth: 0,
+                            circumference: 180,
+                            rotation: 270,
+                            cutout: '80%'
+                        }]
+                    }, {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false }, tooltip: { enabled: false } }
+                    });
+                    document.getElementById(`gauge-val-sdr-${i}`).textContent = vol;
+                });
+            }
         }
 
         function updateRankings(f) {
@@ -508,8 +577,8 @@
                 return sorted[0];
             };
             const vendData = getRank('vendedor'), sdrData = getRank('sdr');
-            const topVend = renderRank('rank-vend-mrr', vendData, 'val', true); renderRank('rank-vend-vol', vendData, 'vol', false);
-            const topSdr = renderRank('rank-sdr-mrr', sdrData, 'val', true); renderRank('rank-sdr-vol', sdrData, 'vol', false);
+            const topVend = renderRank('rank-vend-mrr', vendData, 'val', true);
+            const topSdr = renderRank('rank-sdr-mrr', sdrData, 'val', true);
             if (topVend) { document.getElementById('mvp-vendedor-name').textContent = topVend.name; document.getElementById('mvp-vendedor-val').textContent = `R$ ${Math.round(topVend.val).toLocaleString('pt-BR')}`; }
             if (topSdr) { document.getElementById('mvp-sdr-name').textContent = topSdr.name; document.getElementById('mvp-sdr-val').textContent = `R$ ${Math.round(topSdr.val).toLocaleString('pt-BR')}`; }
         }
@@ -532,7 +601,8 @@
         function switchPage(p) {
             appState.page = p;
             ['performance', 'desempenho', 'inadimplencia'].forEach(page => {
-                document.getElementById(`page-${page}`).style.display = p === page ? 'block' : 'none';
+                const el = document.getElementById(`page-${page}`);
+                if (el) el.style.display = p === page ? 'block' : 'none';
                 const btn = document.getElementById(`btn-${page}`);
                 if (btn) btn.classList.toggle('active', p === page);
             });
