@@ -3,10 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hub Holding Acelerar - Portal Estratégico (V13.6)</title>
+    <title>Hub Holding Acelerar - Portal Estratégico (V13.7)</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios@1.6.0/dist/axios.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/plotly.js/2.26.0/plotly.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         * { font-family: 'Inter', sans-serif; }
@@ -81,7 +82,19 @@
         .geo-item:hover { background: rgba(137, 207, 240, 0.1); border-color: rgba(137, 207, 240, 0.3); }
         .geo-item.active { background: #89CFF0; color: #0B2A4E; }
         .geo-item.active span { color: #0B2A4E !important; }
-        .geo-item.active .text-val { color: #0B2A4E !important; }
+
+        .partnership-viz { background: rgba(11, 42, 78, 0.4); border: 1px solid rgba(137, 207, 240, 0.2); border-radius: 8px; padding: 12px; margin-bottom: 10px; }
+        .partnership-viz h4 { color: #89CFF0; font-size: 0.75rem; font-weight: 800; margin-bottom: 12px; text-transform: uppercase; border-bottom: 1px solid rgba(137, 207, 240, 0.2); padding-bottom: 4px; }
+        .heatmap-table { width: 100%; border-collapse: collapse; font-size: 0.65rem; }
+        .heatmap-table th, .heatmap-table td { padding: 4px; border: 1px solid rgba(137, 207, 240, 0.2); text-align: center; }
+        .heatmap-table th { background: rgba(137, 207, 240, 0.1); color: #89CFF0; }
+        .heatmap-cell { color: #FFF; font-weight: 700; }
+        .heatmap-0 { background: rgba(11, 42, 78, 0.3); }
+        .heatmap-1 { background: rgba(137, 207, 240, 0.2); }
+        .heatmap-2 { background: rgba(137, 207, 240, 0.4); }
+        .heatmap-3 { background: rgba(137, 207, 240, 0.6); }
+        .heatmap-4 { background: rgba(137, 207, 240, 0.8); }
+        .heatmap-5 { background: #89CFF0; color: #0B2A4E; }
     </style>
 </head>
 <body>
@@ -239,6 +252,28 @@
                         <div class="ranking-card" style="max-height: 350px;"><h4>🔥 Funil de SDRs (Novos Negócios)</h4><div id="rank-funil-sdr" class="flex flex-col items-center"></div></div>
                     </div>
 
+                    <!-- SEÇÃO DE PARCERIAS SDR-VENDEDOR (V13.7) -->
+                    <div class="grid grid-cols-1 gap-4 mb-4">
+                        <!-- 1. MATRIZ DE COLABORAÇÃO (HEATMAP) -->
+                        <div class="partnership-viz">
+                            <h4>🤝 Matriz de Colaboração (Heatmap)</h4>
+                            <p class="text-[7px] opacity-50 mb-2">Clique nas células para ver detalhes | Intensidade = Volume de Contratos</p>
+                            <div id="heatmap-container" style="overflow-x: auto;"></div>
+                        </div>
+
+                        <!-- 2. BARRAS EMPILHADAS (STACKED) -->
+                        <div class="partnership-viz">
+                            <h4>📊 Barras Empilhadas (Origem de Agendas por Vendedor)</h4>
+                            <div class="chart-container" style="height: 300px;"><canvas id="chart-stacked-partnerships"></canvas></div>
+                        </div>
+
+                        <!-- 3. SANKEY CHART (FLUXO) -->
+                        <div class="partnership-viz">
+                            <h4>🌊 Diagrama de Fluxo (Sankey - SDR → Vendedor)</h4>
+                            <div id="sankey-container" style="width: 100%; height: 400px; background: rgba(0,0,0,0.2); border-radius: 6px;"></div>
+                        </div>
+                    </div>
+
                     <div class="ranking-card" style="height: 450px;">
                         <h4 class="flex justify-between items-center">
                             🌍 Inteligência de Campo (Geolocalização)
@@ -335,7 +370,7 @@
         async function forceSync() { await loadData(true); }
 
         async function loadData(forceDealsOnly = false) {
-            const cacheKey = `acelerar_v13_6_${appState.empresa}`;
+            const cacheKey = `acelerar_v13_7_${appState.empresa}`;
             const cacheTimeKey = `${cacheKey}_time`;
             const cached = localStorage.getItem(cacheKey);
             const cachedTime = localStorage.getItem(cacheTimeKey);
@@ -385,7 +420,7 @@
                     estado: c.State?.Short || (c.City?.State?.Short) || 'NI' 
                 }));
             } else {
-                const cached = JSON.parse(localStorage.getItem(`acelerar_v13_6_${appState.empresa}`));
+                const cached = JSON.parse(localStorage.getItem(`acelerar_v13_7_${appState.empresa}`));
                 appState.contacts = cached ? cached.contacts : [];
             }
 
@@ -418,8 +453,8 @@
 
             appState.raw_data = [...vendas.map(d => mapDeal(d, 'Venda')), ...churn.map(d => mapDeal(d, 'Churn'))];
             
-            localStorage.setItem(`acelerar_v13_6_${appState.empresa}`, JSON.stringify({ deals: appState.raw_data, contacts: appState.contacts }));
-            localStorage.setItem(`acelerar_v13_6_${appState.empresa}_time`, new Date().getTime().toString());
+            localStorage.setItem(`acelerar_v13_7_${appState.empresa}`, JSON.stringify({ deals: appState.raw_data, contacts: appState.contacts }));
+            localStorage.setItem(`acelerar_v13_7_${appState.empresa}_time`, new Date().getTime().toString());
             
             document.getElementById('cache-info').textContent = `Sinc: ${new Date().toLocaleString('pt-BR')}`;
             renderDashboard();
@@ -504,6 +539,7 @@
 
             updateCharts(f, mesesSelecionados);
             updateRankings(f);
+            renderPartnershipVisualizations(f);
             renderGeoList();
         }
 
@@ -570,6 +606,141 @@
             if (topSdr) { document.getElementById('mvp-sdr-name').textContent = topSdr.name; document.getElementById('mvp-sdr-val').textContent = `R$ ${Math.round(topSdr.val).toLocaleString('pt-BR')}`; }
         }
 
+        function renderPartnershipVisualizations(f) {
+            const vendas = f.filter(d => d.status === 'Venda');
+            
+            // Criar matriz de cruzamento SDR x Vendedor
+            const matriz = {};
+            const vendedores = new Set();
+            const sdrs = new Set();
+            
+            vendas.forEach(d => {
+                const vend = d.vendedor || 'N/A';
+                const sdr = d.sdr || 'N/A';
+                if (vend === 'N/A' || sdr === 'N/A') return;
+                
+                vendedores.add(vend);
+                sdrs.add(sdr);
+                
+                const key = `${sdr}|${vend}`;
+                if (!matriz[key]) matriz[key] = 0;
+                matriz[key]++;
+            });
+            
+            const vendedoresArr = Array.from(vendedores).sort();
+            const sdrsArr = Array.from(sdrs).sort();
+            
+            // 1. HEATMAP
+            renderHeatmap(matriz, sdrsArr, vendedoresArr);
+            
+            // 2. BARRAS EMPILHADAS
+            renderStackedChart(matriz, sdrsArr, vendedoresArr);
+            
+            // 3. SANKEY
+            renderSankey(matriz, sdrsArr, vendedoresArr);
+        }
+
+        function renderHeatmap(matriz, sdrs, vendedores) {
+            let html = '<table class="heatmap-table"><tr><th>SDR / Vendedor</th>';
+            vendedores.forEach(v => html += `<th>${v.substring(0, 8)}</th>`);
+            html += '</tr>';
+            
+            const maxVal = Math.max(...Object.values(matriz), 1);
+            
+            sdrs.forEach(sdr => {
+                html += `<tr><th>${sdr.substring(0, 8)}</th>`;
+                vendedores.forEach(vend => {
+                    const val = matriz[`${sdr}|${vend}`] || 0;
+                    const intensity = val === 0 ? 0 : Math.ceil((val / maxVal) * 5);
+                    const classe = `heatmap-${intensity}`;
+                    html += `<td class="heatmap-cell ${classe}" title="${sdr} → ${vend}: ${val} contratos">${val}</td>`;
+                });
+                html += '</tr>';
+            });
+            html += '</table>';
+            document.getElementById('heatmap-container').innerHTML = html;
+        }
+
+        function renderStackedChart(matriz, sdrs, vendedores) {
+            const datasets = sdrs.map((sdr, idx) => {
+                const colors = ['#89CFF0', '#2980B9', '#1ABC9C', '#F39C12', '#E74C3C', '#9B59B6', '#34495E', '#16A085'];
+                return {
+                    label: sdr,
+                    data: vendedores.map(vend => matriz[`${sdr}|${vend}`] || 0),
+                    backgroundColor: colors[idx % colors.length]
+                };
+            });
+            
+            if (appState.charts['chart-stacked-partnerships']) appState.charts['chart-stacked-partnerships'].destroy();
+            const ctx = document.getElementById('chart-stacked-partnerships');
+            if (ctx) {
+                appState.charts['chart-stacked-partnerships'] = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: vendedores,
+                        datasets: datasets
+                    },
+                    options: {
+                        indexAxis: 'y',
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            x: { stacked: true, ticks: { color: '#FFF' } },
+                            y: { stacked: true, ticks: { color: '#FFF' } }
+                        },
+                        plugins: {
+                            legend: { labels: { color: '#FFF', font: { size: 9 } } }
+                        }
+                    }
+                });
+            }
+        }
+
+        function renderSankey(matriz, sdrs, vendedores) {
+            const nodes = [...sdrs.map(s => ({ name: `SDR: ${s}`, color: '#2980B9' })), ...vendedores.map(v => ({ name: `Vend: ${v}`, color: '#89CFF0' }))];
+            const links = [];
+            
+            sdrs.forEach((sdr, sdrIdx) => {
+                vendedores.forEach((vend, vendIdx) => {
+                    const val = matriz[`${sdr}|${vend}`] || 0;
+                    if (val > 0) {
+                        links.push({
+                            source: sdrIdx,
+                            target: sdrs.length + vendIdx,
+                            value: val
+                        });
+                    }
+                });
+            });
+            
+            const data = [{
+                type: 'sankey',
+                node: {
+                    pad: 15,
+                    thickness: 20,
+                    line: { color: 'black' },
+                    label: nodes.map(n => n.name),
+                    color: nodes.map(n => n.color)
+                },
+                link: {
+                    source: links.map(l => l.source),
+                    target: links.map(l => l.target),
+                    value: links.map(l => l.value),
+                    color: links.map(() => 'rgba(137, 207, 240, 0.4)')
+                }
+            }];
+            
+            const layout = {
+                title: '',
+                font: { color: '#FFF', size: 10 },
+                paper_bgcolor: 'rgba(10, 30, 46, 0)',
+                plot_bgcolor: 'rgba(10, 30, 46, 0)',
+                margin: { l: 50, r: 50, t: 20, b: 20 }
+            };
+            
+            Plotly.newPlot('sankey-container', data, layout, { responsive: true, displayModeBar: false });
+        }
+
         function renderGeoList() {
             const stateList = document.getElementById('geo-state-list');
             const cityList = document.getElementById('geo-city-list');
@@ -581,9 +752,7 @@
                 const uf = c.estado || 'NI';
                 if (uf === 'NI') return;
 
-                // Filtro por empresa: Victec foca no RJ, VMC Tech é Nacional
                 if (appState.empresa === 'Victec' && uf !== 'RJ') {
-                    // Se for Victec e não for RJ, só mostra se tiver contrato fechado (exceções)
                     if (!fechadosIds.has(c.id)) return;
                 }
 
