@@ -183,7 +183,9 @@
             PRODUTO: 111431860,    // Qual produto?
             UPSELL: 111433407,     // Aumento da mensalidade
             ADESAO_S: 110778105,   // Adesão - Simples
-            ADESAO_R: 111431861    // Adesão - Recupera
+            ADESAO_R: 111431861,   // Adesão - Recupera
+            DATA_ATIVACAO: 110778114, // Data de Ativação
+            DATA_CANCELAMENTO: 111417137 // Data do Cancelamento
         };
         const MESES_PT = {1:'Jan',2:'Fev',3:'Mar',4:'Abr',5:'Mai',6:'Jun',7:'Jul',8:'Ago',9:'Set',10:'Out',11:'Nov',12:'Dez'};
 
@@ -281,7 +283,15 @@
                     adesao = valAdesaoSimples;
                 }
 
-                const date = new Date(d.FinishDate || d.CreateDate || '');
+                // DATA DE ATIVAÇÃO / CANCELAMENTO
+                let dateStr = "";
+                if (type === 'Venda') {
+                    dateStr = getProp(FIELDS.DATA_ATIVACAO)?.DateTimeValue || d.FinishDate || d.CreateDate || '';
+                } else {
+                    dateStr = getProp(FIELDS.DATA_CANCELAMENTO)?.DateTimeValue || d.FinishDate || d.CreateDate || '';
+                }
+                const date = new Date(dateStr);
+
                 return {
                     id: d.Id, 
                     cliente: d.Title, 
@@ -338,7 +348,6 @@
             const sdr = document.getElementById('sdr-select').value;
             const mesesSelecionados = Array.from(document.querySelectorAll('#meses-container input:checked')).map(i => i.value);
 
-            // Mapa de Vendas para buscar o MRR original pelo ContactId
             const vendasMap = {};
             appState.raw_data.filter(d => d.status === 'Venda').forEach(v => {
                 if (v.contactId) vendasMap[v.contactId] = v.mrr;
@@ -351,7 +360,6 @@
                 (sdr === 'Todos' || d.sdr === sdr)
             );
 
-            // Cruzamento para Churn: se o MRR estiver vazio, busca na venda do mesmo cliente
             f.forEach(d => {
                 if (d.status === 'Churn' && d.estagio === 'Cancelado' && d.mrr === 0) {
                     d.mrr = vendasMap[d.contactId] || 0;
