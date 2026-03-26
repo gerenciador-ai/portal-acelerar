@@ -247,19 +247,10 @@
                         <!-- 1. MATRIZ DE COLABORAÇÃO (HEATMAP) -->
                         <div class="partnership-viz">
                             <h4>🤝 Matriz de Colaboração (Heatmap)</h4>
-                            <p class="text-[7px] opacity-50 mb-2">Clique nas células para ver detalhes | Intensidade = Volume de Contratos</p>
+                            <p class="text-[7px] opacity-50 mb-2">Intensidade = Volume de Contratos</p>
                             <div id="heatmap-container" style="overflow-x: auto;"></div>
                         </div>
-                        <!-- 2. BARRAS EMPILHADAS (STACKED) -->
-                        <div class="partnership-viz">
-                            <h4>📊 Barras Empilhadas (Origem de Agendas por Vendedor)</h4>
-                            <div class="chart-container" style="height: 300px;"><canvas id="chart-stacked-partnerships"></canvas></div>
-                        </div>
-                        <!-- 3. SANKEY CHART (FLUXO) -->
-                        <div class="partnership-viz">
-                            <h4>🌊 Diagrama de Fluxo (Sankey - SDR → Vendedor)</h4>
-                            <div id="sankey-container" style="width: 100%; height: 400px; background: rgba(0,0,0,0.2); border-radius: 6px;"></div>
-                        </div>
+
                     </div>
                     <div class="ranking-card" style="height: 450px;">
                         <h4 class="flex justify-between items-center">
@@ -583,22 +574,16 @@
             
             // 1. HEATMAP
             renderHeatmap(matriz, sdrsArr, vendedoresArr);
-            
-            // 2. BARRAS EMPILHADAS
-            renderStackedChart(matriz, sdrsArr, vendedoresArr);
-            
-            // 3. SANKEY
-            renderSankey(matriz, sdrsArr, vendedoresArr);
         }
         function renderHeatmap(matriz, sdrs, vendedores) {
             let html = '<table class="heatmap-table"><tr><th>SDR / Vendedor</th>';
-            vendedores.forEach(v => html += `<th>${v.substring(0, 8)}</th>`);
+            vendedores.forEach(v => html += `<th>${v}</th>`);
             html += '</tr>';
             
             const maxVal = Math.max(...Object.values(matriz), 1);
             
             sdrs.forEach(sdr => {
-                html += `<tr><th>${sdr.substring(0, 8)}</th>`;
+                html += `<tr><th>${sdr}</th>`;
                 vendedores.forEach(vend => {
                     const val = matriz[`${sdr}|${vend}`] || 0;
                     const intensity = val === 0 ? 0 : Math.ceil((val / maxVal) * 5);
@@ -609,83 +594,6 @@
             });
             html += '</table>';
             document.getElementById('heatmap-container').innerHTML = html;
-        }
-        function renderStackedChart(matriz, sdrs, vendedores) {
-            const datasets = sdrs.map((sdr, idx) => {
-                const colors = ['#89CFF0', '#2980B9', '#1ABC9C', '#F39C12', '#E74C3C', '#9B59B6', '#34495E', '#16A085'];
-                return {
-                    label: sdr,
-                    data: vendedores.map(vend => matriz[`${sdr}|${vend}`] || 0),
-                    backgroundColor: colors[idx % colors.length]
-                };
-            });
-            
-            if (appState.charts['chart-stacked-partnerships']) appState.charts['chart-stacked-partnerships'].destroy();
-            const ctx = document.getElementById('chart-stacked-partnerships');
-            if (ctx) {
-                appState.charts['chart-stacked-partnerships'] = new Chart(ctx, {
-                    type: 'bar',
-                    data: {
-                        labels: vendedores,
-                        datasets: datasets
-                    },
-                    options: {
-                        indexAxis: 'y',
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        scales: {
-                            x: { stacked: true, ticks: { color: '#FFF' } },
-                            y: { stacked: true, ticks: { color: '#FFF' } }
-                        },
-                        plugins: {
-                            legend: { labels: { color: '#FFF', font: { size: 9 } } }
-                        }
-                    }
-                });
-            }
-        }
-        function renderSankey(matriz, sdrs, vendedores) {
-            const nodes = [...sdrs.map(s => ({ name: `SDR: ${s}`, color: '#2980B9' })), ...vendedores.map(v => ({ name: `Vend: ${v}`, color: '#89CFF0' }))];
-            const links = [];
-            
-            sdrs.forEach((sdr, sdrIdx) => {
-                vendedores.forEach((vend, vendIdx) => {
-                    const val = matriz[`${sdr}|${vend}`] || 0;
-                    if (val > 0) {
-                        links.push({
-                            source: sdrIdx,
-                            target: sdrs.length + vendIdx,
-                            value: val
-                        });
-                    }
-                });
-            });
-            const data = [{
-                type: 'sankey',
-                node: {
-                    pad: 15,
-                    thickness: 20,
-                    line: { color: 'black' },
-                    label: nodes.map(n => n.name),
-                    color: nodes.map(n => n.color)
-                },
-                link: {
-                    source: links.map(l => l.source),
-                    target: links.map(l => l.target),
-                    value: links.map(l => l.value),
-                    color: links.map(() => 'rgba(137, 207, 240, 0.4)')
-                }
-            }];
-            
-            const layout = {
-                title: '',
-                font: { color: '#FFF', size: 10 },
-                paper_bgcolor: 'rgba(10, 30, 46, 0)',
-                plot_bgcolor: 'rgba(10, 30, 46, 0)',
-                margin: { l: 50, r: 50, t: 20, b: 20 }
-            };
-            
-            Plotly.newPlot('sankey-container', data, layout, { responsive: true, displayModeBar: false });
         }
         function renderGeoList() {
             const stateList = document.getElementById('geo-state-list');
