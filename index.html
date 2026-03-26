@@ -504,7 +504,6 @@
             const chartOptions = { responsive: true, maintainAspectRatio: false, scales: { y: { ticks: { color: '#FFF', font: { size: 8 } } }, x: { type: 'category', ticks: { color: '#FFF', font: { size: 8 } } } }, plugins: { legend: { labels: { color: '#FFF', font: { size: 9 } } } } };
             
             let accMrr = 0, accContratos = 0;
-            let accMrr = 0, accContratos = 0;
             const mrrData = meses_labels.map(m => { accMrr += f.filter(d => d.mes === m && d.status === 'Venda' && d.statusId === 2).reduce((s,d) => s + d.mrr, 0); return accMrr; });
             const contratosData = meses_labels.map(m => { accContratos += f.filter(d => d.mes === m && d.status === 'Venda' && d.statusId === 2).length; return accContratos; });
             
