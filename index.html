@@ -428,25 +428,17 @@
             const pipelineId = config.vendas;
             console.log(`[AUDITORIA] Iniciando busca de volume para Pipeline (${appState.empresa}): ${pipelineId}`);
             try {
-                const results = await fetchPloomes(`Deals?$filter=PipelineId eq ${pipelineId} and (StatusId eq 1 or StatusId eq 3)&$expand=OtherProperties,Owner,Contact&$top=2000`);
+                // Buscando apenas Status 2 (Ganha) e Status 3 (Perdido) conforme definido
+                const results = await fetchPloomes(`Deals?$filter=PipelineId eq ${pipelineId} and (StatusId eq 2 or StatusId eq 3)&$expand=OtherProperties,Owner,Contact&$top=2000`);
                 const volumeDeals = results || [];
-                console.log(`[AUDITORIA] API retornou ${volumeDeals.length} negócios (Status 1 ou 3)`);
+                console.log(`[AUDITORIA] API retornou ${volumeDeals.length} negócios (Status 2 ou 3)`);
                 
-                if (volumeDeals.length > 0) {
-                    console.log(`[AUDITORIA] Amostra do 1º negócio:`, {
-                        id: volumeDeals[0].Id,
-                        title: volumeDeals[0].Title,
-                        statusId: volumeDeals[0].StatusId,
-                        createDate: volumeDeals[0].CreateDate,
-                        propsCount: volumeDeals[0].OtherProperties?.length || 0
-                    });
-                }
-
                 const mapDealVolume = (d) => {
                     const props = d.OtherProperties || [];
                     const getProp = (id) => props.find(p => p.FieldId === id);
                     const vendedor = getProp(FIELDS.VENDEDOR_REAL)?.UserValueName || d.Owner?.Name || 'N/A';
                     const sdr = getProp(FIELDS.SDR_REAL)?.UserValueName || 'SDR Não Identificado';
+                    // Usando rigorosamente a CreateDate (Data de Criação) para o Volume Geral
                     const dataCriacao = new Date(d.CreateDate);
                     return { 
                         vendedor, 
