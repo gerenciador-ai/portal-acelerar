@@ -40,6 +40,7 @@
         .kpi-card { background: rgba(11, 42, 78, 0.6); border: 1px solid rgba(137, 207, 240, 0.3); border-radius: 8px; padding: 8px; text-align: center; }
         .kpi-card .label { color: #FFF; font-size: 0.55rem; font-weight: 600; margin-bottom: 2px; opacity: 0.8; text-transform: uppercase; }
         .kpi-card .value { color: #89CFF0; font-size: 1.1rem; font-weight: 800; }
+
         .chart-container { background: rgba(11, 42, 78, 0.4); border: 1px solid rgba(137, 207, 240, 0.2); border-radius: 8px; padding: 10px; margin-bottom: 10px; height: 250px; }
         .table-container { background: rgba(11, 42, 78, 0.4); border: 1px solid rgba(137, 207, 240, 0.2); border-radius: 8px; padding: 10px; overflow-x: auto; margin-bottom: 20px; }
         table { width: 100%; border-collapse: collapse; font-size: 0.7rem; }
@@ -57,17 +58,17 @@
         .bar-fill { height: 100%; background: linear-gradient(90deg, #0B2A4E, #89CFF0); border-radius: 4px; transition: width 0.5s ease; position: absolute; left: 0; top: 0; }
         .bar-content { position: relative; width: 100%; display: flex; align-items: center; padding: 0 10px; z-index: 10; pointer-events: none; gap: 8px; }
         .bar-label { font-size: 0.75rem; font-weight: 700; color: #FFFFFF; text-shadow: 1px 1px 2px rgba(0,0,0,0.8); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .bar-label { font-size: 0.75rem; font-weight: 700; color: #FFFFFF; text-shadow: 1px 1px 2px rgba(0,0,0,0.8); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .bar-value { font-size: 0.75rem; font-weight: 800; color: #89CFF0; text-shadow: 1px 1px 2px rgba(0,0,0,0.8); }
         
         .funnel-row { display: flex; justify-content: center; width: 100%; margin-bottom: 8px; }
         .funnel-bar { height: 24px; background: #2980B9; border-radius: 4px; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 0 10px; position: relative; transition: width 0.5s ease; }
+
         .funnel-label { font-size: 0.7rem; font-weight: 700; color: #FFFFFF; text-shadow: 1px 1px 2px rgba(0,0,0,0.8); white-space: nowrap; }
         .funnel-value { font-size: 0.75rem; font-weight: 800; color: #FFF; }
-
         .toggle-sidebar-btn { background: none; border: 1px solid #89CFF0; color: #89CFF0; padding: 2px 8px; border-radius: 4px; cursor: pointer; font-size: 1rem; margin-right: 10px; }
         .toggle-sidebar-btn:hover { background: #89CFF0; color: #0B2A4E; }
         .export-btn { font-size: 0.65rem; background: #27AE60; color: white; padding: 2px 8px; border-radius: 4px; font-weight: bold; cursor: pointer; float: right; }
-
         .mvp-card { background: linear-gradient(135deg, #0B2A4E, #1a3a5e); border: 2px solid #89CFF0; border-radius: 12px; padding: 15px; text-align: center; position: relative; overflow: hidden; }
         .mvp-card::after { content: '🏆'; position: absolute; right: -10px; bottom: -10px; font-size: 4rem; opacity: 0.1; }
         .mvp-card .title { font-size: 0.65rem; font-weight: 800; color: #89CFF0; text-transform: uppercase; margin-bottom: 8px; }
@@ -75,7 +76,6 @@
         .mvp-card .value { font-size: 0.9rem; font-weight: 700; color: #89CFF0; }
         
         .churn-badge { font-size: 0.6rem; background: rgba(231, 76, 60, 0.2); color: #E74C3C; padding: 1px 4px; border-radius: 4px; font-weight: 800; margin-top: 2px; display: inline-block; }
-
         .geo-list-container { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; height: 100%; }
         .geo-list { background: rgba(0,0,0,0.2); border-radius: 6px; padding: 8px; overflow-y: auto; }
         .geo-item { padding: 6px 10px; border-radius: 4px; margin-bottom: 4px; cursor: pointer; transition: 0.2s; border: 1px solid transparent; }
@@ -99,7 +99,6 @@
 </head>
 <body>
     <div id="loading-overlay"><div class="spinner"></div><p id="loading-text" class="mt-4 text-blue-300 font-bold text-center px-10 text-[10px]">Sincronizando com Ploomes API...</p></div>
-
     <div id="login-section" class="login-container">
         <div class="login-box">
             <img src="https://raw.githubusercontent.com/gerenciador-ai/Relat-rios-Comercial/main/logo_acelerar_sidebar.png" class="logo-login mx-auto mb-6 w-32" alt="Acelerar">
@@ -109,7 +108,6 @@
             <button onclick="handleLogin()">🚀 Acessar</button>
         </div>
     </div>
-
     <div id="hub-section" class="hub-container hidden">
         <div class="hub-box text-center">
             <img src="https://raw.githubusercontent.com/gerenciador-ai/Relat-rios-Comercial/main/logo_acelerar_sidebar.png" class="logo mx-auto" alt="Acelerar">
@@ -127,7 +125,6 @@
             <button class="mt-16 text-red-400 font-bold underline opacity-50 hover:opacity-100 text-xs" onclick="handleLogout()">Sair do Portal</button>
         </div>
     </div>
-
     <div id="dashboard-section" class="dashboard-container">
         <div class="dashboard-header">
             <div class="flex items-center">
@@ -142,7 +139,6 @@
                 <button onclick="handleLogout()" class="!border-red-500 !text-red-500 hover:!bg-red-500 hover:!text-white">🚪 Sair</button>
             </div>
         </div>
-
         <div class="dashboard-wrapper">
             <div class="sidebar" id="sidebar">
                 <h3 id="user-display" class="text-[8px] opacity-50 border-b border-white/10 pb-1 mb-2">USUÁRIO</h3>
@@ -168,7 +164,6 @@
                     <button onclick="forceSync()" class="w-full mt-1 text-[8px] text-blue-400 font-bold hover:underline">🔄 Forçar Sincronização</button>
                 </div>
             </div>
-
             <div class="main-content">
                 <div id="page-performance" style="display: none;">
                     <div class="flex items-center gap-3 mb-4">
@@ -210,7 +205,6 @@
                             <tbody id="tbody-detalhamento"></tbody>
                         </table>
                     </div>
-
                     <div class="table-container">
                         <div class="flex justify-between items-center mb-2">
                             <h4 class="text-red-400 font-bold text-[9px] uppercase">Detalhamento de Cancelados</h4>
@@ -222,7 +216,6 @@
                         </table>
                     </div>
                 </div>
-
                 <div id="page-desempenho" style="display: none;">
                     <div class="flex items-center gap-3 mb-6">
                         <img id="logo-empresa-des" src="" style="width: 80px;">
@@ -241,17 +234,14 @@
                             <div class="value" id="mvp-sdr-val">R$ 0</div>
                         </div>
                     </div>
-
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
                         <div class="ranking-card"><h4>🏆 Vendedores (MRR)</h4><div id="rank-vend-mrr"></div></div>
                         <div class="ranking-card"><h4>🏆 SDRS (MRR)</h4><div id="rank-sdr-mrr"></div></div>
                     </div>
-
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
                         <div class="ranking-card" style="max-height: 350px;"><h4>🚀 Ciclo Médio de Venda (Dias)</h4><div id="rank-ciclo-venda"></div></div>
                         <div class="ranking-card" style="max-height: 350px;"><h4>🔥 Funil de SDRs (Novos Negócios)</h4><div id="rank-funil-sdr" class="flex flex-col items-center"></div></div>
                     </div>
-
                     <!-- SEÇÃO DE PARCERIAS SDR-VENDEDOR (V13.7) -->
                     <div class="grid grid-cols-1 gap-4 mb-4">
                         <!-- 1. MATRIZ DE COLABORAÇÃO (HEATMAP) -->
@@ -260,20 +250,17 @@
                             <p class="text-[7px] opacity-50 mb-2">Clique nas células para ver detalhes | Intensidade = Volume de Contratos</p>
                             <div id="heatmap-container" style="overflow-x: auto;"></div>
                         </div>
-
                         <!-- 2. BARRAS EMPILHADAS (STACKED) -->
                         <div class="partnership-viz">
                             <h4>📊 Barras Empilhadas (Origem de Agendas por Vendedor)</h4>
                             <div class="chart-container" style="height: 300px;"><canvas id="chart-stacked-partnerships"></canvas></div>
                         </div>
-
                         <!-- 3. SANKEY CHART (FLUXO) -->
                         <div class="partnership-viz">
                             <h4>🌊 Diagrama de Fluxo (Sankey - SDR → Vendedor)</h4>
                             <div id="sankey-container" style="width: 100%; height: 400px; background: rgba(0,0,0,0.2); border-radius: 6px;"></div>
                         </div>
                     </div>
-
                     <div class="ranking-card" style="height: 450px;">
                         <h4 class="flex justify-between items-center">
                             🌍 Inteligência de Campo (Geolocalização)
@@ -287,7 +274,6 @@
                         </div>
                     </div>
                 </div>
-
                 <div id="page-inadimplencia" style="display: none;">
                     <h1 class="text-md font-bold text-blue-300 mb-4">📋 Inadimplência Comercial</h1>
                     <div class="kpi-row">
@@ -305,7 +291,6 @@
             </div>
         </div>
     </div>
-
     <script>
         const API_KEY = '29E5423CAF1E5B85B4098B699811A9D801F612E5B2781EB8033CC0BAB439EC95E4FFAA8E605F741387DE21374E42EA2DDFF191ED954DC87D10757FA4D8D8AD4F';
         const INADIMPLENCIA_SHEET_ID = { 'VMC Tech': '1Nqmn2c9p0QFu8LFIqFQ0EBxA8klHFUsVjAW15la-Fjg', 'Victec': '1Y28LP_ZPqWKMjXqf88ahzaDET_DneOYhxuNOmyinxus' };
@@ -326,24 +311,19 @@
             DATA_CANCELAMENTO: 111417137 
         };
         const MESES_PT = {1:'Jan',2:'Fev',3:'Mar',4:'Abr',5:'Mai',6:'Jun',7:'Jul',8:'Ago',9:'Set',10:'Out',11:'Nov',12:'Dez'};
-
         let appState = { empresa: 'VMC Tech', page: 'performance', raw_data: [], contacts: [], activeState: null, charts: {} };
-
         function toggleSidebar() { document.getElementById('sidebar').classList.toggle('collapsed'); }
         function showLoading(t) { document.getElementById('loading-overlay').style.display = 'flex'; document.getElementById('loading-text').textContent = t; }
         function hideLoading() { document.getElementById('loading-overlay').style.display = 'none'; }
-
         async function fetchPloomes(endpoint) {
             const url = `https://api2.ploomes.com/${endpoint}`;
             try { return (await axios.get(url, { headers: { 'User-Key': API_KEY, 'Content-Type': 'application/json' }, timeout: 60000 })).data.value; }
             catch (e) { console.error("Ploomes Error:", e); return []; }
         }
-
         function sanitizeVal(v) {
             if (v === null || v === undefined || v === '') return 0;
             return parseFloat(v) || 0;
         }
-
         async function handleLogin() {
             const senha = document.getElementById('password').value.trim();
             if (senha !== 'Acelerar@2026') { alert('Senha incorreta!'); return; }
@@ -351,24 +331,19 @@
             document.getElementById('login-section').classList.add('hidden');
             document.getElementById('hub-section').classList.remove('hidden');
         }
-
         function handleLogout() { location.reload(); }
         function openFinanceiro() { alert('Módulo Financeiro em Construção'); }
-
         async function openModule(m) {
             document.getElementById('hub-section').classList.add('hidden');
             document.getElementById('dashboard-section').style.display = 'block';
             await loadData(false);
             switchPage('performance');
         }
-
         function returnToHub() {
             document.getElementById('dashboard-section').style.display = 'none';
             document.getElementById('hub-section').classList.remove('hidden');
         }
-
         async function forceSync() { await loadData(true); }
-
         async function loadData(forceDealsOnly = false) {
             const cacheKey = `acelerar_v13_7_${appState.empresa}`;
             const cacheTimeKey = `${cacheKey}_time`;
@@ -384,7 +359,6 @@
                 if (diffHours > 24) needsFullSync = true;
                 if (lastSync.getDate() !== now.getDate() && now.getHours() >= 8) needsFullSync = true;
             }
-
             if (!needsFullSync && !forceDealsOnly) { 
                 const data = JSON.parse(cached);
                 appState.raw_data = data.deals;
@@ -395,7 +369,6 @@
                 await refreshData(needsFullSync); 
             }
         }
-
         async function refreshData(fullSync) {
             showLoading(fullSync ? `Sincronizando Base Completa...` : `Sincronizando Negócios...`);
             const config = PIPELINES[appState.empresa];
@@ -404,11 +377,9 @@
                 fetchPloomes(`Deals?$filter=PipelineId eq ${config.vendas} and StatusId eq 2&$expand=OtherProperties,Owner,Contact&$top=2000`),
                 fetchPloomes(`Deals?$filter=PipelineId eq ${config.churn}&$expand=OtherProperties,Owner,Stage,Contact&$top=2000`)
             ];
-
             if (fullSync) {
                 promises.push(fetchPloomes(`Contacts?$select=Id,Name,CNPJ,CPF,City,State&$expand=City,State&$top=2000`));
             }
-
             const results = await Promise.all(promises);
             const vendas = results[0];
             const churn = results[1];
@@ -423,26 +394,21 @@
                 const cached = JSON.parse(localStorage.getItem(`acelerar_v13_7_${appState.empresa}`));
                 appState.contacts = cached ? cached.contacts : [];
             }
-
             const mapDeal = (d, type) => {
                 const props = d.OtherProperties || [];
                 const getProp = (id) => props.find(p => p.FieldId === id);
                 const propProduto = getProp(FIELDS.PRODUTO);
                 let produto = propProduto ? (propProduto.ObjectValueName || propProduto.ValueName || propProduto.Value || "") : "";
                 if (!produto || produto === "") produto = "Sittax Simples";
-
                 let mrr = sanitizeVal(getProp(FIELDS.MRR)?.DecimalValue);
                 let adesao = sanitizeVal(getProp(FIELDS.ADESAO_S)?.DecimalValue) || sanitizeVal(getProp(FIELDS.ADESAO_R)?.DecimalValue);
                 let upsell = sanitizeVal(getProp(FIELDS.UPSELL)?.DecimalValue);
-
                 const vendedor = getProp(FIELDS.VENDEDOR_REAL)?.UserValueName || 'N/A';
                 const sdr = getProp(FIELDS.SDR_REAL)?.UserValueName || 'N/A';
-
                 const dataCriacao = new Date(d.CreateDate);
                 let dateStr = type === 'Venda' ? (getProp(FIELDS.DATA_ATIVACAO)?.DateTimeValue || d.FinishDate || d.CreateDate || '') : (getProp(FIELDS.DATA_CANCELAMENTO)?.DateTimeValue || d.FinishDate || d.CreateDate || '');
                 const dataAtivacao = new Date(dateStr);
                 const ciclo = Math.max(0, Math.round((dataAtivacao - dataCriacao) / (1000 * 60 * 60 * 24)));
-
                 return {
                     id: d.Id, cliente: d.Title, cnpj: d.Contact?.CNPJ || d.Contact?.CPF || 'N/A',
                     contactId: d.ContactId, data: dataAtivacao, dataCriacao: dataCriacao, ciclo: ciclo,
@@ -450,7 +416,6 @@
                     status: type, estagio: d.Stage?.Name || '', ano: dataAtivacao.getFullYear(), mes: MESES_PT[dataAtivacao.getMonth()+1]
                 };
             };
-
             appState.raw_data = [...vendas.map(d => mapDeal(d, 'Venda')), ...churn.map(d => mapDeal(d, 'Churn'))];
             
             localStorage.setItem(`acelerar_v13_7_${appState.empresa}`, JSON.stringify({ deals: appState.raw_data, contacts: appState.contacts }));
@@ -460,7 +425,6 @@
             renderDashboard();
             hideLoading();
         }
-
         function renderDashboard() {
             const anos = [...new Set(appState.raw_data.map(d => d.ano))].sort((a,b) => b-a);
             document.getElementById('ano-select').innerHTML = anos.map(a => `<option value="${a}">${a}</option>`).join('');
@@ -474,7 +438,6 @@
             document.getElementById('logo-empresa-des').src = PIPELINES[appState.empresa].logo;
             updateMeses();
         }
-
         function updateMeses() {
             const ano = parseInt(document.getElementById('ano-select').value);
             const mesesReais = [...new Set(appState.raw_data.filter(d => d.ano === ano).map(d => d.mes))];
@@ -485,21 +448,18 @@
             `).join('');
             applyFilters();
         }
-
         function applyFilters() {
             const ano = parseInt(document.getElementById('ano-select').value);
             const prod = document.getElementById('produto-select').value;
             const vend = document.getElementById('vendedor-select').value;
             const sdr = document.getElementById('sdr-select').value;
             const mesesSelecionados = Array.from(document.querySelectorAll('#meses-container input:checked')).map(i => i.value);
-
             const f = appState.raw_data.filter(d => 
                 d.ano === ano && mesesSelecionados.includes(d.mes) &&
                 (prod === 'Todos' || d.produto === prod) &&
                 (vend === 'Todos' || d.vendedor === vend) &&
                 (sdr === 'Todos' || d.sdr === sdr)
             );
-
             const vendasMap = {};
             appState.raw_data.filter(d => d.status === 'Venda').forEach(v => { if (v.contactId) vendasMap[v.contactId] = { mrr: v.mrr, vend: v.vendedor, sdr: v.sdr }; });
             f.forEach(d => {
@@ -508,7 +468,6 @@
                     if (original) { d.mrr = original.mrr; d.vendedor_orig = original.vend; d.sdr_orig = original.sdr; }
                 }
             });
-
             const mrrConq = f.filter(d => d.status === 'Venda').reduce((s, d) => s + d.mrr, 0);
             const f_churn = f.filter(d => d.status === 'Churn' && d.estagio === 'Cancelado' && d.mrr > 0);
             const churn = f_churn.reduce((s, d) => s + d.mrr, 0);
@@ -517,7 +476,6 @@
             const fechados = f.filter(d => d.status === 'Venda').length;
             const cancelados = f_churn.length;
             const carteiraTotal = appState.raw_data.filter(d => d.status === 'Venda').length - appState.raw_data.filter(d => d.status === 'Churn' && d.estagio === 'Cancelado').length;
-
             document.getElementById('kpi-mrr-conq').textContent = `R$ ${Math.round(mrrConq).toLocaleString('pt-BR')}`;
             document.getElementById('kpi-mrr-perd').textContent = `R$ ${Math.round(churn).toLocaleString('pt-BR')}`;
             document.getElementById('kpi-mrr-net').textContent = `R$ ${Math.round(mrrConq - churn).toLocaleString('pt-BR')}`;
@@ -528,21 +486,17 @@
             document.getElementById('kpi-fechados-cancelados').textContent = cancelados;
             document.getElementById('kpi-carteira').textContent = carteiraTotal;
             document.getElementById('badge-churn-rate').textContent = `${((churn / (mrrConq || 1)) * 100).toFixed(1)}%`;
-
             document.getElementById('tbody-detalhamento').innerHTML = f.filter(d => d.status === 'Venda').sort((a,b) => b.data - a.data).map(d => `
                 <tr><td>${d.data.toLocaleDateString('pt-BR')}</td><td>${d.cnpj}</td><td>${d.cliente}</td><td>${d.vendedor}</td><td>${d.sdr}</td><td>${d.produto}</td><td>R$ ${Math.round(d.mrr).toLocaleString('pt-BR')}</td><td>R$ ${Math.round(d.adesao).toLocaleString('pt-BR')}</td><td>R$ ${Math.round(d.upsell).toLocaleString('pt-BR')}</td></tr>
             `).join('');
-
             document.getElementById('tbody-cancelados').innerHTML = f_churn.sort((a,b) => b.data - a.data).map(d => `
                 <tr><td>${d.data.toLocaleDateString('pt-BR')}</td><td>${d.cnpj}</td><td>${d.cliente}</td><td>${d.vendedor_orig || 'N/A'}</td><td>${d.sdr_orig || 'N/A'}</td><td>${d.produto}</td><td>R$ ${Math.round(d.mrr).toLocaleString('pt-BR')}</td></tr>
             `).join('');
-
             updateCharts(f, mesesSelecionados);
             updateRankings(f);
             renderPartnershipVisualizations(f);
             renderGeoList();
         }
-
         function updateCharts(f, mesesEixo) {
             const meses_labels = Object.values(MESES_PT).filter(m => mesesEixo.includes(m));
             const config = PIPELINES[appState.empresa];
@@ -565,7 +519,6 @@
             renderChart('chart-evolucao-upsell', 'bar', { labels: meses_labels, datasets: [{ label: 'Upsell Mensal', data: evolData('upsell', null), backgroundColor: '#89CFF0' }] }, chartOptions);
             renderChart('chart-evolucao-churn', 'bar', { labels: meses_labels, datasets: [{ label: 'Churn Mensal', data: evolData('mrr', 'Churn'), backgroundColor: '#E74C3C' }] }, chartOptions);
         }
-
         function updateRankings(f) {
             const getRank = (key) => {
                 const map = {};
@@ -601,11 +554,9 @@
                 const pct = (r.vol / maxVol) * 100;
                 return `<div class="funnel-row"><div class="funnel-bar" style="width: ${Math.max(30, pct)}%;"><span class="funnel-label">${r.name} (${r.vol})</span></div></div>`;
             }).join('') || '<p class="text-[7px] opacity-30">Sem dados</p>';
-
             if (topVend) { document.getElementById('mvp-vendedor-name').textContent = topVend.name; document.getElementById('mvp-vendedor-val').textContent = `R$ ${Math.round(topVend.val).toLocaleString('pt-BR')}`; }
             if (topSdr) { document.getElementById('mvp-sdr-name').textContent = topSdr.name; document.getElementById('mvp-sdr-val').textContent = `R$ ${Math.round(topSdr.val).toLocaleString('pt-BR')}`; }
         }
-
         function renderPartnershipVisualizations(f) {
             const vendas = f.filter(d => d.status === 'Venda');
             
@@ -639,7 +590,6 @@
             // 3. SANKEY
             renderSankey(matriz, sdrsArr, vendedoresArr);
         }
-
         function renderHeatmap(matriz, sdrs, vendedores) {
             let html = '<table class="heatmap-table"><tr><th>SDR / Vendedor</th>';
             vendedores.forEach(v => html += `<th>${v.substring(0, 8)}</th>`);
@@ -660,7 +610,6 @@
             html += '</table>';
             document.getElementById('heatmap-container').innerHTML = html;
         }
-
         function renderStackedChart(matriz, sdrs, vendedores) {
             const datasets = sdrs.map((sdr, idx) => {
                 const colors = ['#89CFF0', '#2980B9', '#1ABC9C', '#F39C12', '#E74C3C', '#9B59B6', '#34495E', '#16A085'];
@@ -695,7 +644,6 @@
                 });
             }
         }
-
         function renderSankey(matriz, sdrs, vendedores) {
             const nodes = [...sdrs.map(s => ({ name: `SDR: ${s}`, color: '#2980B9' })), ...vendedores.map(v => ({ name: `Vend: ${v}`, color: '#89CFF0' }))];
             const links = [];
@@ -712,7 +660,6 @@
                     }
                 });
             });
-            
             const data = [{
                 type: 'sankey',
                 node: {
@@ -740,22 +687,18 @@
             
             Plotly.newPlot('sankey-container', data, layout, { responsive: true, displayModeBar: false });
         }
-
         function renderGeoList() {
             const stateList = document.getElementById('geo-state-list');
             const cityList = document.getElementById('geo-city-list');
             
             const fechadosIds = new Set(appState.raw_data.filter(d => d.status === 'Venda').map(d => d.contactId));
             const geoMap = {};
-
             appState.contacts.forEach(c => {
                 const uf = c.estado || 'NI';
                 if (uf === 'NI') return;
-
                 if (appState.empresa === 'Victec' && uf !== 'RJ') {
                     if (!fechadosIds.has(c.id)) return;
                 }
-
                 if (!geoMap[uf]) geoMap[uf] = { total: 0, fechados: 0, cidades: {} };
                 geoMap[uf].total++;
                 if (fechadosIds.has(c.id)) geoMap[uf].fechados++;
@@ -765,7 +708,6 @@
                 geoMap[uf].cidades[cid].total++;
                 if (fechadosIds.has(c.id)) geoMap[uf].cidades[cid].fechados++;
             });
-
             const sortedStates = Object.entries(geoMap).sort((a,b) => b[1].total - a[1].total);
             stateList.innerHTML = sortedStates.map(([uf, data]) => `
                 <div class="geo-item ${appState.activeState === uf ? 'active' : ''}" onclick="selectGeoState('${uf}')">
@@ -773,7 +715,6 @@
                     <div class="text-[7px] opacity-60 text-val">${data.fechados} Fechados (${((data.fechados/data.total)*100).toFixed(1)}%)</div>
                 </div>
             `).join('') || '<p class="text-center opacity-30 mt-10 text-[9px]">Sem dados geográficos</p>';
-
             if (appState.activeState && geoMap[appState.activeState]) {
                 const data = geoMap[appState.activeState];
                 const sortedCidades = Object.entries(data.cidades).sort((a,b) => b[1].total - a[1].total);
@@ -788,9 +729,7 @@
                 cityList.innerHTML = '<div class="flex items-center justify-center h-full opacity-30 text-[9px]">Selecione um estado</div>';
             }
         }
-
         function selectGeoState(uf) { appState.activeState = uf; renderGeoList(); }
-
         function exportTable(id, name) {
             let csv = [];
             const rows = document.querySelectorAll(`#${id} tr`);
@@ -805,7 +744,6 @@
             a.setAttribute("href", url); a.setAttribute("download", `acelerar_${name}_${appState.empresa}.csv`);
             a.click();
         }
-
         function switchPage(p) {
             appState.page = p;
             ['performance', 'desempenho', 'inadimplencia'].forEach(page => {
@@ -817,9 +755,7 @@
             if (p === 'inadimplencia') loadInadimplencia();
             else applyFilters();
         }
-
         function changeEmpresa() { appState.empresa = document.getElementById('empresa-select').value; appState.activeState = null; loadData(false); }
-
         async function loadInadimplencia() {
             showLoading(`Lendo Inadimplência...`);
             const sheetId = INADIMPLENCIA_SHEET_ID[appState.empresa];
