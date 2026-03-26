@@ -332,14 +332,14 @@
             document.getElementById('hub-section').classList.add('hidden');
             document.getElementById('dashboard-section').style.display = 'block';
             await loadData(false);
-            fetchVolumeGeral(); // Inicia busca em paralelo
+            fetchVolumeGeral();
             switchPage('performance');
         }
         function returnToHub() {
             document.getElementById('dashboard-section').style.display = 'none';
             document.getElementById('hub-section').classList.remove('hidden');
         }
-        async function forceSync() { await loadData(true); await fetchVolumeGeral(); }
+        async function forceSync() { await loadData(true); fetchVolumeGeral(); }
         async function loadData(forceDealsOnly = false) {
             const cacheKey = `acelerar_v13_7_${appState.empresa}`;
             const cacheTimeKey = `${cacheKey}_time`;
@@ -423,30 +423,20 @@
         }
         async function fetchVolumeGeral() {
             const config = PIPELINES[appState.empresa];
-            console.log(`[DIAGNOSTICO] Buscando Volume para ${appState.empresa}...`);
-            const promises = [
-                fetchPloomes(`Deals?$filter=PipelineId eq ${config.vendas} and (StatusId eq 1 or StatusId eq 3)&$expand=OtherProperties,Owner,Contact&$top=2000`)
-            ];
-            const results = await Promise.all(promises);
-            const volumeDeals = results[0] || [];
-            console.log(`[DIAGNOSTICO] API retornou ${volumeDeals.length} negócios (Status 1 ou 3).`);
-            
-            const mapDealVolume = (d) => {
-                const props = d.OtherProperties || [];
-                const getProp = (id) => props.find(p => p.FieldId === id);
-                const vendedor = getProp(FIELDS.VENDEDOR_REAL)?.UserValueName || d.Owner?.Name || 'N/A';
-                const sdr = getProp(FIELDS.SDR_REAL)?.UserValueName || 'SDR Não Identificado';
-                const dataCriacao = new Date(d.CreateDate);
-                return {
-                    id: d.Id, cliente: d.Title, vendedor: vendedor, sdr: sdr,
-                    data: dataCriacao, ano: dataCriacao.getFullYear(), mes: MESES_PT[dataCriacao.getMonth()+1],
-                    statusId: d.StatusId
+            try {
+                const results = await fetchPloomes(`Deals?$filter=PipelineId eq ${config.vendas} and (StatusId eq 1 or StatusId eq 3)&$expand=OtherProperties,Owner,Contact&$top=2000`);
+                const volumeDeals = results || [];
+                const mapDealVolume = (d) => {
+                    const props = d.OtherProperties || [];
+                    const getProp = (id) => props.find(p => p.FieldId === id);
+                    const vendedor = getProp(FIELDS.VENDEDOR_REAL)?.UserValueName || d.Owner?.Name || 'N/A';
+                    const sdr = getProp(FIELDS.SDR_REAL)?.UserValueName || 'SDR Não Identificado';
+                    const dataCriacao = new Date(d.CreateDate);
+                    return { vendedor, sdr, ano: dataCriacao.getFullYear(), mes: MESES_PT[dataCriacao.getMonth()+1] };
                 };
-            };
-            appState.volumeData = volumeDeals.map(d => mapDealVolume(d));
-            console.log(`[DIAGNOSTICO] Volume mapeado: ${appState.volumeData.length} registros.`);
-            // Forçar renderização do heatmap de volume após a carga
-            if (appState.page === 'desempenho') applyFilters();
+                appState.volumeData = volumeDeals.map(d => mapDealVolume(d));
+                if (appState.page === 'desempenho') applyFilters();
+            } catch (e) { console.error("Volume Error:", e); }
         }
         function renderDashboard() {
             const anos = [...new Set(appState.raw_data.map(d => d.ano))].sort((a,b) => b-a);
@@ -585,81 +575,48 @@
             const matriz = {};
             const vendedores = new Set();
             const sdrs = new Set();
-            
             vendas.forEach(d => {
                 const vend = d.vendedor || 'N/A';
                 const sdr = d.sdr || 'N/A';
                 if (vend === 'N/A' || sdr === 'N/A') return;
-                vendedores.add(vend);
-                sdrs.add(sdr);
+                vendedores.add(vend); sdrs.add(sdr);
                 const key = `${sdr}|${vend}`;
-                if (!matriz[key]) matriz[key] = 0;
-                matriz[key]++;
+                matriz[key] = (matriz[key] || 0) + 1;
             });
-            const vendedoresArr = Array.from(vendedores).sort();
-            const sdrsArr = Array.from(sdrs).sort();
-            renderHeatmap(matriz, sdrsArr, vendedoresArr);
+            renderHeatmapGeneric(matriz, Array.from(sdrs).sort(), Array.from(vendedores).sort(), 'heatmap-container');
             
-            renderHeatmapVolume(f);
-        }
-        function renderHeatmapVolume(f) {
             const ano = parseInt(document.getElementById('ano-select').value);
-            const mesesSelecionados = Array.from(document.querySelectorAll('#meses-container input:checked')).map(i => i.value);
-            
-            const volumeFiltered = appState.volumeData.filter(d => 
-                d.ano === ano && mesesSelecionados.includes(d.mes)
-            );
-            
-            const matriz = {};
-            const vendedores = new Set();
-            const sdrs = new Set();
-            
+            const meses = Array.from(document.querySelectorAll('#meses-container input:checked')).map(i => i.value);
+            const volumeFiltered = appState.volumeData.filter(d => d.ano === ano && meses.includes(d.mes));
+            const matrizVol = {}; const vendsVol = new Set(); const sdrsVol = new Set();
             volumeFiltered.forEach(d => {
-                const vend = d.vendedor || 'Vendedor N/A';
-                const sdr = d.sdr || 'SDR N/A';
-                vendedores.add(vend);
-                sdrs.add(sdr);
-                const key = `${sdr}|${vend}`;
-                if (!matriz[key]) matriz[key] = 0;
-                matriz[key]++;
+                vendsVol.add(d.vendedor); sdrsVol.add(d.sdr);
+                const key = `${d.sdr}|${d.vendedor}`;
+                matrizVol[key] = (matrizVol[key] || 0) + 1;
             });
-            const vendedoresArr = Array.from(vendedores).sort();
-            const sdrsArr = Array.from(sdrs).sort();
-            renderHeatmapGeneric(matriz, sdrsArr, vendedoresArr, 'heatmap-volume-container');
+            renderHeatmapGeneric(matrizVol, Array.from(sdrsVol).sort(), Array.from(vendsVol).sort(), 'heatmap-volume-container');
         }
         function renderHeatmapGeneric(matriz, sdrs, vendedores, containerId) {
             let html = '<table class="heatmap-table"><tr><th>SDR / Vendedor</th>';
             vendedores.forEach(v => html += `<th>${v}</th>`);
             html += '<th style="background: rgba(137, 207, 240, 0.3);">TOTAL</th></tr>';
-            
-            const colTotals = {};
-            vendedores.forEach(v => colTotals[v] = 0);
+            const colTotals = {}; vendedores.forEach(v => colTotals[v] = 0);
             let grandTotal = 0;
-
             const maxVal = Math.max(...Object.values(matriz), 1);
-            
             sdrs.forEach(sdr => {
-                let rowTotal = 0;
-                html += `<tr><th>${sdr}</th>`;
+                let rowTotal = 0; html += `<tr><th>${sdr}</th>`;
                 vendedores.forEach(vend => {
                     const val = matriz[`${sdr}|${vend}`] || 0;
-                    rowTotal += val;
-                    colTotals[vend] += val;
-                    
+                    rowTotal += val; colTotals[vend] += val;
                     const intensity = val === 0 ? 0 : Math.ceil((val / maxVal) * 5);
-                    const classe = `heatmap-${intensity}`;
-                    html += `<td class="heatmap-cell ${classe}" title="${sdr} → ${vend}: ${val} negócios">${val}</td>`;
+                    html += `<td class="heatmap-cell heatmap-${intensity}">${val}</td>`;
                 });
                 grandTotal += rowTotal;
                 html += `<td style="background: rgba(137, 207, 240, 0.2); font-weight: 800;">${rowTotal}</td></tr>`;
             });
-
             html += `<tr><th style="background: rgba(137, 207, 240, 0.3);">TOTAL</th>`;
-            vendedores.forEach(v => {
-                html += `<td style="background: rgba(137, 207, 240, 0.2); font-weight: 800;">${colTotals[v]}</td>`;
-            });
+            vendedores.forEach(v => html += `<td style="background: rgba(137, 207, 240, 0.2); font-weight: 800;">${colTotals[v]}</td>`);
             html += `<td style="background: #89CFF0; color: #0B2A4E; font-weight: 900;">${grandTotal}</td></tr></table>`;
-            
             const container = document.getElementById(containerId);
             if (container) container.innerHTML = html;
         }
