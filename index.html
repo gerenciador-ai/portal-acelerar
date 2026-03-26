@@ -422,10 +422,13 @@
             hideLoading();
         }
         async function fetchVolumeGeral() {
+            // Lógica dinâmica: busca o PipelineId da empresa ativa no appState
             const config = PIPELINES[appState.empresa];
-            console.log(`[AUDITORIA] Iniciando busca de volume para Pipeline: ${config.vendas}`);
+            if (!config) return;
+            const pipelineId = config.vendas;
+            console.log(`[AUDITORIA] Iniciando busca de volume para Pipeline (${appState.empresa}): ${pipelineId}`);
             try {
-                const results = await fetchPloomes(`Deals?$filter=PipelineId eq ${config.vendas} and (StatusId eq 1 or StatusId eq 3)&$expand=OtherProperties,Owner,Contact&$top=2000`);
+                const results = await fetchPloomes(`Deals?$filter=PipelineId eq ${pipelineId} and (StatusId eq 1 or StatusId eq 3)&$expand=OtherProperties,Owner,Contact&$top=2000`);
                 const volumeDeals = results || [];
                 console.log(`[AUDITORIA] API retornou ${volumeDeals.length} negócios (Status 1 ou 3)`);
                 
