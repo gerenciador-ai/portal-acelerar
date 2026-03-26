@@ -111,69 +111,75 @@
         <div class="hub-box text-center">
             <img src="https://raw.githubusercontent.com/gerenciador-ai/Relat-rios-Comercial/main/logo_acelerar_sidebar.png" class="logo mx-auto" alt="Acelerar">
             <h1 class="text-lg font-bold text-blue-300 mb-10">Hub Estratégico Holding</h1>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <button class="hub-btn" onclick="showDashboard('Comercial')">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <button class="hub-btn" onclick="openModule('comercial')">
                     <span class="icon">📊</span>
-                    <span>Dashboard Comercial</span>
-                    <span class="text-[10px] opacity-60">Vendas, Metas e Performance</span>
+                    <span>Módulo Comercial</span>
                 </button>
-                <button class="hub-btn opacity-50 cursor-not-allowed">
+                <button class="hub-btn" onclick="openFinanceiro()">
                     <span class="icon">💰</span>
-                    <span>Dashboard Financeiro</span>
-                    <span class="text-[10px] opacity-60">DRE, DFC e Consolidação (Em breve)</span>
+                    <span>Módulo Financeiro</span>
                 </button>
             </div>
+            <button class="mt-16 text-red-400 font-bold underline opacity-50 hover:opacity-100 text-xs" onclick="handleLogout()">Sair do Portal</button>
         </div>
     </div>
-
     <div id="dashboard-section" class="dashboard-container">
-        <header class="dashboard-header">
+        <div class="dashboard-header">
             <div class="flex items-center">
                 <button class="toggle-sidebar-btn" onclick="toggleSidebar()">☰</button>
                 <img src="https://raw.githubusercontent.com/gerenciador-ai/Relat-rios-Comercial/main/logo_acelerar_sidebar.png" class="logo" alt="Acelerar">
             </div>
             <div class="nav-tabs">
-                <button id="tab-resumo" class="active" onclick="switchTab('resumo')">RESUMO</button>
-                <button id="tab-desempenho" onclick="switchTab('desempenho')">DESEMPENHO POR TIME</button>
-                <button id="tab-geografico" onclick="switchTab('geografico')">GEOGRÁFICO</button>
-                <button id="tab-detalhamento" onclick="switchTab('detalhamento')">DETALHAMENTO</button>
-                <button class="ml-4 bg-red-900/30 border-red-500 text-red-400" onclick="logout()">SAIR</button>
+                <button onclick="switchPage('performance')" id="btn-performance">📊 Resultados (Performance)</button>
+                <button onclick="switchPage('desempenho')" id="btn-desempenho">🏆 Desempenho do Time</button>
+                <button onclick="switchPage('inadimplencia')" id="btn-inadimplencia">📋 Inadimplência</button>
+                <button onclick="returnToHub()" class="opacity-70">🏠 Hub</button>
+                <button onclick="handleLogout()" class="!border-red-500 !text-red-500 hover:!bg-red-500 hover:!text-white">🚪 Sair</button>
             </div>
-        </header>
-
+        </div>
         <div class="dashboard-wrapper">
-            <aside class="sidebar" id="sidebar">
-                <h3>Empresa</h3>
-                <select id="empresa-select" onchange="updateDashboard()">
-                    <option value="Acelerar">Acelerar.tech</option>
+            <div class="sidebar" id="sidebar">
+                <h3 id="user-display" class="text-[8px] opacity-50 border-b border-white/10 pb-1 mb-4">...</h3>
+                
+                <div class="flex justify-between items-center mb-2">
+                    <h3>🏢 Empresa</h3>
+                    <button onclick="forceSync()" class="text-[8px] bg-blue-500/20 text-blue-300 px-2 py-1 rounded hover:bg-blue-500 hover:text-white transition">🔄 Sinc</button>
+                </div>
+                <select id="empresa-select" onchange="loadData(false)">
+                    <option value="VMC Tech">VMC Tech</option>
                     <option value="Victec">Victec</option>
-                    <option value="VMCTech">VMCTech</option>
                 </select>
 
-                <h3>Ano</h3>
-                <select id="ano-select" onchange="updateDashboard()">
+                <h3>📅 Ano Base</h3>
+                <select id="ano-select" onchange="applyFilters()">
                     <option value="2026">2026</option>
                     <option value="2025">2025</option>
+                    <option value="2024">2024</option>
                 </select>
 
-                <h3>Meses</h3>
+                <h3>🗓️ Meses</h3>
                 <div id="meses-container" class="grid grid-cols-2 gap-1">
                     <!-- Gerado via JS -->
                 </div>
+                
+                <div class="mt-auto pt-10">
+                    <p id="cache-info" class="text-[7px] opacity-30 text-center italic">Sincronizando...</p>
+                </div>
             </aside>
 
-            <main class="main-content">
-                <div id="content-resumo">
+            <div class="main-content">
+                <div id="page-performance">
                     <div class="kpi-row">
-                        <div class="kpi-card"><div class="label">MRR Conquistado</div><div id="kpi-mrr-conq" class="value">R$ 0</div></div>
-                        <div class="kpi-card"><div class="label">Churn (MRR)</div><div id="kpi-mrr-perd" class="value">R$ 0</div><div id="badge-churn-rate" class="churn-badge">0%</div></div>
-                        <div class="kpi-card"><div class="label">Net MRR</div><div id="kpi-mrr-net" class="value">R$ 0</div></div>
-                        <div class="kpi-card"><div class="label">Upsell</div><div id="kpi-upsell" class="value">R$ 0</div></div>
-                        <div class="kpi-card"><div class="label">Ticket Médio</div><div id="kpi-ticket" class="value">R$ 0</div></div>
-                        <div class="kpi-card"><div class="label">Adesão/Impl.</div><div id="kpi-adesao" class="value">R$ 0</div></div>
-                        <div class="kpi-card"><div class="label">Fechados</div><div id="kpi-fechados" class="value">0</div></div>
-                        <div class="kpi-card"><div class="label">Cancelados</div><div id="kpi-fechados-cancelados" class="value">0</div></div>
-                        <div class="kpi-card"><div class="label">Carteira Ativa</div><div id="kpi-carteira" class="value">0</div></div>
+                        <div class="kpi-card"><div class="label">MRR Conquistado</div><div class="value" id="kpi-mrr-conq">R$ 0</div></div>
+                        <div class="kpi-card"><div class="label">Churn (MRR)</div><div class="value" id="kpi-mrr-perd" style="color: #E74C3C;">R$ 0</div><div id="badge-churn-rate" class="churn-badge">0%</div></div>
+                        <div class="kpi-card"><div class="label">Net MRR</div><div class="value" id="kpi-mrr-net">R$ 0</div></div>
+                        <div class="kpi-card"><div class="label">Upsell</div><div class="value" id="kpi-upsell">R$ 0</div></div>
+                        <div class="kpi-card"><div class="label">Ticket Médio</div><div class="value" id="kpi-ticket">R$ 0</div></div>
+                        <div class="kpi-card"><div class="label">Adesão/Impl.</div><div class="value" id="kpi-adesao">R$ 0</div></div>
+                        <div class="kpi-card"><div class="label">Fechados</div><div class="value" id="kpi-fechados">0</div></div>
+                        <div class="kpi-card"><div class="label">Cancelados</div><div class="value" id="kpi-fechados-cancelados">0</div></div>
+                        <div class="kpi-card"><div class="label">Carteira Ativa</div><div class="value" id="kpi-carteira">0</div></div>
                     </div>
 
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -184,7 +190,7 @@
                     </div>
                 </div>
 
-                <div id="content-desempenho" style="display:none;">
+                <div id="page-desempenho" style="display: none;">
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
                         <div class="mvp-card">
                             <div class="title">Top Vendedor (MRR)</div>
@@ -216,209 +222,285 @@
                             <h4>Funil de Geração (SDR)</h4>
                             <div id="rank-funil-sdr"></div>
                         </div>
-                    </div>
-
-                    <div class="partnership-viz mt-4">
-                        <h4>Negócios Gerados (SDR x Vendedor) - Status 2 e 3</h4>
-                        <div id="heatmap-container" class="overflow-x-auto"></div>
-                    </div>
-
-                    <div class="partnership-viz mt-4">
-                        <h4>Negócios Fechados (SDR x Vendedor) - Status 2</h4>
-                        <div id="heatmap-volume-container" class="overflow-x-auto"></div>
-                    </div>
-                </div>
-
-                <div id="content-geografico" style="display:none;">
-                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 h-[500px]">
-                        <div class="lg:col-span-2 bg-black/20 rounded-lg p-4">
-                            <div id="geo-map" class="w-full h-full"></div>
+                        
+                        <!-- 1. NEGÓCIOS GERADOS -->
+                        <div class="partnership-viz">
+                            <h4>🚀 Auditoria de Negócios Gerados (SDR x Vendedor)</h4>
+                            <p class="text-[7px] opacity-50 mb-2">Filtro: Status 2 (Ganha) e 3 (Perdido) | Data: Entrada Agenda</p>
+                            <div id="heatmap-volume-container" style="overflow-x: auto;"></div>
                         </div>
+
+                        <!-- 2. NEGÓCIOS CONVERTIDOS -->
+                        <div class="partnership-viz">
+                            <h4>🏆 Auditoria de Negócios Convertidos (Ganhos)</h4>
+                            <p class="text-[7px] opacity-50 mb-2">Intensidade = Volume de Contratos</p>
+                            <div id="heatmap-container" style="overflow-x: auto;"></div>
+                        </div>
+                    </div>
+                    <div class="ranking-card" style="height: 450px;">
+                        <h4 class="flex justify-between items-center">
+                            🌍 Inteligência de Campo (Geolocalização)
+                            <span class="text-[7px] opacity-50 uppercase">Clique no Estado para ver os Municípios</span>
+                        </h4>
                         <div class="geo-list-container">
                             <div class="geo-list" id="geo-state-list"></div>
-                            <div class="geo-list" id="geo-city-list"></div>
+                            <div class="geo-list" id="geo-city-list">
+                                <div class="flex items-center justify-center h-full opacity-30 text-[9px]">Selecione um estado</div>
+                            </div>
                         </div>
                     </div>
                 </div>
-
-                <div id="content-detalhamento" style="display:none;">
-                    <div class="table-container">
-                        <div class="flex justify-between items-center mb-4">
-                            <h4 class="text-blue-300 font-bold text-xs uppercase">Vendas Realizadas</h4>
-                            <button class="export-btn" onclick="exportTable('table-vendas')">Exportar CSV</button>
-                        </div>
-                        <table id="table-vendas">
-                            <thead><tr><th>Data</th><th>CNPJ</th><th>Cliente</th><th>Vendedor</th><th>SDR</th><th>Produto</th><th>MRR</th><th>Adesão</th><th>Upsell</th></tr></thead>
-                            <tbody id="tbody-detalhamento"></tbody>
-                        </table>
+                <div id="page-inadimplencia" style="display: none;">
+                    <h1 class="text-md font-bold text-blue-300 mb-4">📋 Inadimplência Comercial</h1>
+                    <div class="kpi-row">
+                        <div class="kpi-card"><div class="label">Total em Aberto</div><div class="value" id="kpi-total-aberto">R$ 0</div></div>
+                        <div class="kpi-card"><div class="label">Clientes Inadimplentes</div><div class="value" id="kpi-clientes-inad">0</div></div>
+                        <div class="kpi-card" style="border-left: 2px solid #F1C40F;"><div class="label">Repasse (30%)</div><div class="value" id="kpi-repasse" style="color: #F1C40F;">R$ 0</div></div>
                     </div>
                     <div class="table-container">
-                        <div class="flex justify-between items-center mb-4">
-                            <h4 class="text-red-400 font-bold text-xs uppercase">Cancelamentos (Churn)</h4>
-                            <button class="export-btn" onclick="exportTable('table-churn')">Exportar CSV</button>
-                        </div>
-                        <table id="table-churn">
-                            <thead><tr><th>Data</th><th>CNPJ</th><th>Cliente</th><th>Vendedor Orig.</th><th>SDR Orig.</th><th>Produto</th><th>MRR Perdido</th></tr></thead>
-                            <tbody id="tbody-cancelados"></tbody>
+                        <table id="table-inadimplencia">
+                            <thead><tr><th>Cliente</th><th>Valor Aberto</th><th>Atraso</th><th>Faixa</th></tr></thead>
+                            <tbody id="tbody-inadimplencia"></tbody>
                         </table>
                     </div>
                 </div>
-            </main>
+            </div>
         </div>
     </div>
-
     <script>
-        const API_KEY = "29E5423CAF1E5B85B4098B699811A9D801F612E5B2781EB8033CC0BAB439EC95E4FFAA8E605F741387DE21374E42EA2DDFF191ED954DC87D10757FA4D8AD4F";
+        const API_KEY = '29E5423CAF1E5B85B4098B699811A9D801F612E5B2781EB8033CC0BAB439EC95E4FFAA8E605F741387DE21374E42EA2DDFF191ED954DC87D10757FA4D8AD4F';
+        const INADIMPLENCIA_SHEET_ID = { 'VMC Tech': '1Nqmn2c9p0QFu8LFIqFQ0EBxA8klHFUsVjAW15la-Fjg', 'Victec': '1Y28LP_ZPqWKMjXqf88ahzaDET_DneOYhxuNOmyinxus' };
         const PIPELINES = {
-            "Acelerar": { id: 1005113, meta_mrr: 15000, logo: "logo_acelerar_sidebar.png" },
-            "Victec": { id: 1005114, meta_mrr: 10000, logo: "logo_victec.png" },
-            "VMCTech": { id: 1005115, meta_mrr: 8000, logo: "logo_vmctech.png" }
+            'VMC Tech': { vendas: 110064393, churn: 110065017, meta_mrr: 8000, logo: 'https://raw.githubusercontent.com/gerenciador-ai/Relat-rios-Comercial/main/logo_vmctech.png' },
+            'Victec': { vendas: 110023047, churn: 110042202, meta_mrr: 10000, logo: 'https://raw.githubusercontent.com/gerenciador-ai/Relat-rios-Comercial/main/logo_victec.png' }
         };
-        const MESES_PT = { 1: "Jan", 2: "Fev", 3: "Mar", 4: "Abr", 5: "Mai", 6: "Jun", 7: "Jul", 8: "Ago", 9: "Set", 10: "Out", 11: "Nov", 12: "Dez" };
         
-        let appState = {
-            user: null,
-            empresa: 'Acelerar',
-            raw_data: [],
-            volumeData: [],
-            contacts: [],
-            charts: {},
-            activeTab: 'resumo',
-            activeState: null
+        const FIELDS = { 
+            VENDEDOR_REAL: 110777788, 
+            SDR_REAL: 110777789,      
+            MRR: 110778108,        
+            PRODUTO: 111431860,    
+            UPSELL: 111433407,     
+            ADESAO_S: 110778105,   
+            ADESAO_R: 111431861,   
+            DATA_ATIVACAO: 110778114, 
+            DATA_CANCELAMENTO: 111417137 
         };
-
-        function handleLogin() {
-            const email = document.getElementById('email').value;
-            const pass = document.getElementById('password').value;
-            if (email === 'adm.rodrigopessanha@acelerar.tech' && pass === 'Acelerar@2026') {
-                document.getElementById('login-section').classList.add('hidden');
-                document.getElementById('hub-section').classList.remove('hidden');
-            } else {
-                alert('Credenciais inválidas');
-            }
+        const MESES_PT = {1:'Jan',2:'Fev',3:'Mar',4:'Abr',5:'Mai',6:'Jun',7:'Jul',8:'Ago',9:'Set',10:'Out',11:'Nov',12:'Dez'};
+        let appState = { empresa: 'VMC Tech', page: 'performance', raw_data: [], volumeData: [], contacts: [], activeState: null, charts: {} };
+        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('collapsed'); }
+        function showLoading(t) { document.getElementById('loading-overlay').style.display = 'flex'; document.getElementById('loading-text').textContent = t; }
+        function hideLoading() { document.getElementById('loading-overlay').style.display = 'none'; }
+        async function fetchPloomes(endpoint) {
+            const url = `https://api2.ploomes.com/${endpoint}`;
+            try { return (await axios.get(url, { headers: { 'User-Key': API_KEY, 'Content-Type': 'application/json' }, timeout: 60000 })).data.value; }
+            catch (e) { console.error("Ploomes Error:", e); return []; }
         }
-
-        function showDashboard(type) {
+        function sanitizeVal(v) {
+            if (v === null || v === undefined || v === '') return 0;
+            return parseFloat(v) || 0;
+        }
+        async function handleLogin() {
+            const senha = document.getElementById('password').value.trim();
+            if (senha !== 'Acelerar@2026') { alert('Senha incorreta!'); return; }
+            document.getElementById('user-display').textContent = document.getElementById('email').value;
+            document.getElementById('login-section').classList.add('hidden');
+            document.getElementById('hub-section').classList.remove('hidden');
+        }
+        function handleLogout() { location.reload(); }
+        function openFinanceiro() { alert('Módulo Financeiro em Construção'); }
+        async function openModule(m) {
             document.getElementById('hub-section').classList.add('hidden');
             document.getElementById('dashboard-section').style.display = 'block';
-            initMeses();
-            loadData();
+            await loadData(false);
+            fetchVolumeGeral();
+            switchPage('performance');
         }
-
+        function returnToHub() {
+            document.getElementById('dashboard-section').style.display = 'none';
+            document.getElementById('hub-section').classList.remove('hidden');
+        }
+        async function forceSync() { await loadData(true); fetchVolumeGeral(); }
+        async function loadData(forceDealsOnly = false) {
+            const cacheKey = `acelerar_v13_7_${appState.empresa}`;
+            const cacheTimeKey = `${cacheKey}_time`;
+            const cached = localStorage.getItem(cacheKey);
+            const cachedTime = localStorage.getItem(cacheTimeKey);
+            
+            const now = new Date();
+            const lastSync = cachedTime ? new Date(parseInt(cachedTime)) : null;
+            
+            let needsFullSync = !cached || !lastSync;
+            if (lastSync) {
+                const diffHours = (now - lastSync) / (1000 * 60 * 60);
+                if (diffHours > 24) needsFullSync = true;
+                if (lastSync.getDate() !== now.getDate() && now.getHours() >= 8) needsFullSync = true;
+            }
+            if (!needsFullSync && !forceDealsOnly) { 
+                const data = JSON.parse(cached);
+                appState.raw_data = data.deals;
+                appState.contacts = data.contacts;
+                document.getElementById('cache-info').textContent = `Sinc: ${lastSync.toLocaleString('pt-BR')}`;
+                renderDashboard();
+            } else { 
+                await refreshData(needsFullSync); 
+            }
+        }
+        async function refreshData(fullSync) {
+            showLoading(fullSync ? `Sincronizando Base Completa...` : `Sincronizando Negócios...`);
+            const config = PIPELINES[appState.empresa];
+            
+            const promises = [
+                fetchPloomes(`Deals?$filter=PipelineId eq ${config.vendas} and StatusId eq 2&$expand=OtherProperties,Owner,Contact&$top=2000`),
+                fetchPloomes(`Deals?$filter=PipelineId eq ${config.churn}&$expand=OtherProperties,Owner,Stage,Contact&$top=2000`)
+            ];
+            if (fullSync) {
+                promises.push(fetchPloomes(`Contacts?$select=Id,Name,CNPJ,CPF,City,State&$expand=City,State&$top=2000`));
+            }
+            const results = await Promise.all(promises);
+            const vendas = results[0];
+            const churn = results[1];
+            
+            if (fullSync) {
+                appState.contacts = results[2].map(c => ({ 
+                    id: c.Id, name: c.Name, cnpj: c.CNPJ || c.CPF, 
+                    cidade: c.City?.Name, 
+                    estado: c.State?.Short || (c.City?.State?.Short) || 'NI' 
+                }));
+            } else {
+                const cached = JSON.parse(localStorage.getItem(`acelerar_v13_7_${appState.empresa}`));
+                appState.contacts = cached ? cached.contacts : [];
+            }
+            const mapDeal = (d, type) => {
+                const props = d.OtherProperties || [];
+                const getProp = (id) => props.find(p => p.FieldId === id);
+                const propProduto = getProp(FIELDS.PRODUTO);
+                let produto = propProduto ? (propProduto.ObjectValueName || propProduto.ValueName || propProduto.Value || "") : "";
+                if (!produto || produto === "") produto = "Sittax Simples";
+                let mrr = sanitizeVal(getProp(FIELDS.MRR)?.DecimalValue);
+                let adesao = sanitizeVal(getProp(FIELDS.ADESAO_S)?.DecimalValue) || sanitizeVal(getProp(FIELDS.ADESAO_R)?.DecimalValue);
+                let upsell = sanitizeVal(getProp(FIELDS.UPSELL)?.DecimalValue);
+                const vendedor = getProp(FIELDS.VENDEDOR_REAL)?.UserValueName || 'N/A';
+                const sdr = getProp(FIELDS.SDR_REAL)?.UserValueName || 'N/A';
+                const dataCriacao = new Date(d.CreateDate);
+                let dateStr = type === 'Venda' ? (getProp(FIELDS.DATA_ATIVACAO)?.DateTimeValue || d.FinishDate || d.CreateDate || '') : (getProp(FIELDS.DATA_CANCELAMENTO)?.DateTimeValue || d.FinishDate || d.CreateDate || '');
+                const dataAtivacao = new Date(dateStr);
+                const ciclo = Math.max(0, Math.round((dataAtivacao - dataCriacao) / (1000 * 60 * 60 * 24)));
+                return {
+                    id: d.Id, cliente: d.Title, cnpj: d.Contact?.CNPJ || d.Contact?.CPF || 'N/A',
+                    contactId: d.ContactId, data: dataAtivacao, dataCriacao: dataCriacao, ciclo: ciclo,
+                    vendedor: vendedor, sdr: sdr, mrr: mrr, upsell: upsell, adesao: adesao, produto: produto, 
+                    status: type, estagio: d.Stage?.Name || '', ano: dataAtivacao.getFullYear(), mes: MESES_PT[dataAtivacao.getMonth()+1]
+                };
+            };
+            appState.raw_data = [...vendas.map(d => mapDeal(d, 'Venda')), ...churn.map(d => mapDeal(d, 'Churn'))];
+            
+            localStorage.setItem(`acelerar_v13_7_${appState.empresa}`, JSON.stringify({ deals: appState.raw_data, contacts: appState.contacts }));
+            localStorage.setItem(`acelerar_v13_7_${appState.empresa}_time`, new Date().getTime().toString());
+            
+            document.getElementById('cache-info').textContent = `Sinc: ${new Date().toLocaleString('pt-BR')}`;
+            renderDashboard();
+            hideLoading();
+        }
+        async function fetchVolumeGeral() {
+            // Lógica dinâmica: busca o PipelineId da empresa ativa no appState
+            const config = PIPELINES[appState.empresa];
+            if (!config) return;
+            const pipelineId = config.vendas;
+            console.log(`[AUDITORIA] Iniciando busca de volume para Pipeline (${appState.empresa}): ${pipelineId}`);
+            try {
+                // Buscando apenas Status 2 (Ganha) e Status 3 (Perdido) conforme definido
+                const results = await fetchPloomes(`Deals?$filter=PipelineId eq ${pipelineId} and (StatusId eq 2 or StatusId eq 3)&$expand=OtherProperties,Owner,Contact&$top=2000`);
+                const volumeDeals = results || [];
+                console.log(`[AUDITORIA] API retornou ${volumeDeals.length} negócios (Status 2 ou 3)`);
+                
+                const mapDealVolume = (d) => {
+                    const props = d.OtherProperties || [];
+                    const getProp = (id) => props.find(p => p.FieldId === id);
+                    const vendedor = getProp(FIELDS.VENDEDOR_REAL)?.UserValueName || d.Owner?.Name || 'N/A';
+                    const sdr = getProp(FIELDS.SDR_REAL)?.UserValueName || 'SDR Não Identificado';
+                    
+                    // CAMPO 110777879: Data de Entrada - Agenda
+                    const dataAgendaRaw = getProp(110777879)?.DateTimeValue;
+                    const dataAgenda = dataAgendaRaw ? new Date(dataAgendaRaw) : new Date(d.CreateDate);
+                    
+                    return { 
+                        vendedor, 
+                        sdr, 
+                        ano: dataAgenda.getFullYear(), 
+                        mes: MESES_PT[dataAgenda.getMonth()+1] 
+                    };
+                };
+                appState.volumeData = volumeDeals.map(d => mapDealVolume(d));
+                console.log(`[AUDITORIA] Volume mapeado com sucesso: ${appState.volumeData.length} registros.`);
+                if (appState.page === 'desempenho') applyFilters();
+            } catch (e) { 
+                console.error("[AUDITORIA] Erro ao buscar volume:", e); 
+            }
+        }
         function initMeses() {
             const container = document.getElementById('meses-container');
             const currentMonth = new Date().getMonth() + 1;
             container.innerHTML = Object.entries(MESES_PT).map(([num, nome]) => `
                 <label class="flex items-center gap-1 text-[9px] cursor-pointer hover:text-blue-300">
-                    <input type="checkbox" value="${nome}" ${num <= currentMonth ? 'checked' : ''} onchange="updateDashboard()"> ${nome}
+                    <input type="checkbox" value="${nome}" ${num <= currentMonth ? 'checked' : ''} onchange="applyFilters()"> ${nome}
                 </label>
             `).join('');
         }
-
-        async function loadData() {
-            document.getElementById('loading-overlay').style.display = 'flex';
-            const config = PIPELINES[appState.empresa];
-            const headers = { "User-Key": API_KEY, "Content-Type": "application/json" };
-            
-            try {
-                const [dealsRes, contactsRes] = await Promise.all([
-                    axios.get(`https://api2.ploomes.com/Deals?$filter=PipelineId eq ${config.id}&$expand=OtherProperties,Owner,Contact`, { headers }),
-                    axios.get(`https://api2.ploomes.com/Contacts?$select=Id,Name,City,State&$expand=OtherProperties`, { headers })
-                ]);
-
-                appState.contacts = contactsRes.data.value.map(c => ({
-                    id: c.Id,
-                    nome: c.Name,
-                    cidade: c.City ? c.City.Name : 'NI',
-                    estado: c.State ? c.State.ShortName : 'NI'
-                }));
-
-                appState.raw_data = dealsRes.data.value.map(d => {
-                    const props = d.OtherProperties || [];
-                    const getProp = (id) => {
-                        const p = props.find(x => x.FieldKey === id);
-                        return p ? (p.StringValue || p.DecimalValue || p.DateTimeValue || p.Options?.[0]?.Name) : null;
-                    };
-
-                    const dataFechamento = d.FinishDate ? new Date(d.FinishDate) : new Date();
-                    
-                    // CAMPO 110777879: Data de Entrada - Agenda
-                    const dataEntradaAgendaRaw = getProp('110777879');
-                    const dataEntradaAgenda = dataEntradaAgendaRaw ? new Date(dataEntradaAgendaRaw) : null;
-
-                    return {
-                        id: d.Id,
-                        contactId: d.ContactId,
-                        cliente: d.Contact?.Name || 'N/A',
-                        cnpj: d.Contact?.CNPJ || 'N/A',
-                        vendedor: d.Owner?.Name || 'N/A',
-                        sdr: getProp('110777789') || 'N/A', // SDR Real
-                        produto: getProp('110777790') || 'N/A',
-                        mrr: parseFloat(getProp('110777791')) || 0,
-                        adesao: parseFloat(getProp('110777792')) || 0,
-                        upsell: parseFloat(getProp('110777793')) || 0,
-                        ciclo: parseInt(getProp('110777794')) || 0,
-                        status: d.StatusId === 2 ? 'Venda' : (d.StatusId === 3 ? 'Churn' : 'Aberto'),
-                        statusId: d.StatusId,
-                        estagio: d.Stage?.Name || 'N/A',
-                        data: dataFechamento,
-                        dataAgenda: dataEntradaAgenda,
-                        mes: MESES_PT[dataFechamento.getMonth() + 1],
-                        ano: dataFechamento.getFullYear(),
-                        mesAgenda: dataEntradaAgenda ? MESES_PT[dataEntradaAgenda.getMonth() + 1] : null,
-                        anoAgenda: dataEntradaAgenda ? dataEntradaAgenda.getFullYear() : null
-                    };
-                });
-
-                updateDashboard();
-            } catch (e) {
-                console.error(e);
-                alert('Erro ao sincronizar dados');
-            } finally {
-                document.getElementById('loading-overlay').style.display = 'none';
-            }
+        function switchPage(p) {
+            appState.page = p;
+            document.querySelectorAll('.nav-tabs button').forEach(b => b.classList.remove('active'));
+            document.getElementById(`btn-${p}`).classList.add('active');
+            document.getElementById('page-performance').style.display = p === 'performance' ? 'block' : 'none';
+            document.getElementById('page-desempenho').style.display = p === 'desempenho' ? 'block' : 'none';
+            document.getElementById('page-inadimplencia').style.display = p === 'inadimplencia' ? 'block' : 'none';
+            if (p === 'performance' || p === 'desempenho') applyFilters();
+            if (p === 'inadimplencia') loadInadimplencia();
         }
-
-        function updateDashboard() {
+        function applyFilters() {
             const ano = parseInt(document.getElementById('ano-select').value);
-            const mesesSelecionados = Array.from(document.querySelectorAll('#meses-container input:checked')).map(i => i.value);
+            const meses = Array.from(document.querySelectorAll('#meses-container input:checked')).map(i => i.value);
+            const f = appState.raw_data.filter(d => d.ano === ano && meses.includes(d.mes));
+            renderDashboard(f, meses);
+        }
+        function renderDashboard(f, mesesSelecionados) {
+            if (!f) {
+                const ano = parseInt(document.getElementById('ano-select').value);
+                const meses = Array.from(document.querySelectorAll('#meses-container input:checked')).map(i => i.value);
+                f = appState.raw_data.filter(d => d.ano === ano && meses.includes(d.mes));
+                mesesSelecionados = meses;
+            }
+            const f_venda = f.filter(d => d.status === 'Venda');
+            const f_churn = f.filter(d => d.status === 'Churn' && d.estagio === 'Cancelado');
             
-            const f = appState.raw_data.filter(d => d.ano === ano && mesesSelecionados.includes(d.mes));
-            const f_churn = appState.raw_data.filter(d => d.status === 'Churn' && d.estagio === 'Cancelado' && d.ano === ano && mesesSelecionados.includes(d.mes));
-            
-            const mrrConq = f.filter(d => d.status === 'Venda').reduce((s, d) => s + d.mrr, 0);
+            const mrrConq = f_venda.reduce((s, d) => s + d.mrr, 0);
             const churn = f_churn.reduce((s, d) => s + d.mrr, 0);
             const upsell = f.reduce((s, d) => s + d.upsell, 0);
-            const adesao = f.reduce((s, d) => s + d.adesao, 0);
-            const fechados = f.filter(d => d.status === 'Venda').length;
+            const adsao = f.reduce((s, d) => s + d.adesao, 0);
+            const fechados = f_venda.length;
             const cancelados = f_churn.length;
             const carteiraTotal = appState.raw_data.filter(d => d.status === 'Venda').length - appState.raw_data.filter(d => d.status === 'Churn' && d.estagio === 'Cancelado').length;
-
             document.getElementById('kpi-mrr-conq').textContent = `R$ ${Math.round(mrrConq).toLocaleString('pt-BR')}`;
             document.getElementById('kpi-mrr-perd').textContent = `R$ ${Math.round(churn).toLocaleString('pt-BR')}`;
             document.getElementById('kpi-mrr-net').textContent = `R$ ${Math.round(mrrConq - churn).toLocaleString('pt-BR')}`;
             document.getElementById('kpi-upsell').textContent = `R$ ${Math.round(upsell).toLocaleString('pt-BR')}`;
             document.getElementById('kpi-ticket').textContent = `R$ ${Math.round(fechados > 0 ? mrrConq/fechados : 0).toLocaleString('pt-BR')}`;
-            document.getElementById('kpi-adesao').textContent = `R$ ${Math.round(adesao).toLocaleString('pt-BR')}`;
+            document.getElementById('kpi-adesao').textContent = `R$ ${Math.round(adsao).toLocaleString('pt-BR')}`;
             document.getElementById('kpi-fechados').textContent = fechados;
             document.getElementById('kpi-fechados-cancelados').textContent = cancelados;
             document.getElementById('kpi-carteira').textContent = carteiraTotal;
             document.getElementById('badge-churn-rate').textContent = `${((churn / (mrrConq || 1)) * 100).toFixed(1)}%`;
-
             document.getElementById('tbody-detalhamento').innerHTML = f.filter(d => d.status === 'Venda').sort((a,b) => b.data - a.data).map(d => `
                 <tr><td>${d.data.toLocaleDateString('pt-BR')}</td><td>${d.cnpj}</td><td>${d.cliente}</td><td>${d.vendedor}</td><td>${d.sdr}</td><td>${d.produto}</td><td>R$ ${Math.round(d.mrr).toLocaleString('pt-BR')}</td><td>R$ ${Math.round(d.adesao).toLocaleString('pt-BR')}</td><td>R$ ${Math.round(d.upsell).toLocaleString('pt-BR')}</td></tr>
             `).join('');
-
             document.getElementById('tbody-cancelados').innerHTML = f_churn.sort((a,b) => b.data - a.data).map(d => `
                 <tr><td>${d.data.toLocaleDateString('pt-BR')}</td><td>${d.cnpj}</td><td>${d.cliente}</td><td>${d.vendedor_orig || 'N/A'}</td><td>${d.sdr_orig || 'N/A'}</td><td>${d.produto}</td><td>R$ ${Math.round(d.mrr).toLocaleString('pt-BR')}</td></tr>
             `).join('');
-
             updateCharts(f, mesesSelecionados);
             updateRankings(f);
-            renderPartnershipVisualizations(appState.raw_data, ano, mesesSelecionados);
+            renderPartnershipVisualizations(f);
             renderGeoList();
         }
-
         function updateCharts(f, mesesEixo) {
             const meses_labels = Object.values(MESES_PT).filter(m => mesesEixo.includes(m));
             const config = PIPELINES[appState.empresa];
@@ -441,7 +523,6 @@
             renderChart('chart-evolucao-upsell', 'bar', { labels: meses_labels, datasets: [{ label: 'Upsell Mensal', data: evolData('upsell', null), backgroundColor: '#89CFF0' }] }, chartOptions);
             renderChart('chart-evolucao-churn', 'bar', { labels: meses_labels, datasets: [{ label: 'Churn Mensal', data: evolData('mrr', 'Churn'), backgroundColor: '#E74C3C' }] }, chartOptions);
         }
-
         function updateRankings(f) {
             const getRank = (key) => {
                 const map = {};
@@ -480,48 +561,32 @@
             if (topVend) { document.getElementById('mvp-vendedor-name').textContent = topVend.name; document.getElementById('mvp-vendedor-val').textContent = `R$ ${Math.round(topVend.val).toLocaleString('pt-BR')}`; }
             if (topSdr) { document.getElementById('mvp-sdr-name').textContent = topSdr.name; document.getElementById('mvp-sdr-val').textContent = `R$ ${Math.round(topSdr.val).toLocaleString('pt-BR')}`; }
         }
-
-        function renderPartnershipVisualizations(allData, ano, meses) {
-            // HEATMAP 1: NEGÓCIOS GERADOS (Status 2 e 3)
-            // Usa dataAgenda (campo 110777879)
-            const gerados = allData.filter(d => 
-                d.anoAgenda === ano && 
-                meses.includes(d.mesAgenda) && 
-                (d.statusId === 2 || d.statusId === 3)
-            );
-            
-            const matrizGerados = {};
-            const vendsGerados = new Set();
-            const sdrsGerados = new Set();
-            
-            gerados.forEach(d => {
+        function renderPartnershipVisualizations(f) {
+            const vendas = f.filter(d => d.status === 'Venda');
+            const matriz = {};
+            const vendedores = new Set();
+            const sdrs = new Set();
+            vendas.forEach(d => {
                 const vend = d.vendedor || 'N/A';
                 const sdr = d.sdr || 'N/A';
                 if (vend === 'N/A' || sdr === 'N/A') return;
-                vendsGerados.add(vend); sdrsGerados.add(sdr);
+                vendedores.add(vend); sdrs.add(sdr);
                 const key = `${sdr}|${vend}`;
-                matrizGerados[key] = (matrizGerados[key] || 0) + 1;
+                matriz[key] = (matriz[key] || 0) + 1;
             });
-            renderHeatmapGeneric(matrizGerados, Array.from(sdrsGerados).sort(), Array.from(vendsGerados).sort(), 'heatmap-container');
-
-            // HEATMAP 2: NEGÓCIOS FECHADOS (Status 2)
-            // Mantém lógica original (data de fechamento)
-            const fechados = allData.filter(d => d.ano === ano && meses.includes(d.mes) && d.statusId === 2);
-            const matrizFechados = {};
-            const vendsFechados = new Set();
-            const sdrsFechados = new Set();
+            renderHeatmapGeneric(matriz, Array.from(sdrs).sort(), Array.from(vendedores).sort(), 'heatmap-container');
             
-            fechados.forEach(d => {
-                const vend = d.vendedor || 'N/A';
-                const sdr = d.sdr || 'N/A';
-                if (vend === 'N/A' || sdr === 'N/A') return;
-                vendsFechados.add(vend); sdrsFechados.add(sdr);
-                const key = `${sdr}|${vend}`;
-                matrizFechados[key] = (matrizFechados[key] || 0) + 1;
+            const ano = parseInt(document.getElementById('ano-select').value);
+            const meses = Array.from(document.querySelectorAll('#meses-container input:checked')).map(i => i.value);
+            const volumeFiltered = appState.volumeData.filter(d => d.ano === ano && meses.includes(d.mes));
+            const matrizVol = {}; const vendsVol = new Set(); const sdrsVol = new Set();
+            volumeFiltered.forEach(d => {
+                vendsVol.add(d.vendedor); sdrsVol.add(d.sdr);
+                const key = `${d.sdr}|${d.vendedor}`;
+                matrizVol[key] = (matrizVol[key] || 0) + 1;
             });
-            renderHeatmapGeneric(matrizFechados, Array.from(sdrsFechados).sort(), Array.from(vendsFechados).sort(), 'heatmap-volume-container');
+            renderHeatmapGeneric(matrizVol, Array.from(sdrsVol).sort(), Array.from(vendsVol).sort(), 'heatmap-volume-container');
         }
-
         function renderHeatmapGeneric(matriz, sdrs, vendedores, containerId) {
             let html = '<table class="heatmap-table"><tr><th>SDR / Vendedor</th>';
             vendedores.forEach(v => html += `<th>${v}</th>`);
@@ -546,7 +611,9 @@
             const container = document.getElementById(containerId);
             if (container) container.innerHTML = html;
         }
-
+        function renderHeatmap(matriz, sdrs, vendedores) {
+            renderHeatmapGeneric(matriz, sdrs, vendedores, 'heatmap-container');
+        }
         function renderGeoList() {
             const stateList = document.getElementById('geo-state-list');
             const cityList = document.getElementById('geo-city-list');
@@ -587,54 +654,30 @@
                 cityList.innerHTML = '<p class="text-[8px] opacity-30 text-center mt-10">Selecione um estado</p>';
             }
         }
-
-        function selectGeoState(uf) {
-            appState.activeState = uf;
-            renderGeoList();
+        function selectGeoState(uf) { appState.activeState = uf; renderGeoList(); }
+        async function loadInadimplencia() {
+            const sheetId = INADIMPLENCIA_SHEET_ID[appState.empresa];
+            if (!sheetId) { alert('Planilha de inadimplência não configurada para esta empresa'); return; }
+            showLoading('Buscando Inadimplência...');
+            try {
+                const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv`;
+                const res = await axios.get(url);
+                const rows = res.data.split('\n').slice(1).map(r => r.split(',').map(c => c.replace(/"/g, '')));
+                let total = 0, clientes = 0;
+                const tbody = document.getElementById('tbody-inadimplencia');
+                tbody.innerHTML = rows.map(r => {
+                    const valor = parseFloat(r[1]) || 0;
+                    if (valor <= 0) return '';
+                    total += valor; clientes++;
+                    return `<tr><td>${r[0]}</td><td>R$ ${valor.toLocaleString('pt-BR')}</td><td>${r[2]} dias</td><td>${r[3]}</td></tr>`;
+                }).join('');
+                document.getElementById('kpi-total-aberto').textContent = `R$ ${Math.round(total).toLocaleString('pt-BR')}`;
+                document.getElementById('kpi-clientes-inad').textContent = clientes;
+                document.getElementById('kpi-repasse').textContent = `R$ ${Math.round(total * 0.3).toLocaleString('pt-BR')}`;
+            } catch (e) { console.error(e); }
+            finally { hideLoading(); }
         }
-
-        function switchTab(tab) {
-            appState.activeTab = tab;
-            document.querySelectorAll('.nav-tabs button').forEach(b => b.classList.remove('active'));
-            document.getElementById(`tab-${tab}`).classList.add('active');
-            document.getElementById('content-resumo').style.display = tab === 'resumo' ? 'block' : 'none';
-            document.getElementById('content-desempenho').style.display = tab === 'desempenho' ? 'block' : 'none';
-            document.getElementById('content-geografico').style.display = tab === 'geografico' ? 'block' : 'none';
-            document.getElementById('content-detalhamento').style.display = tab === 'detalhamento' ? 'block' : 'none';
-            if (tab === 'geografico') setTimeout(initMap, 100);
-        }
-
-        function toggleSidebar() {
-            document.getElementById('sidebar').classList.toggle('collapsed');
-        }
-
-        function logout() {
-            location.reload();
-        }
-
-        function exportTable(id) {
-            const table = document.getElementById(id);
-            let csv = [];
-            for (let i = 0; i < table.rows.length; i++) {
-                let row = [], cols = table.rows[i].cells;
-                for (let j = 0; j < cols.length; j++) row.push('"' + cols[j].innerText + '"');
-                csv.push(row.join(","));
-            }
-            const blob = new Blob([csv.join("\n")], { type: 'text/csv' });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.setAttribute('hidden', '');
-            a.setAttribute('href', url);
-            a.setAttribute('download', `${id}.csv`);
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-        }
-
-        function initMap() {
-            // Placeholder para integração com mapa real se necessário
-            document.getElementById('geo-map').innerHTML = '<div class="flex items-center justify-center h-full text-blue-300 opacity-30 font-bold">MAPA DE CALOR GEOGRÁFICO</div>';
-        }
+        initMeses();
     </script>
 </body>
 </html>
