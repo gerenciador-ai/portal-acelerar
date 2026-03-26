@@ -711,32 +711,17 @@
         }
         function changeEmpresa() { appState.empresa = document.getElementById('empresa-select').value; appState.activeState = null; loadData(false); }
         async function loadInadimplencia() {
-            showLoading(`Lendo Inadimplência (Nibo)...`);
+            showLoading(`Lendo Inadimplência...`);
+            const sheetId = INADIMPLENCIA_SHEET_ID[appState.empresa];
             try {
-                // Lê o arquivo JSON gerado pela automação diária do GitHub
-                const res = await axios.get('data/inadimplencia.json');
-                const data = res.data;
-
-                // 1. Atualiza os KPIs Superiores
-                document.getElementById('kpi-total-aberto').textContent = `R$ ${Math.round(data.kpis.total_aberto).toLocaleString('pt-BR')}`;
-                document.getElementById('kpi-clientes-inad').textContent = data.kpis.clientes_inadimplentes;
-                document.getElementById('kpi-repasse').textContent = `R$ ${Math.round(data.kpis.repasse_sittax).toLocaleString('pt-BR')}`;
-
-                // 2. Preenche a Tabela de Detalhamento de Títulos
-                document.getElementById('tbody-inadimplencia').innerHTML = data.detalhamento_titulos.map(r => `
-                    <tr>
-                        <td>${new Date(r.vencimento).toLocaleDateString('pt-BR')}</td>
-                        <td>${r.cliente}</td>
-                        <td>R$ ${r.valor.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>
-                        <td>${r.dias} dias</td>
-                        <td>${r.faixa}</td>
-                    </tr>
-                `).join('');
-
-            } catch (e) { 
-                console.error("Erro ao ler dados do Nibo:", e);
-                alert("Dados de inadimplência ainda não disponíveis. Por favor, aguarde a sincronização das 08:00 ou force a atualização no GitHub Actions.");
-            }
+                const res = await axios.get(`https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json`);
+                const json = JSON.parse(res.data.substring(47, res.data.length - 2));
+                const rows = json.table.rows.map(r => ({ cliente: r.c[0]?.v || 'N/A', valor: r.c[1]?.v || 0, atraso: r.c[2]?.v || 0, faixa: r.c[3]?.v || 'N/A' })).filter(r => r.valor > 0);
+                const total = rows.reduce((s,r) => s + r.valor, 0);
+                document.getElementById('kpi-total-aberto').textContent = `R$ ${Math.round(total).toLocaleString('pt-BR')}`;
+                document.getElementById('kpi-clientes-inad').textContent = rows.length;
+                document.getElementById('tbody-inadimplencia').innerHTML = rows.map(r => `<tr><td>${r.cliente}</td><td>R$ ${Math.round(r.valor).toLocaleString('pt-BR')}</td><td>${r.atraso} dias</td><td>${r.faixa}</td></tr>`).join('');
+            } catch (e) { console.error("Inadimplência Error:", e); }
             hideLoading();
         }
     </script>
