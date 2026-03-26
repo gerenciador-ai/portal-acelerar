@@ -243,7 +243,13 @@
                     </div>
                     <!-- SEÇÃO DE PARCERIAS SDR-VENDEDOR (V13.7) -->
                     <div class="grid grid-cols-1 gap-4 mb-4">
-                        <!-- 1. NEGÓCIOS CONVERTIDOS -->
+                        <!-- 1. NEGÓCIOS GERADOS (VOLUME) -->
+                        <div class="partnership-viz">
+                            <h4>📊 Auditoria de Negócios Gerados (Volume)</h4>
+                            <p class="text-[7px] opacity-50 mb-2">Total de negócios gerados por SDR (Em Aberto + Perdidos) | Intensidade = Volume</p>
+                            <div id="heatmap-volume-container" style="overflow-x: auto;"></div>
+                        </div>
+                        <!-- 2. NEGÓCIOS CONVERTIDOS -->
                         <div class="partnership-viz">
                             <h4>🏆 Auditoria de Negócios Convertidos (Ganhos)</h4>
                             <p class="text-[7px] opacity-50 mb-2">Intensidade = Volume de Contratos</p>
@@ -300,7 +306,7 @@
             DATA_CANCELAMENTO: 111417137 
         };
         const MESES_PT = {1:'Jan',2:'Fev',3:'Mar',4:'Abr',5:'Mai',6:'Jun',7:'Jul',8:'Ago',9:'Set',10:'Out',11:'Nov',12:'Dez'};
-        let appState = { empresa: 'VMC Tech', page: 'performance', raw_data: [], contacts: [], activeState: null, charts: {} };
+        let appState = { empresa: 'VMC Tech', page: 'performance', raw_data: [], volumeData: [], contacts: [], activeState: null, charts: {} };
         function toggleSidebar() { document.getElementById('sidebar').classList.toggle('collapsed'); }
         function showLoading(t) { document.getElementById('loading-overlay').style.display = 'flex'; document.getElementById('loading-text').textContent = t; }
         function hideLoading() { document.getElementById('loading-overlay').style.display = 'none'; }
@@ -326,13 +332,14 @@
             document.getElementById('hub-section').classList.add('hidden');
             document.getElementById('dashboard-section').style.display = 'block';
             await loadData(false);
+            await fetchVolumeGeral();
             switchPage('performance');
         }
         function returnToHub() {
             document.getElementById('dashboard-section').style.display = 'none';
             document.getElementById('hub-section').classList.remove('hidden');
         }
-        async function forceSync() { await loadData(true); }
+        async function forceSync() { await loadData(true); await fetchVolumeGeral(); }
         async function loadData(forceDealsOnly = false) {
             const cacheKey = `acelerar_v13_7_${appState.empresa}`;
             const cacheTimeKey = `${cacheKey}_time`;
@@ -413,6 +420,28 @@
             document.getElementById('cache-info').textContent = `Sinc: ${new Date().toLocaleString('pt-BR')}`;
             renderDashboard();
             hideLoading();
+        }
+        async function fetchVolumeGeral() {
+            const config = PIPELINES[appState.empresa];
+            const promises = [
+                fetchPloomes(`Deals?$filter=PipelineId eq ${config.vendas} and (StatusId eq 1 or StatusId eq 3)&$expand=OtherProperties,Owner,Contact&$top=2000`)
+            ];
+            const results = await Promise.all(promises);
+            const volumeDeals = results[0];
+            
+            const mapDealVolume = (d) => {
+                const props = d.OtherProperties || [];
+                const getProp = (id) => props.find(p => p.FieldId === id);
+                const vendedor = getProp(FIELDS.VENDEDOR_REAL)?.UserValueName || 'N/A';
+                const sdr = getProp(FIELDS.SDR_REAL)?.UserValueName || 'N/A';
+                const dataCriacao = new Date(d.CreateDate);
+                return {
+                    id: d.Id, cliente: d.Title, vendedor: vendedor, sdr: sdr,
+                    data: dataCriacao, ano: dataCriacao.getFullYear(), mes: MESES_PT[dataCriacao.getMonth()+1],
+                    statusId: d.StatusId
+                };
+            };
+            appState.volumeData = volumeDeals.map(d => mapDealVolume(d));
         }
         function renderDashboard() {
             const anos = [...new Set(appState.raw_data.map(d => d.ano))].sort((a,b) => b-a);
@@ -565,8 +594,36 @@
             const vendedoresArr = Array.from(vendedores).sort();
             const sdrsArr = Array.from(sdrs).sort();
             renderHeatmap(matriz, sdrsArr, vendedoresArr);
+            
+            renderHeatmapVolume(f);
         }
-        function renderHeatmap(matriz, sdrs, vendedores) {
+        function renderHeatmapVolume(f) {
+            const ano = parseInt(document.getElementById('ano-select').value);
+            const mesesSelecionados = Array.from(document.querySelectorAll('#meses-container input:checked')).map(i => i.value);
+            
+            const volumeFiltered = appState.volumeData.filter(d => 
+                d.ano === ano && mesesSelecionados.includes(d.mes)
+            );
+            
+            const matriz = {};
+            const vendedores = new Set();
+            const sdrs = new Set();
+            
+            volumeFiltered.forEach(d => {
+                const vend = d.vendedor || 'N/A';
+                const sdr = d.sdr || 'N/A';
+                if (vend === 'N/A' || sdr === 'N/A') return;
+                vendedores.add(vend);
+                sdrs.add(sdr);
+                const key = `${sdr}|${vend}`;
+                if (!matriz[key]) matriz[key] = 0;
+                matriz[key]++;
+            });
+            const vendedoresArr = Array.from(vendedores).sort();
+            const sdrsArr = Array.from(sdrs).sort();
+            renderHeatmapGeneric(matriz, sdrsArr, vendedoresArr, 'heatmap-volume-container');
+        }
+        function renderHeatmapGeneric(matriz, sdrs, vendedores, containerId) {
             let html = '<table class="heatmap-table"><tr><th>SDR / Vendedor</th>';
             vendedores.forEach(v => html += `<th>${v}</th>`);
             html += '<th style="background: rgba(137, 207, 240, 0.3);">TOTAL</th></tr>';
@@ -587,21 +644,23 @@
                     
                     const intensity = val === 0 ? 0 : Math.ceil((val / maxVal) * 5);
                     const classe = `heatmap-${intensity}`;
-                    html += `<td class="heatmap-cell ${classe}" title="${sdr} → ${vend}: ${val} contratos">${val}</td>`;
+                    html += `<td class="heatmap-cell ${classe}" title="${sdr} → ${vend}: ${val} negócios">${val}</td>`;
                 });
                 grandTotal += rowTotal;
                 html += `<td style="background: rgba(137, 207, 240, 0.2); font-weight: 800;">${rowTotal}</td></tr>`;
             });
 
-            // Linha de Totais
             html += `<tr><th style="background: rgba(137, 207, 240, 0.3);">TOTAL</th>`;
             vendedores.forEach(v => {
                 html += `<td style="background: rgba(137, 207, 240, 0.2); font-weight: 800;">${colTotals[v]}</td>`;
             });
             html += `<td style="background: #89CFF0; color: #0B2A4E; font-weight: 900;">${grandTotal}</td></tr></table>`;
             
-            const container = document.getElementById('heatmap-container');
+            const container = document.getElementById(containerId);
             if (container) container.innerHTML = html;
+        }
+        function renderHeatmap(matriz, sdrs, vendedores) {
+            renderHeatmapGeneric(matriz, sdrs, vendedores, 'heatmap-container');
         }
         function renderGeoList() {
             const stateList = document.getElementById('geo-state-list');
