@@ -332,7 +332,7 @@
             document.getElementById('hub-section').classList.add('hidden');
             document.getElementById('dashboard-section').style.display = 'block';
             await loadData(false);
-            await fetchVolumeGeral();
+            fetchVolumeGeral(); // Inicia busca em paralelo
             switchPage('performance');
         }
         function returnToHub() {
@@ -442,6 +442,8 @@
                 };
             };
             appState.volumeData = volumeDeals.map(d => mapDealVolume(d));
+            // Forçar renderização do heatmap de volume após a carga
+            if (appState.page === 'desempenho') applyFilters();
         }
         function renderDashboard() {
             const anos = [...new Set(appState.raw_data.map(d => d.ano))].sort((a,b) => b-a);
