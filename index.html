@@ -244,19 +244,14 @@
                     </div>
                     <!-- SEÇÃO DE PARCERIAS SDR-VENDEDOR (V13.7) -->
                     <div class="grid grid-cols-1 gap-4 mb-4">
-                        <!-- 1. NEGÓCIOS GERADOS -->
+                        <!-- 1. MATRIZ DE COLABORAÇÃO (HEATMAP) -->
                         <div class="partnership-viz">
-                            <h4>🤝 Auditoria de Negócios Gerados (Volume)</h4>
-                            <p class="text-[7px] opacity-50 mb-2">Total de negócios gerados por SDR (Independente do Status) | Inclui Ganha, Perdida e Em Aberto</p>
-                            <div id="heatmap-gerados-container" style="overflow-x: auto;"></div>
+                            <h4>🤝 Matriz de Colaboração (Heatmap)</h4>
+                            <p class="text-[7px] opacity-50 mb-2">Intensidade = Volume de Contratos</p>
+                            <div id="heatmap-container" style="overflow-x: auto;"></div>
                         </div>
-                        <!-- 2. NEGÓCIOS CONVERTIDOS -->
-                        <div class="partnership-viz">
-                            <h4>🏆 Auditoria de Negócios Convertidos (Ganhos)</h4>
-                            <p class="text-[7px] opacity-50 mb-2">Total de negócios com Status "Ganha" | Exibição: Qtd (Taxa de Conversão %)</p>
-                            <div id="heatmap-convertidos-container" style="overflow-x: auto;"></div>
-                        </div>
-                    </div>>
+
+                    </div>
                     <div class="ranking-card" style="height: 450px;">
                         <h4 class="flex justify-between items-center">
                             🌍 Inteligência de Campo (Geolocalização)
@@ -370,7 +365,7 @@
             const config = PIPELINES[appState.empresa];
             
             const promises = [
-                fetchPloomes(`Deals?$filter=PipelineId eq ${config.vendas}&$expand=OtherProperties,Owner,Status,Contact&$top=2000`),
+                fetchPloomes(`Deals?$filter=PipelineId eq ${config.vendas} and StatusId eq 2&$expand=OtherProperties,Owner,Contact&$top=2000`),
                 fetchPloomes(`Deals?$filter=PipelineId eq ${config.churn}&$expand=OtherProperties,Owner,Stage,Contact&$top=2000`)
             ];
             if (fullSync) {
@@ -409,7 +404,7 @@
                     id: d.Id, cliente: d.Title, cnpj: d.Contact?.CNPJ || d.Contact?.CPF || 'N/A',
                     contactId: d.ContactId, data: dataAtivacao, dataCriacao: dataCriacao, ciclo: ciclo,
                     vendedor: vendedor, sdr: sdr, mrr: mrr, upsell: upsell, adesao: adesao, produto: produto, 
-                    status: type, statusId: d.StatusId, estagio: d.Stage?.Name || '', ano: dataAtivacao.getFullYear(), mes: MESES_PT[dataAtivacao.getMonth()+1]
+                    status: type, estagio: d.Stage?.Name || '', ano: dataAtivacao.getFullYear(), mes: MESES_PT[dataAtivacao.getMonth()+1]
                 };
             };
             appState.raw_data = [...vendas.map(d => mapDeal(d, 'Venda')), ...churn.map(d => mapDeal(d, 'Churn'))];
@@ -457,21 +452,21 @@
                 (sdr === 'Todos' || d.sdr === sdr)
             );
             const vendasMap = {};
-            appState.raw_data.filter(d => d.status === 'Venda' && d.statusId === 2).forEach(v => { if (v.contactId) vendasMap[v.contactId] = { mrr: v.mrr, vend: v.vendedor, sdr: v.sdr }; });
+            appState.raw_data.filter(d => d.status === 'Venda').forEach(v => { if (v.contactId) vendasMap[v.contactId] = { mrr: v.mrr, vend: v.vendedor, sdr: v.sdr }; });
             f.forEach(d => {
                 if (d.status === 'Churn' && d.estagio === 'Cancelado' && d.mrr === 0) {
                     const original = vendasMap[d.contactId];
                     if (original) { d.mrr = original.mrr; d.vendedor_orig = original.vend; d.sdr_orig = original.sdr; }
                 }
             });
-            const mrrConq = f.filter(d => d.status === 'Venda' && d.statusId === 2).reduce((s, d) => s + d.mrr, 0);
+            const mrrConq = f.filter(d => d.status === 'Venda').reduce((s, d) => s + d.mrr, 0);
             const f_churn = f.filter(d => d.status === 'Churn' && d.estagio === 'Cancelado' && d.mrr > 0);
             const churn = f_churn.reduce((s, d) => s + d.mrr, 0);
             const upsell = f.reduce((s, d) => s + d.upsell, 0);
             const adesao = f.reduce((s, d) => s + d.adesao, 0);
-            const fechados = f.filter(d => d.status === 'Venda' && d.statusId === 2).length;
+            const fechados = f.filter(d => d.status === 'Venda').length;
             const cancelados = f_churn.length;
-            const carteiraTotal = appState.raw_data.filter(d => d.status === 'Venda' && d.statusId === 2).length - appState.raw_data.filter(d => d.status === 'Churn' && d.estagio === 'Cancelado').length;
+            const carteiraTotal = appState.raw_data.filter(d => d.status === 'Venda').length - appState.raw_data.filter(d => d.status === 'Churn' && d.estagio === 'Cancelado').length;
             document.getElementById('kpi-mrr-conq').textContent = `R$ ${Math.round(mrrConq).toLocaleString('pt-BR')}`;
             document.getElementById('kpi-mrr-perd').textContent = `R$ ${Math.round(churn).toLocaleString('pt-BR')}`;
             document.getElementById('kpi-mrr-net').textContent = `R$ ${Math.round(mrrConq - churn).toLocaleString('pt-BR')}`;
@@ -482,7 +477,7 @@
             document.getElementById('kpi-fechados-cancelados').textContent = cancelados;
             document.getElementById('kpi-carteira').textContent = carteiraTotal;
             document.getElementById('badge-churn-rate').textContent = `${((churn / (mrrConq || 1)) * 100).toFixed(1)}%`;
-            document.getElementById('tbody-detalhamento').innerHTML = f.filter(d => d.status === 'Venda' && d.statusId === 2).sort((a,b) => b.data - a.data).map(d => `
+            document.getElementById('tbody-detalhamento').innerHTML = f.filter(d => d.status === 'Venda').sort((a,b) => b.data - a.data).map(d => `
                 <tr><td>${d.data.toLocaleDateString('pt-BR')}</td><td>${d.cnpj}</td><td>${d.cliente}</td><td>${d.vendedor}</td><td>${d.sdr}</td><td>${d.produto}</td><td>R$ ${Math.round(d.mrr).toLocaleString('pt-BR')}</td><td>R$ ${Math.round(d.adesao).toLocaleString('pt-BR')}</td><td>R$ ${Math.round(d.upsell).toLocaleString('pt-BR')}</td></tr>
             `).join('');
             document.getElementById('tbody-cancelados').innerHTML = f_churn.sort((a,b) => b.data - a.data).map(d => `
@@ -504,13 +499,13 @@
             const chartOptions = { responsive: true, maintainAspectRatio: false, scales: { y: { ticks: { color: '#FFF', font: { size: 8 } } }, x: { type: 'category', ticks: { color: '#FFF', font: { size: 8 } } } }, plugins: { legend: { labels: { color: '#FFF', font: { size: 9 } } } } };
             
             let accMrr = 0, accContratos = 0;
-            const mrrData = meses_labels.map(m => { accMrr += f.filter(d => d.mes === m && d.status === 'Venda' && d.statusId === 2).reduce((s,d) => s + d.mrr, 0); return accMrr; });
-            const contratosData = meses_labels.map(m => { accContratos += f.filter(d => d.mes === m && d.status === 'Venda' && d.statusId === 2).length; return accContratos; });
+            const mrrData = meses_labels.map(m => { accMrr += f.filter(d => d.mes === m && d.status === 'Venda').reduce((s,d) => s + d.mrr, 0); return accMrr; });
+            const contratosData = meses_labels.map(m => { accContratos += f.filter(d => d.mes === m && d.status === 'Venda').length; return accContratos; });
             
             renderChart('chart-mrr-meta', 'bar', { labels: meses_labels, datasets: [{ label: 'MRR Acumulado', data: mrrData, backgroundColor: '#89CFF0', order: 2 }, { label: 'Meta', data: meses_labels.map((_, i) => (i + 1) * config.meta_mrr), type: 'line', borderColor: '#FFF', borderWidth: 1.5, pointRadius: 0, order: 1 }] }, chartOptions);
             renderChart('chart-contratos-meta', 'bar', { labels: meses_labels, datasets: [{ label: 'Contratos Acumulados', data: contratosData, backgroundColor: '#89CFF0', order: 2 }, { label: 'Meta', data: meses_labels.map((_, i) => (i + 1) * 17), type: 'line', borderColor: '#FFF', borderWidth: 1.5, pointRadius: 0, order: 1 }] }, chartOptions);
             
-            const evolData = (valKey, status) => meses_labels.map(m => f.filter(d => d.mes === m && (status ? (status === 'Churn' ? (d.status === 'Churn' && d.estagio === 'Cancelado') : (status === 'Venda' ? (d.status === 'Venda' && d.statusId === 2) : d.status === status)) : true)).reduce((s,d) => s + d[valKey], 0));
+            const evolData = (valKey, status) => meses_labels.map(m => f.filter(d => d.mes === m && (status ? (status === 'Churn' ? (d.status === 'Churn' && d.estagio === 'Cancelado') : d.status === status) : true)).reduce((s,d) => s + d[valKey], 0));
             renderChart('chart-evolucao-mrr', 'bar', { labels: meses_labels, datasets: [{ label: 'MRR Mensal', data: evolData('mrr', 'Venda'), backgroundColor: '#89CFF0' }] }, chartOptions);
             renderChart('chart-evolucao-upsell', 'bar', { labels: meses_labels, datasets: [{ label: 'Upsell Mensal', data: evolData('upsell', null), backgroundColor: '#89CFF0' }] }, chartOptions);
             renderChart('chart-evolucao-churn', 'bar', { labels: meses_labels, datasets: [{ label: 'Churn Mensal', data: evolData('mrr', 'Churn'), backgroundColor: '#E74C3C' }] }, chartOptions);
@@ -518,7 +513,7 @@
         function updateRankings(f) {
             const getRank = (key) => {
                 const map = {};
-                f.filter(d => d.status === 'Venda' && d.statusId === 2).forEach(d => {
+                f.filter(d => d.status === 'Venda').forEach(d => {
                     const k = d[key]; if (k === 'N/A' || !k) return;
                     if (!map[k]) map[k] = { name: k, val: 0, vol: 0, ciclo: 0 };
                     map[k].val += d.mrr; map[k].vol += 1; map[k].ciclo += d.ciclo;
@@ -555,8 +550,9 @@
         }
         function renderPartnershipVisualizations(f) {
             const vendas = f.filter(d => d.status === 'Venda');
-            const matrizGerados = {};
-            const matrizGanhos = {};
+            
+            // Criar matriz de cruzamento SDR x Vendedor
+            const matriz = {};
             const vendedores = new Set();
             const sdrs = new Set();
             
@@ -569,67 +565,41 @@
                 sdrs.add(sdr);
                 
                 const key = `${sdr}|${vend}`;
-                matrizGerados[key] = (matrizGerados[key] || 0) + 1;
-                if (d.statusId === 2) {
-                    matrizGanhos[key] = (matrizGanhos[key] || 0) + 1;
-                }
+                if (!matriz[key]) matriz[key] = 0;
+                matriz[key]++;
             });
             
             const vendedoresArr = Array.from(vendedores).sort();
             const sdrsArr = Array.from(sdrs).sort();
             
-            renderHeatmapGeneric('heatmap-gerados-container', matrizGerados, sdrsArr, vendedoresArr, false);
-            renderHeatmapGeneric('heatmap-convertidos-container', matrizGanhos, sdrsArr, vendedoresArr, true, matrizGerados);
+            // 1. HEATMAP
+            renderHeatmap(matriz, sdrsArr, vendedoresArr);
         }
-
-        function renderHeatmapGeneric(containerId, matriz, sdrs, vendedores, isConvertidos, matrizReferencia = null) {
+        function renderHeatmap(matriz, sdrs, vendedores) {
             let html = '<table class="heatmap-table"><tr><th>SDR / Vendedor</th>';
             vendedores.forEach(v => html += `<th>${v}</th>`);
-            html += '<th style="background: rgba(137, 207, 240, 0.3);">TOTAL</th></tr>';
+            html += '</tr>';
             
-            const colTotals = {};
-            vendedores.forEach(v => colTotals[v] = 0);
-            let grandTotal = 0;
-
             const maxVal = Math.max(...Object.values(matriz), 1);
             
             sdrs.forEach(sdr => {
-                let rowTotal = 0;
                 html += `<tr><th>${sdr}</th>`;
                 vendedores.forEach(vend => {
                     const val = matriz[`${sdr}|${vend}`] || 0;
-                    rowTotal += val;
-                    colTotals[vend] += val;
-                    
                     const intensity = val === 0 ? 0 : Math.ceil((val / maxVal) * 5);
-                    let display = val;
-                    
-                    if (isConvertidos && matrizReferencia) {
-                        const totalGerados = matrizReferencia[`${sdr}|${vend}`] || 0;
-                        const conv = totalGerados > 0 ? Math.round((val / totalGerados) * 100) : 0;
-                        display = `${val} <span style="font-size: 0.55rem; opacity: 0.7;">(${conv}%)</span>`;
-                    }
-                    
-                    html += `<td class="heatmap-cell heatmap-${intensity}">${display}</td>`;
+                    const classe = `heatmap-${intensity}`;
+                    html += `<td class="heatmap-cell ${classe}" title="${sdr} → ${vend}: ${val} contratos">${val}</td>`;
                 });
-                grandTotal += rowTotal;
-                html += `<td style="background: rgba(137, 207, 240, 0.2); font-weight: 800;">${rowTotal}</td></tr>`;
+                html += '</tr>';
             });
-
-            // Linha de Totais
-            html += `<tr><th style="background: rgba(137, 207, 240, 0.3);">TOTAL</th>`;
-            vendedores.forEach(v => {
-                html += `<td style="background: rgba(137, 207, 240, 0.2); font-weight: 800;">${colTotals[v]}</td>`;
-            });
-            html += `<td style="background: #89CFF0; color: #0B2A4E; font-weight: 900;">${grandTotal}</td></tr></table>`;
-            
-            document.getElementById(containerId).innerHTML = html;
+            html += '</table>';
+            document.getElementById('heatmap-container').innerHTML = html;
         }
         function renderGeoList() {
             const stateList = document.getElementById('geo-state-list');
             const cityList = document.getElementById('geo-city-list');
             
-            const fechadosIds = new Set(appState.raw_data.filter(d => d.status === 'Venda' && d.statusId === 2).map(d => d.contactId));
+            const fechadosIds = new Set(appState.raw_data.filter(d => d.status === 'Venda').map(d => d.contactId));
             const geoMap = {};
             appState.contacts.forEach(c => {
                 const uf = c.estado || 'NI';
