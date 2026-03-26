@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hub Holding Acelerar - Portal Estratégico (V13.7)</title>
+    <title>Hub Holding Acelerar - Portal Estratégico (V13.9)</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios@1.6.0/dist/axios.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -62,7 +62,6 @@
         .funnel-row { display: flex; justify-content: center; width: 100%; margin-bottom: 8px; }
         .funnel-bar { height: 24px; background: #2980B9; border-radius: 4px; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 0 10px; position: relative; transition: width 0.5s ease; }
         .funnel-label { font-size: 0.7rem; font-weight: 700; color: #FFFFFF; text-shadow: 1px 1px 2px rgba(0,0,0,0.8); white-space: nowrap; }
-        .funnel-value { font-size: 0.75rem; font-weight: 800; color: #FFF; }
 
         .toggle-sidebar-btn { background: none; border: 1px solid #89CFF0; color: #89CFF0; padding: 2px 8px; border-radius: 4px; cursor: pointer; font-size: 1rem; margin-right: 10px; }
         .toggle-sidebar-btn:hover { background: #89CFF0; color: #0B2A4E; }
@@ -85,11 +84,14 @@
 
         .partnership-viz { background: rgba(11, 42, 78, 0.4); border: 1px solid rgba(137, 207, 240, 0.2); border-radius: 8px; padding: 12px; margin-bottom: 10px; }
         .partnership-viz h4 { color: #89CFF0; font-size: 0.75rem; font-weight: 800; margin-bottom: 12px; text-transform: uppercase; border-bottom: 1px solid rgba(137, 207, 240, 0.2); padding-bottom: 4px; }
-        .heatmap-table { width: 100%; border-collapse: collapse; font-size: 0.65rem; }
-        .heatmap-table th, .heatmap-table td { padding: 4px; border: 1px solid rgba(137, 207, 240, 0.2); text-align: center; }
-        .heatmap-table th { background: rgba(137, 207, 240, 0.1); color: #89CFF0; }
-        .heatmap-cell { color: #FFF; font-weight: 700; }
-        .heatmap-0 { background: rgba(11, 42, 78, 0.3); }
+        .heatmap-wrapper { overflow-x: auto; width: 100%; }
+        .heatmap-table { width: 100%; border-collapse: collapse; font-size: 0.65rem; min-width: 600px; }
+        .heatmap-table th, .heatmap-table td { padding: 6px 8px; border: 1px solid rgba(137, 207, 240, 0.2); text-align: center; white-space: nowrap; }
+        .heatmap-table th { background: rgba(137, 207, 240, 0.1); color: #89CFF0; font-weight: 800; }
+        .heatmap-table .row-label { text-align: left; background: rgba(137, 207, 240, 0.05); font-weight: 700; width: 150px; }
+        .heatmap-table .total-cell { background: rgba(255,255,255,0.05); font-weight: 800; color: #89CFF0; }
+        .heatmap-cell { color: #FFF; font-weight: 700; transition: 0.3s; }
+        .heatmap-0 { background: rgba(11, 42, 78, 0.3); color: rgba(255,255,255,0.2); }
         .heatmap-1 { background: rgba(137, 207, 240, 0.2); }
         .heatmap-2 { background: rgba(137, 207, 240, 0.4); }
         .heatmap-3 { background: rgba(137, 207, 240, 0.6); }
@@ -252,25 +254,22 @@
                         <div class="ranking-card" style="max-height: 350px;"><h4>🔥 Funil de SDRs (Novos Negócios)</h4><div id="rank-funil-sdr" class="flex flex-col items-center"></div></div>
                     </div>
 
-                    <!-- SEÇÃO DE PARCERIAS SDR-VENDEDOR (V13.7) -->
+                    <!-- SEÇÃO DE AUDITORIA DE CONVERSÃO (HEATMAPS EMPILHADOS V13.9) -->
                     <div class="grid grid-cols-1 gap-4 mb-4">
-                        <!-- 1. MATRIZ DE COLABORAÇÃO (HEATMAP) -->
                         <div class="partnership-viz">
-                            <h4>🤝 Matriz de Colaboração (Heatmap)</h4>
-                            <p class="text-[7px] opacity-50 mb-2">Clique nas células para ver detalhes | Intensidade = Volume de Contratos</p>
-                            <div id="heatmap-container" style="overflow-x: auto;"></div>
+                            <h4 class="flex justify-between items-center">
+                                🔥 1. Agendas Realizadas (Volume Bruto)
+                                <span class="text-[7px] opacity-50 uppercase">Total de Negócios Criados no Pipeline</span>
+                            </h4>
+                            <div class="heatmap-wrapper" id="heatmap-agendas-container"></div>
                         </div>
 
-                        <!-- 2. BARRAS EMPILHADAS (STACKED) -->
                         <div class="partnership-viz">
-                            <h4>📊 Barras Empilhadas (Origem de Agendas por Vendedor)</h4>
-                            <div class="chart-container" style="height: 300px;"><canvas id="chart-stacked-partnerships"></canvas></div>
-                        </div>
-
-                        <!-- 3. SANKEY CHART (FLUXO) -->
-                        <div class="partnership-viz">
-                            <h4>🌊 Diagrama de Fluxo (Sankey - SDR → Vendedor)</h4>
-                            <div id="sankey-container" style="width: 100%; height: 400px; background: rgba(0,0,0,0.2); border-radius: 6px;"></div>
+                            <h4 class="flex justify-between items-center">
+                                💰 2. Negócios Fechados (Conversão Final)
+                                <span class="text-[7px] opacity-50 uppercase">Total de Contratos com Status "Ganho"</span>
+                            </h4>
+                            <div class="heatmap-wrapper" id="heatmap-fechados-container"></div>
                         </div>
                     </div>
 
@@ -370,7 +369,7 @@
         async function forceSync() { await loadData(true); }
 
         async function loadData(forceDealsOnly = false) {
-            const cacheKey = `acelerar_v13_7_${appState.empresa}`;
+            const cacheKey = `acelerar_v13_9_${appState.empresa}`;
             const cacheTimeKey = `${cacheKey}_time`;
             const cached = localStorage.getItem(cacheKey);
             const cachedTime = localStorage.getItem(cacheTimeKey);
@@ -401,7 +400,7 @@
             const config = PIPELINES[appState.empresa];
             
             const promises = [
-                fetchPloomes(`Deals?$filter=PipelineId eq ${config.vendas} and StatusId eq 2&$expand=OtherProperties,Owner,Contact&$top=2000`),
+                fetchPloomes(`Deals?$filter=PipelineId eq ${config.vendas}&$expand=OtherProperties,Owner,Contact&$top=2000`),
                 fetchPloomes(`Deals?$filter=PipelineId eq ${config.churn}&$expand=OtherProperties,Owner,Stage,Contact&$top=2000`)
             ];
 
@@ -420,7 +419,7 @@
                     estado: c.State?.Short || (c.City?.State?.Short) || 'NI' 
                 }));
             } else {
-                const cached = JSON.parse(localStorage.getItem(`acelerar_v13_7_${appState.empresa}`));
+                const cached = JSON.parse(localStorage.getItem(`acelerar_v13_9_${appState.empresa}`));
                 appState.contacts = cached ? cached.contacts : [];
             }
 
@@ -447,14 +446,14 @@
                     id: d.Id, cliente: d.Title, cnpj: d.Contact?.CNPJ || d.Contact?.CPF || 'N/A',
                     contactId: d.ContactId, data: dataAtivacao, dataCriacao: dataCriacao, ciclo: ciclo,
                     vendedor: vendedor, sdr: sdr, mrr: mrr, upsell: upsell, adesao: adesao, produto: produto, 
-                    status: type, estagio: d.Stage?.Name || '', ano: dataAtivacao.getFullYear(), mes: MESES_PT[dataAtivacao.getMonth()+1]
+                    status: type, statusId: d.StatusId, estagio: d.Stage?.Name || '', ano: dataAtivacao.getFullYear(), mes: MESES_PT[dataAtivacao.getMonth()+1]
                 };
             };
 
             appState.raw_data = [...vendas.map(d => mapDeal(d, 'Venda')), ...churn.map(d => mapDeal(d, 'Churn'))];
             
-            localStorage.setItem(`acelerar_v13_7_${appState.empresa}`, JSON.stringify({ deals: appState.raw_data, contacts: appState.contacts }));
-            localStorage.setItem(`acelerar_v13_7_${appState.empresa}_time`, new Date().getTime().toString());
+            localStorage.setItem(`acelerar_v13_9_${appState.empresa}`, JSON.stringify({ deals: appState.raw_data, contacts: appState.contacts }));
+            localStorage.setItem(`acelerar_v13_9_${appState.empresa}_time`, new Date().getTime().toString());
             
             document.getElementById('cache-info').textContent = `Sinc: ${new Date().toLocaleString('pt-BR')}`;
             renderDashboard();
@@ -500,8 +499,9 @@
                 (sdr === 'Todos' || d.sdr === sdr)
             );
 
+            // Cruzamento inteligente de valores para Churn (MRR Perdido)
             const vendasMap = {};
-            appState.raw_data.filter(d => d.status === 'Venda').forEach(v => { if (v.contactId) vendasMap[v.contactId] = { mrr: v.mrr, vend: v.vendedor, sdr: v.sdr }; });
+            appState.raw_data.filter(d => d.status === 'Venda' && d.statusId === 2).forEach(v => { if (v.contactId) vendasMap[v.contactId] = { mrr: v.mrr, vend: v.vendedor, sdr: v.sdr }; });
             f.forEach(d => {
                 if (d.status === 'Churn' && d.estagio === 'Cancelado' && d.mrr === 0) {
                     const original = vendasMap[d.contactId];
@@ -509,14 +509,16 @@
                 }
             });
 
-            const mrrConq = f.filter(d => d.status === 'Venda').reduce((s, d) => s + d.mrr, 0);
-            const f_churn = f.filter(d => d.status === 'Churn' && d.estagio === 'Cancelado' && d.mrr > 0);
+            const f_vendas_ganhas = f.filter(d => d.status === 'Venda' && d.statusId === 2);
+            const mrrConq = f_vendas_ganhas.reduce((s, d) => s + d.mrr, 0);
+            
+            const f_churn = f.filter(d => d.status === 'Churn' && d.estagio === 'Cancelado');
             const churn = f_churn.reduce((s, d) => s + d.mrr, 0);
             const upsell = f.reduce((s, d) => s + d.upsell, 0);
             const adesao = f.reduce((s, d) => s + d.adesao, 0);
-            const fechados = f.filter(d => d.status === 'Venda').length;
+            const fechados = f_vendas_ganhas.length;
             const cancelados = f_churn.length;
-            const carteiraTotal = appState.raw_data.filter(d => d.status === 'Venda').length - appState.raw_data.filter(d => d.status === 'Churn' && d.estagio === 'Cancelado').length;
+            const carteiraTotal = appState.raw_data.filter(d => d.status === 'Venda' && d.statusId === 2).length - appState.raw_data.filter(d => d.status === 'Churn' && d.estagio === 'Cancelado').length;
 
             document.getElementById('kpi-mrr-conq').textContent = `R$ ${Math.round(mrrConq).toLocaleString('pt-BR')}`;
             document.getElementById('kpi-mrr-perd').textContent = `R$ ${Math.round(churn).toLocaleString('pt-BR')}`;
@@ -529,7 +531,7 @@
             document.getElementById('kpi-carteira').textContent = carteiraTotal;
             document.getElementById('badge-churn-rate').textContent = `${((churn / (mrrConq || 1)) * 100).toFixed(1)}%`;
 
-            document.getElementById('tbody-detalhamento').innerHTML = f.filter(d => d.status === 'Venda').sort((a,b) => b.data - a.data).map(d => `
+            document.getElementById('tbody-detalhamento').innerHTML = f_vendas_ganhas.sort((a,b) => b.data - a.data).map(d => `
                 <tr><td>${d.data.toLocaleDateString('pt-BR')}</td><td>${d.cnpj}</td><td>${d.cliente}</td><td>${d.vendedor}</td><td>${d.sdr}</td><td>${d.produto}</td><td>R$ ${Math.round(d.mrr).toLocaleString('pt-BR')}</td><td>R$ ${Math.round(d.adesao).toLocaleString('pt-BR')}</td><td>R$ ${Math.round(d.upsell).toLocaleString('pt-BR')}</td></tr>
             `).join('');
 
@@ -539,7 +541,7 @@
 
             updateCharts(f, mesesSelecionados);
             updateRankings(f);
-            renderPartnershipVisualizations(f);
+            renderHeatmaps(f);
             renderGeoList();
         }
 
@@ -554,13 +556,13 @@
             const chartOptions = { responsive: true, maintainAspectRatio: false, scales: { y: { ticks: { color: '#FFF', font: { size: 8 } } }, x: { type: 'category', ticks: { color: '#FFF', font: { size: 8 } } } }, plugins: { legend: { labels: { color: '#FFF', font: { size: 9 } } } } };
             
             let accMrr = 0, accContratos = 0;
-            const mrrData = meses_labels.map(m => { accMrr += f.filter(d => d.mes === m && d.status === 'Venda').reduce((s,d) => s + d.mrr, 0); return accMrr; });
-            const contratosData = meses_labels.map(m => { accContratos += f.filter(d => d.mes === m && d.status === 'Venda').length; return accContratos; });
+            const mrrData = meses_labels.map(m => { accMrr += f.filter(d => d.mes === m && d.status === 'Venda' && d.statusId === 2).reduce((s,d) => s + d.mrr, 0); return accMrr; });
+            const contratosData = meses_labels.map(m => { accContratos += f.filter(d => d.mes === m && d.status === 'Venda' && d.statusId === 2).length; return accContratos; });
             
             renderChart('chart-mrr-meta', 'bar', { labels: meses_labels, datasets: [{ label: 'MRR Acumulado', data: mrrData, backgroundColor: '#89CFF0', order: 2 }, { label: 'Meta', data: meses_labels.map((_, i) => (i + 1) * config.meta_mrr), type: 'line', borderColor: '#FFF', borderWidth: 1.5, pointRadius: 0, order: 1 }] }, chartOptions);
             renderChart('chart-contratos-meta', 'bar', { labels: meses_labels, datasets: [{ label: 'Contratos Acumulados', data: contratosData, backgroundColor: '#89CFF0', order: 2 }, { label: 'Meta', data: meses_labels.map((_, i) => (i + 1) * 17), type: 'line', borderColor: '#FFF', borderWidth: 1.5, pointRadius: 0, order: 1 }] }, chartOptions);
             
-            const evolData = (valKey, status) => meses_labels.map(m => f.filter(d => d.mes === m && (status ? (status === 'Churn' ? (d.status === 'Churn' && d.estagio === 'Cancelado') : d.status === status) : true)).reduce((s,d) => s + d[valKey], 0));
+            const evolData = (valKey, status) => meses_labels.map(m => f.filter(d => d.mes === m && (status ? (status === 'Churn' ? (d.status === 'Churn' && d.estagio === 'Cancelado') : (d.status === status && d.statusId === 2)) : true)).reduce((s,d) => s + d[valKey], 0));
             renderChart('chart-evolucao-mrr', 'bar', { labels: meses_labels, datasets: [{ label: 'MRR Mensal', data: evolData('mrr', 'Venda'), backgroundColor: '#89CFF0' }] }, chartOptions);
             renderChart('chart-evolucao-upsell', 'bar', { labels: meses_labels, datasets: [{ label: 'Upsell Mensal', data: evolData('upsell', null), backgroundColor: '#89CFF0' }] }, chartOptions);
             renderChart('chart-evolucao-churn', 'bar', { labels: meses_labels, datasets: [{ label: 'Churn Mensal', data: evolData('mrr', 'Churn'), backgroundColor: '#E74C3C' }] }, chartOptions);
@@ -569,7 +571,7 @@
         function updateRankings(f) {
             const getRank = (key) => {
                 const map = {};
-                f.filter(d => d.status === 'Venda').forEach(d => {
+                f.filter(d => d.status === 'Venda' && d.statusId === 2).forEach(d => {
                     const k = d[key]; if (k === 'N/A' || !k) return;
                     if (!map[k]) map[k] = { name: k, val: 0, vol: 0, ciclo: 0 };
                     map[k].val += d.mrr; map[k].vol += 1; map[k].ciclo += d.ciclo;
@@ -606,146 +608,68 @@
             if (topSdr) { document.getElementById('mvp-sdr-name').textContent = topSdr.name; document.getElementById('mvp-sdr-val').textContent = `R$ ${Math.round(topSdr.val).toLocaleString('pt-BR')}`; }
         }
 
-        function renderPartnershipVisualizations(f) {
-            const vendas = f.filter(d => d.status === 'Venda');
+        function renderHeatmaps(f) {
+            const agendas = f.filter(d => d.status === 'Venda');
+            const fechados = f.filter(d => d.status === 'Venda' && d.statusId === 2);
             
-            // Criar matriz de cruzamento SDR x Vendedor
-            const matriz = {};
-            const vendedores = new Set();
-            const sdrs = new Set();
-            
-            vendas.forEach(d => {
-                const vend = d.vendedor || 'N/A';
-                const sdr = d.sdr || 'N/A';
-                if (vend === 'N/A' || sdr === 'N/A') return;
-                
-                vendedores.add(vend);
-                sdrs.add(sdr);
-                
-                const key = `${sdr}|${vend}`;
-                if (!matriz[key]) matriz[key] = 0;
-                matriz[key]++;
-            });
-            
-            const vendedoresArr = Array.from(vendedores).sort();
-            const sdrsArr = Array.from(sdrs).sort();
-            
-            // 1. HEATMAP
-            renderHeatmap(matriz, sdrsArr, vendedoresArr);
-            
-            // 2. BARRAS EMPILHADAS
-            renderStackedChart(matriz, sdrsArr, vendedoresArr);
-            
-            // 3. SANKEY
-            renderSankey(matriz, sdrsArr, vendedoresArr);
-        }
-
-        function renderHeatmap(matriz, sdrs, vendedores) {
-            let html = '<table class="heatmap-table"><tr><th>SDR / Vendedor</th>';
-            vendedores.forEach(v => html += `<th>${v.substring(0, 8)}</th>`);
-            html += '</tr>';
-            
-            const maxVal = Math.max(...Object.values(matriz), 1);
-            
-            sdrs.forEach(sdr => {
-                html += `<tr><th>${sdr.substring(0, 8)}</th>`;
-                vendedores.forEach(vend => {
-                    const val = matriz[`${sdr}|${vend}`] || 0;
-                    const intensity = val === 0 ? 0 : Math.ceil((val / maxVal) * 5);
-                    const classe = `heatmap-${intensity}`;
-                    html += `<td class="heatmap-cell ${classe}" title="${sdr} → ${vend}: ${val} contratos">${val}</td>`;
+            const buildMatrix = (data) => {
+                const matrix = {};
+                const vends = new Set();
+                const sdrs = new Set();
+                data.forEach(d => {
+                    const v = d.vendedor || 'N/A', s = d.sdr || 'N/A';
+                    if (v === 'N/A' || s === 'N/A') return;
+                    vends.add(v); sdrs.add(s);
+                    const key = `${s}|${v}`; matrix[key] = (matrix[key] || 0) + 1;
                 });
-                html += '</tr>';
-            });
-            html += '</table>';
-            document.getElementById('heatmap-container').innerHTML = html;
-        }
-
-        function renderStackedChart(matriz, sdrs, vendedores) {
-            const datasets = sdrs.map((sdr, idx) => {
-                const colors = ['#89CFF0', '#2980B9', '#1ABC9C', '#F39C12', '#E74C3C', '#9B59B6', '#34495E', '#16A085'];
-                return {
-                    label: sdr,
-                    data: vendedores.map(vend => matriz[`${sdr}|${vend}`] || 0),
-                    backgroundColor: colors[idx % colors.length]
-                };
-            });
-            
-            if (appState.charts['chart-stacked-partnerships']) appState.charts['chart-stacked-partnerships'].destroy();
-            const ctx = document.getElementById('chart-stacked-partnerships');
-            if (ctx) {
-                appState.charts['chart-stacked-partnerships'] = new Chart(ctx, {
-                    type: 'bar',
-                    data: {
-                        labels: vendedores,
-                        datasets: datasets
-                    },
-                    options: {
-                        indexAxis: 'y',
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        scales: {
-                            x: { stacked: true, ticks: { color: '#FFF' } },
-                            y: { stacked: true, ticks: { color: '#FFF' } }
-                        },
-                        plugins: {
-                            legend: { labels: { color: '#FFF', font: { size: 9 } } }
-                        }
-                    }
-                });
-            }
-        }
-
-        function renderSankey(matriz, sdrs, vendedores) {
-            const nodes = [...sdrs.map(s => ({ name: `SDR: ${s}`, color: '#2980B9' })), ...vendedores.map(v => ({ name: `Vend: ${v}`, color: '#89CFF0' }))];
-            const links = [];
-            
-            sdrs.forEach((sdr, sdrIdx) => {
-                vendedores.forEach((vend, vendIdx) => {
-                    const val = matriz[`${sdr}|${vend}`] || 0;
-                    if (val > 0) {
-                        links.push({
-                            source: sdrIdx,
-                            target: sdrs.length + vendIdx,
-                            value: val
-                        });
-                    }
-                });
-            });
-            
-            const data = [{
-                type: 'sankey',
-                node: {
-                    pad: 15,
-                    thickness: 20,
-                    line: { color: 'black' },
-                    label: nodes.map(n => n.name),
-                    color: nodes.map(n => n.color)
-                },
-                link: {
-                    source: links.map(l => l.source),
-                    target: links.map(l => l.target),
-                    value: links.map(l => l.value),
-                    color: links.map(() => 'rgba(137, 207, 240, 0.4)')
-                }
-            }];
-            
-            const layout = {
-                title: '',
-                font: { color: '#FFF', size: 10 },
-                paper_bgcolor: 'rgba(10, 30, 46, 0)',
-                plot_bgcolor: 'rgba(10, 30, 46, 0)',
-                margin: { l: 50, r: 50, t: 20, b: 20 }
+                return { matrix, vends: Array.from(vends).sort(), sdrs: Array.from(sdrs).sort() };
             };
+
+            const agendasData = buildMatrix(agendas);
+            const fechadosData = buildMatrix(fechados);
             
-            Plotly.newPlot('sankey-container', data, layout, { responsive: true, displayModeBar: false });
+            const render = (id, dataObj) => {
+                const { matrix, vends, sdrs } = dataObj;
+                if (sdrs.length === 0) { document.getElementById(id).innerHTML = '<p class="text-center opacity-30 text-[9px] py-10">Sem dados para este período</p>'; return; }
+                
+                let html = '<table class="heatmap-table"><tr><th class="row-label">SDR / Vendedor</th>';
+                vends.forEach(v => html += `<th>${v}</th>`);
+                html += '<th class="total-cell">TOTAL</th></tr>';
+                
+                const maxVal = Math.max(...Object.values(matrix), 1);
+                const vendTotals = {};
+                let grandTotal = 0;
+
+                sdrs.forEach(sdr => {
+                    html += `<tr><td class="row-label">${sdr}</td>`;
+                    let sdrSum = 0;
+                    vends.forEach(vend => {
+                        const val = matrix[`${sdr}|${vend}`] || 0;
+                        sdrSum += val;
+                        vendTotals[vend] = (vendTotals[vend] || 0) + val;
+                        const intensity = val === 0 ? 0 : Math.ceil((val / maxVal) * 5);
+                        html += `<td class="heatmap-cell heatmap-${intensity}" title="${sdr} → ${vend}: ${val}">${val}</td>`;
+                    });
+                    grandTotal += sdrSum;
+                    html += `<td class="total-cell">${sdrSum}</td></tr>`;
+                });
+
+                html += '<tr><td class="row-label">TOTAL GERAL</td>';
+                vends.forEach(vend => html += `<td class="total-cell">${vendTotals[vend] || 0}</td>`);
+                html += `<td class="total-cell" style="background: #89CFF0; color: #0B2A4E;">${grandTotal}</td></tr></table>`;
+                
+                document.getElementById(id).innerHTML = html;
+            };
+
+            render('heatmap-agendas-container', agendasData);
+            render('heatmap-fechados-container', fechadosData);
         }
 
         function renderGeoList() {
             const stateList = document.getElementById('geo-state-list');
             const cityList = document.getElementById('geo-city-list');
             
-            const fechadosIds = new Set(appState.raw_data.filter(d => d.status === 'Venda').map(d => d.contactId));
+            const fechadosIds = new Set(appState.raw_data.filter(d => d.status === 'Venda' && d.statusId === 2).map(d => d.contactId));
             const geoMap = {};
 
             appState.contacts.forEach(c => {
