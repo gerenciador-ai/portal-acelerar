@@ -729,19 +729,43 @@
         async function loadInadimplencia() {
             showLoading(`Lendo Inadimplência (Nibo)...`);
             try {
-                // Lê o arquivo JSON gerado pela automação diária
                 const res = await axios.get('data/inadimplencia.json');
                 const data = res.data;
 
-                // 1. Atualiza os KPIs Superiores
+                // 1. Atualiza KPIs
                 document.getElementById('kpi-total-aberto').textContent = `R$ ${Math.round(data.kpis.total_aberto).toLocaleString('pt-BR')}`;
                 document.getElementById('kpi-clientes-inad').textContent = data.kpis.clientes_inadimplentes;
-                
-                // 2. Atualiza o KPI de Repasse (30%) se o elemento existir
-                const elRepasse = document.getElementById('kpi-repasse');
-                if (elRepasse) elRepasse.textContent = `R$ ${Math.round(data.kpis.repasse_sittax).toLocaleString('pt-BR')}`;
+                document.getElementById('kpi-repasse').textContent = `R$ ${Math.round(data.kpis.repasse_sittax).toLocaleString('pt-BR')}`;
 
-                // 3. Popular Tabela de Detalhamento de Títulos
+                // 2. Renderiza Gráfico de Rosca (Plotly)
+                const dataPlotly = [{
+                    values: data.aging_chart.values,
+                    labels: data.aging_chart.labels,
+                    type: 'pie',
+                    hole: .4,
+                    marker: { colors: ['#0B2A4E', '#89CFF0', '#FF6B6B', '#E74C3C'] }
+                }];
+                const layoutPlotly = {
+                    title: 'Distribuição por Pior Faixa',
+                    paper_bgcolor: 'rgba(0,0,0,0)',
+                    plot_bgcolor: 'rgba(0,0,0,0)',
+                    font: { color: '#FFF', size: 10 },
+                    margin: { t: 30, b: 10, l: 10, r: 10 },
+                    showlegend: true
+                };
+                Plotly.newPlot('chart-aging-inadimplencia', dataPlotly, layoutPlotly);
+
+                // 3. Preenche Tabela: Resumo por Cliente
+                document.getElementById('tbody-resumo-cliente').innerHTML = data.resumo_clientes.map(r => `
+                    <tr>
+                        <td>${r.nome}</td>
+                        <td>R$ ${r.valor.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>
+                        <td class="text-center">${r.parcelas}</td>
+                        <td>${r.faixa}</td>
+                    </tr>
+                `).join('');
+
+                // 4. Preenche Tabela: Detalhamento de Títulos
                 document.getElementById('tbody-inadimplencia').innerHTML = data.detalhamento_titulos.map(r => `
                     <tr>
                         <td>${new Date(r.vencimento).toLocaleDateString('pt-BR')}</td>
@@ -753,11 +777,8 @@
                 `).join('');
 
             } catch (e) { 
-                console.error("Erro ao ler dados do Nibo:", e);
-                alert("Dados de inadimplência ainda não disponíveis ou erro na leitura.");
+                console.error("Erro na leitura do JSON:", e);
+                alert("Erro ao carregar os dados processados do Nibo.");
             }
             hideLoading();
         }
-    </script>
-</body>
-</html>
