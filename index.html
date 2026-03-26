@@ -732,12 +732,12 @@
                 const res = await axios.get('data/inadimplencia.json');
                 const data = res.data;
 
-                // 1. Atualiza KPIs
+                // 1. KPIs
                 document.getElementById('kpi-total-aberto').textContent = `R$ ${Math.round(data.kpis.total_aberto).toLocaleString('pt-BR')}`;
                 document.getElementById('kpi-clientes-inad').textContent = data.kpis.clientes_inadimplentes;
                 document.getElementById('kpi-repasse').textContent = `R$ ${Math.round(data.kpis.repasse_sittax).toLocaleString('pt-BR')}`;
 
-                // 2. Renderiza Gráfico de Rosca (Plotly)
+                // 2. Gráfico de Rosca (Plotly)
                 const dataPlotly = [{
                     values: data.aging_chart.values,
                     labels: data.aging_chart.labels,
@@ -755,7 +755,7 @@
                 };
                 Plotly.newPlot('chart-aging-inadimplencia', dataPlotly, layoutPlotly);
 
-                // 3. Preenche Tabela: Resumo por Cliente
+                // 3. Tabela: Resumo por Cliente
                 document.getElementById('tbody-resumo-cliente').innerHTML = data.resumo_clientes.map(r => `
                     <tr>
                         <td>${r.nome}</td>
@@ -765,7 +765,7 @@
                     </tr>
                 `).join('');
 
-                // 4. Preenche Tabela: Detalhamento de Títulos
+                // 4. Tabela: Detalhamento de Títulos
                 document.getElementById('tbody-inadimplencia').innerHTML = data.detalhamento_titulos.map(r => `
                     <tr>
                         <td>${new Date(r.vencimento).toLocaleDateString('pt-BR')}</td>
@@ -777,8 +777,8 @@
                 `).join('');
 
             } catch (e) { 
-                console.error("Erro na leitura do JSON:", e);
-                alert("Erro ao carregar os dados processados do Nibo.");
+                console.error("Erro ao ler dados do Nibo:", e);
+                alert("Erro na leitura dos dados. Certifique-se de que o arquivo data/inadimplencia.json existe.");
             }
             hideLoading();
         }
