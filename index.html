@@ -423,17 +423,19 @@
         }
         async function fetchVolumeGeral() {
             const config = PIPELINES[appState.empresa];
+            console.log(`[DIAGNOSTICO] Buscando Volume para ${appState.empresa}...`);
             const promises = [
                 fetchPloomes(`Deals?$filter=PipelineId eq ${config.vendas} and (StatusId eq 1 or StatusId eq 3)&$expand=OtherProperties,Owner,Contact&$top=2000`)
             ];
             const results = await Promise.all(promises);
-            const volumeDeals = results[0];
+            const volumeDeals = results[0] || [];
+            console.log(`[DIAGNOSTICO] API retornou ${volumeDeals.length} negócios (Status 1 ou 3).`);
             
             const mapDealVolume = (d) => {
                 const props = d.OtherProperties || [];
                 const getProp = (id) => props.find(p => p.FieldId === id);
-                const vendedor = getProp(FIELDS.VENDEDOR_REAL)?.UserValueName || 'N/A';
-                const sdr = getProp(FIELDS.SDR_REAL)?.UserValueName || 'N/A';
+                const vendedor = getProp(FIELDS.VENDEDOR_REAL)?.UserValueName || d.Owner?.Name || 'N/A';
+                const sdr = getProp(FIELDS.SDR_REAL)?.UserValueName || 'SDR Não Identificado';
                 const dataCriacao = new Date(d.CreateDate);
                 return {
                     id: d.Id, cliente: d.Title, vendedor: vendedor, sdr: sdr,
@@ -442,6 +444,7 @@
                 };
             };
             appState.volumeData = volumeDeals.map(d => mapDealVolume(d));
+            console.log(`[DIAGNOSTICO] Volume mapeado: ${appState.volumeData.length} registros.`);
             // Forçar renderização do heatmap de volume após a carga
             if (appState.page === 'desempenho') applyFilters();
         }
@@ -612,9 +615,8 @@
             const sdrs = new Set();
             
             volumeFiltered.forEach(d => {
-                const vend = d.vendedor || 'N/A';
-                const sdr = d.sdr || 'N/A';
-                if (vend === 'N/A' || sdr === 'N/A') return;
+                const vend = d.vendedor || 'Vendedor N/A';
+                const sdr = d.sdr || 'SDR N/A';
                 vendedores.add(vend);
                 sdrs.add(sdr);
                 const key = `${sdr}|${vend}`;
