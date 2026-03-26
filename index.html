@@ -277,7 +277,20 @@
                         <div class="kpi-card"><div class="label">Clientes Inadimplentes</div><div class="value" id="kpi-clientes-inad">0</div></div>
                         <div class="kpi-card" style="border-left: 2px solid #F1C40F;"><div class="label">Repasse (30%)</div><div class="value" id="kpi-repasse" style="color: #F1C40F;">R$ 0</div></div>
                     </div>
+
+                    <!-- LUGAR DO GRÁFICO -->
+                    <div class="chart-container" style="height: 300px;" id="chart-aging-inadimplencia"></div>
                     
+                    <!-- LUGAR DO RESUMO POR CLIENTE -->
+                    <h3 class="text-sm font-bold text-blue-300 mt-6 mb-3">👥 Resumo por Cliente</h3>
+                    <div class="table-container">
+                        <table id="table-resumo-cliente">
+                            <thead><tr><th>Cliente</th><th>Valor Total</th><th>Parcelas</th><th>Pior Faixa</th></tr></thead>
+                            <tbody id="tbody-resumo-cliente"></tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- LUGAR DO DETALHAMENTO -->
                     <h3 class="text-sm font-bold text-blue-300 mt-6 mb-3">📋 Detalhamento de Títulos</h3>
                     <div class="table-container">
                         <table id="table-inadimplencia">
