@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hub Holding Acelerar - Portal Estratégico (V13.7)</title>
+    <title>Hub Holding Acelerar - Portal Estratégico (V13.7 - Restaurada)</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios@1.6.0/dist/axios.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -59,11 +59,6 @@
         .bar-label { font-size: 0.75rem; font-weight: 700; color: #FFFFFF; text-shadow: 1px 1px 2px rgba(0,0,0,0.8); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .bar-value { font-size: 0.75rem; font-weight: 800; color: #89CFF0; text-shadow: 1px 1px 2px rgba(0,0,0,0.8); }
         
-        .funnel-row { display: flex; justify-content: center; width: 100%; margin-bottom: 8px; }
-        .funnel-bar { height: 24px; background: #2980B9; border-radius: 4px; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 0 10px; position: relative; transition: width 0.5s ease; }
-        .funnel-label { font-size: 0.7rem; font-weight: 700; color: #FFFFFF; text-shadow: 1px 1px 2px rgba(0,0,0,0.8); white-space: nowrap; }
-        .funnel-value { font-size: 0.75rem; font-weight: 800; color: #FFF; }
-
         .toggle-sidebar-btn { background: none; border: 1px solid #89CFF0; color: #89CFF0; padding: 2px 8px; border-radius: 4px; cursor: pointer; font-size: 1rem; margin-right: 10px; }
         .toggle-sidebar-btn:hover { background: #89CFF0; color: #0B2A4E; }
         .export-btn { font-size: 0.65rem; background: #27AE60; color: white; padding: 2px 8px; border-radius: 4px; font-weight: bold; cursor: pointer; float: right; }
@@ -76,20 +71,15 @@
         
         .churn-badge { font-size: 0.6rem; background: rgba(231, 76, 60, 0.2); color: #E74C3C; padding: 1px 4px; border-radius: 4px; font-weight: 800; margin-top: 2px; display: inline-block; }
 
-        .geo-list-container { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; height: 100%; }
-        .geo-list { background: rgba(0,0,0,0.2); border-radius: 6px; padding: 8px; overflow-y: auto; }
-        .geo-item { padding: 6px 10px; border-radius: 4px; margin-bottom: 4px; cursor: pointer; transition: 0.2s; border: 1px solid transparent; }
-        .geo-item:hover { background: rgba(137, 207, 240, 0.1); border-color: rgba(137, 207, 240, 0.3); }
-        .geo-item.active { background: #89CFF0; color: #0B2A4E; }
-        .geo-item.active span { color: #0B2A4E !important; }
-
         .partnership-viz { background: rgba(11, 42, 78, 0.4); border: 1px solid rgba(137, 207, 240, 0.2); border-radius: 8px; padding: 12px; margin-bottom: 10px; }
         .partnership-viz h4 { color: #89CFF0; font-size: 0.75rem; font-weight: 800; margin-bottom: 12px; text-transform: uppercase; border-bottom: 1px solid rgba(137, 207, 240, 0.2); padding-bottom: 4px; }
-        .heatmap-table { width: 100%; border-collapse: collapse; font-size: 0.65rem; }
-        .heatmap-table th, .heatmap-table td { padding: 4px; border: 1px solid rgba(137, 207, 240, 0.2); text-align: center; }
-        .heatmap-table th { background: rgba(137, 207, 240, 0.1); color: #89CFF0; }
-        .heatmap-cell { color: #FFF; font-weight: 700; }
-        .heatmap-0 { background: rgba(11, 42, 78, 0.3); }
+        .heatmap-wrapper { overflow-x: auto; width: 100%; }
+        .heatmap-table { width: 100%; border-collapse: collapse; font-size: 0.6rem; min-width: 600px; }
+        .heatmap-table th, .heatmap-table td { padding: 4px 6px; border: 1px solid rgba(137, 207, 240, 0.2); text-align: center; }
+        .heatmap-table th { background: rgba(137, 207, 240, 0.1); color: #89CFF0; font-weight: 800; }
+        .heatmap-table .row-label { text-align: left; background: rgba(137, 207, 240, 0.05); font-weight: 700; }
+        .heatmap-cell { color: #FFF; font-weight: 700; transition: 0.3s; }
+        .heatmap-0 { background: rgba(11, 42, 78, 0.3); color: rgba(255,255,255,0.2); }
         .heatmap-1 { background: rgba(137, 207, 240, 0.2); }
         .heatmap-2 { background: rgba(137, 207, 240, 0.4); }
         .heatmap-3 { background: rgba(137, 207, 240, 0.6); }
@@ -243,47 +233,27 @@
                     </div>
 
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
-                        <div class="ranking-card"><h4>🏆 Vendedores (MRR)</h4><div id="rank-vend-mrr"></div></div>
-                        <div class="ranking-card"><h4>🏆 SDRS (MRR)</h4><div id="rank-sdr-mrr"></div></div>
+                        <div class="ranking-card"><h4>🏆 Top 5 Vendedores (MRR)</h4><div id="rank-vend-mrr"></div></div>
+                        <div class="ranking-card"><h4>🏆 Top 5 SDRS (MRR)</h4><div id="rank-sdr-mrr"></div></div>
                     </div>
 
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
-                        <div class="ranking-card" style="max-height: 350px;"><h4>🚀 Ciclo Médio de Venda (Dias)</h4><div id="rank-ciclo-venda"></div></div>
-                        <div class="ranking-card" style="max-height: 350px;"><h4>🔥 Funil de SDRs (Novos Negócios)</h4><div id="rank-funil-sdr" class="flex flex-col items-center"></div></div>
+                        <div class="ranking-card"><h4>🏆 Top 5 Vendedores (Volume)</h4><div id="rank-vend-vol"></div></div>
+                        <div class="ranking-card"><h4>🏆 Top 5 SDRS (Volume)</h4><div id="rank-sdr-vol"></div></div>
                     </div>
 
-                    <!-- SEÇÃO DE PARCERIAS SDR-VENDEDOR (V13.7) -->
                     <div class="grid grid-cols-1 gap-4 mb-4">
-                        <!-- 1. MATRIZ DE COLABORAÇÃO (HEATMAP) -->
                         <div class="partnership-viz">
-                            <h4>🤝 Matriz de Colaboração (Heatmap)</h4>
-                            <p class="text-[7px] opacity-50 mb-2">Clique nas células para ver detalhes | Intensidade = Volume de Contratos</p>
-                            <div id="heatmap-container" style="overflow-x: auto;"></div>
+                            <h4>🤝 Matriz de Colaboração (SDR → Vendedor)</h4>
+                            <div class="heatmap-wrapper" id="heatmap-container"></div>
                         </div>
-
-                        <!-- 2. BARRAS EMPILHADAS (STACKED) -->
                         <div class="partnership-viz">
-                            <h4>📊 Barras Empilhadas (Origem de Agendas por Vendedor)</h4>
-                            <div class="chart-container" style="height: 300px;"><canvas id="chart-stacked-partnerships"></canvas></div>
+                            <h4>📊 Parcerias por Vendedor (Stacked)</h4>
+                            <div class="chart-container" style="height: 300px;"><canvas id="chart-stacked-partners"></canvas></div>
                         </div>
-
-                        <!-- 3. SANKEY CHART (FLUXO) -->
                         <div class="partnership-viz">
-                            <h4>🌊 Diagrama de Fluxo (Sankey - SDR → Vendedor)</h4>
-                            <div id="sankey-container" style="width: 100%; height: 400px; background: rgba(0,0,0,0.2); border-radius: 6px;"></div>
-                        </div>
-                    </div>
-
-                    <div class="ranking-card" style="height: 450px;">
-                        <h4 class="flex justify-between items-center">
-                            🌍 Inteligência de Campo (Geolocalização)
-                            <span class="text-[7px] opacity-50 uppercase">Clique no Estado para ver os Municípios</span>
-                        </h4>
-                        <div class="geo-list-container">
-                            <div class="geo-list" id="geo-state-list"></div>
-                            <div class="geo-list" id="geo-city-list">
-                                <div class="flex items-center justify-center h-full opacity-30 text-[9px]">Selecione um estado</div>
-                            </div>
+                            <h4>🔄 Fluxo de Negócios (Sankey Diagram)</h4>
+                            <div id="sankey-container" style="height: 400px; width: 100%;"></div>
                         </div>
                     </div>
                 </div>
@@ -327,7 +297,7 @@
         };
         const MESES_PT = {1:'Jan',2:'Fev',3:'Mar',4:'Abr',5:'Mai',6:'Jun',7:'Jul',8:'Ago',9:'Set',10:'Out',11:'Nov',12:'Dez'};
 
-        let appState = { empresa: 'VMC Tech', page: 'performance', raw_data: [], contacts: [], activeState: null, charts: {} };
+        let appState = { empresa: 'VMC Tech', page: 'performance', raw_data: [], charts: {} };
 
         function toggleSidebar() { document.getElementById('sidebar').classList.toggle('collapsed'); }
         function showLoading(t) { document.getElementById('loading-overlay').style.display = 'flex'; document.getElementById('loading-text').textContent = t; }
@@ -369,60 +339,24 @@
 
         async function forceSync() { await loadData(true); }
 
-        async function loadData(forceDealsOnly = false) {
+        async function loadData(force) {
             const cacheKey = `acelerar_v13_7_${appState.empresa}`;
-            const cacheTimeKey = `${cacheKey}_time`;
             const cached = localStorage.getItem(cacheKey);
-            const cachedTime = localStorage.getItem(cacheTimeKey);
-            
-            const now = new Date();
-            const lastSync = cachedTime ? new Date(parseInt(cachedTime)) : null;
-            
-            let needsFullSync = !cached || !lastSync;
-            if (lastSync) {
-                const diffHours = (now - lastSync) / (1000 * 60 * 60);
-                if (diffHours > 24) needsFullSync = true;
-                if (lastSync.getDate() !== now.getDate() && now.getHours() >= 8) needsFullSync = true;
-            }
-
-            if (!needsFullSync && !forceDealsOnly) { 
-                const data = JSON.parse(cached);
-                appState.raw_data = data.deals;
-                appState.contacts = data.contacts;
-                document.getElementById('cache-info').textContent = `Sinc: ${lastSync.toLocaleString('pt-BR')}`;
+            const cachedTime = localStorage.getItem(`${cacheKey}_time`);
+            const now = new Date().getTime();
+            if (!force && cached && cachedTime && (now - parseInt(cachedTime)) < 300000) { 
+                appState.raw_data = JSON.parse(cached); 
                 renderDashboard();
-            } else { 
-                await refreshData(needsFullSync); 
-            }
+            } else { await refreshData(); }
         }
 
-        async function refreshData(fullSync) {
-            showLoading(fullSync ? `Sincronizando Base Completa...` : `Sincronizando Negócios...`);
+        async function refreshData() {
+            showLoading('Sincronizando com Ploomes API...');
             const config = PIPELINES[appState.empresa];
-            
-            const promises = [
-                fetchPloomes(`Deals?$filter=PipelineId eq ${config.vendas} and StatusId eq 2&$expand=OtherProperties,Owner,Contact&$top=2000`),
+            const [vendas, churn] = await Promise.all([
+                fetchPloomes(`Deals?$filter=PipelineId eq ${config.vendas}&$expand=OtherProperties,Owner,Contact&$top=2000`),
                 fetchPloomes(`Deals?$filter=PipelineId eq ${config.churn}&$expand=OtherProperties,Owner,Stage,Contact&$top=2000`)
-            ];
-
-            if (fullSync) {
-                promises.push(fetchPloomes(`Contacts?$select=Id,Name,CNPJ,CPF,City,State&$expand=City,State&$top=2000`));
-            }
-
-            const results = await Promise.all(promises);
-            const vendas = results[0];
-            const churn = results[1];
-            
-            if (fullSync) {
-                appState.contacts = results[2].map(c => ({ 
-                    id: c.Id, name: c.Name, cnpj: c.CNPJ || c.CPF, 
-                    cidade: c.City?.Name, 
-                    estado: c.State?.Short || (c.City?.State?.Short) || 'NI' 
-                }));
-            } else {
-                const cached = JSON.parse(localStorage.getItem(`acelerar_v13_7_${appState.empresa}`));
-                appState.contacts = cached ? cached.contacts : [];
-            }
+            ]);
 
             const mapDeal = (d, type) => {
                 const props = d.OtherProperties || [];
@@ -438,25 +372,22 @@
                 const vendedor = getProp(FIELDS.VENDEDOR_REAL)?.UserValueName || 'N/A';
                 const sdr = getProp(FIELDS.SDR_REAL)?.UserValueName || 'N/A';
 
-                const dataCriacao = new Date(d.CreateDate);
                 let dateStr = type === 'Venda' ? (getProp(FIELDS.DATA_ATIVACAO)?.DateTimeValue || d.FinishDate || d.CreateDate || '') : (getProp(FIELDS.DATA_CANCELAMENTO)?.DateTimeValue || d.FinishDate || d.CreateDate || '');
-                const dataAtivacao = new Date(dateStr);
-                const ciclo = Math.max(0, Math.round((dataAtivacao - dataCriacao) / (1000 * 60 * 60 * 24)));
+                const date = new Date(dateStr);
 
                 return {
                     id: d.Id, cliente: d.Title, cnpj: d.Contact?.CNPJ || d.Contact?.CPF || 'N/A',
-                    contactId: d.ContactId, data: dataAtivacao, dataCriacao: dataCriacao, ciclo: ciclo,
-                    vendedor: vendedor, sdr: sdr, mrr: mrr, upsell: upsell, adesao: adesao, produto: produto, 
-                    status: type, estagio: d.Stage?.Name || '', ano: dataAtivacao.getFullYear(), mes: MESES_PT[dataAtivacao.getMonth()+1]
+                    contactId: d.ContactId, data: date, vendedor: vendedor, sdr: sdr,
+                    mrr: mrr, upsell: upsell, adesao: adesao, produto: produto, 
+                    status: type, statusId: d.StatusId, estagio: d.Stage?.Name || '',
+                    ano: date.getFullYear(), mes: MESES_PT[date.getMonth()+1]
                 };
             };
 
             appState.raw_data = [...vendas.map(d => mapDeal(d, 'Venda')), ...churn.map(d => mapDeal(d, 'Churn'))];
-            
-            localStorage.setItem(`acelerar_v13_7_${appState.empresa}`, JSON.stringify({ deals: appState.raw_data, contacts: appState.contacts }));
+            localStorage.setItem(`acelerar_v13_7_${appState.empresa}`, JSON.stringify(appState.raw_data));
             localStorage.setItem(`acelerar_v13_7_${appState.empresa}_time`, new Date().getTime().toString());
-            
-            document.getElementById('cache-info').textContent = `Sinc: ${new Date().toLocaleString('pt-BR')}`;
+            document.getElementById('cache-info').textContent = `Sinc: ${new Date().toLocaleTimeString()}`;
             renderDashboard();
             hideLoading();
         }
@@ -500,8 +431,9 @@
                 (sdr === 'Todos' || d.sdr === sdr)
             );
 
+            // Cruzamento de MRR para Cancelados
             const vendasMap = {};
-            appState.raw_data.filter(d => d.status === 'Venda').forEach(v => { if (v.contactId) vendasMap[v.contactId] = { mrr: v.mrr, vend: v.vendedor, sdr: v.sdr }; });
+            appState.raw_data.filter(d => d.status === 'Venda' && d.statusId === 2).forEach(v => { if (v.contactId) vendasMap[v.contactId] = { mrr: v.mrr, vend: v.vendedor, sdr: v.sdr }; });
             f.forEach(d => {
                 if (d.status === 'Churn' && d.estagio === 'Cancelado' && d.mrr === 0) {
                     const original = vendasMap[d.contactId];
@@ -509,27 +441,28 @@
                 }
             });
 
-            const mrrConq = f.filter(d => d.status === 'Venda').reduce((s, d) => s + d.mrr, 0);
-            const f_churn = f.filter(d => d.status === 'Churn' && d.estagio === 'Cancelado' && d.mrr > 0);
+            const f_vendas_ganhas = f.filter(d => d.status === 'Venda' && d.statusId === 2);
+            const mrrConq = f_vendas_ganhas.reduce((s, d) => s + d.mrr, 0);
+            const f_churn = f.filter(d => d.status === 'Churn' && d.estagio === 'Cancelado');
             const churn = f_churn.reduce((s, d) => s + d.mrr, 0);
             const upsell = f.reduce((s, d) => s + d.upsell, 0);
-            const adesao = f.reduce((s, d) => s + d.adesao, 0);
-            const fechados = f.filter(d => d.status === 'Venda').length;
+            const adsao = f.reduce((s, d) => s + d.adesao, 0);
+            const fechados = f_vendas_ganhas.length;
             const cancelados = f_churn.length;
-            const carteiraTotal = appState.raw_data.filter(d => d.status === 'Venda').length - appState.raw_data.filter(d => d.status === 'Churn' && d.estagio === 'Cancelado').length;
+            const carteiraTotal = appState.raw_data.filter(d => d.status === 'Venda' && d.statusId === 2).length - appState.raw_data.filter(d => d.status === 'Churn' && d.estagio === 'Cancelado').length;
 
             document.getElementById('kpi-mrr-conq').textContent = `R$ ${Math.round(mrrConq).toLocaleString('pt-BR')}`;
             document.getElementById('kpi-mrr-perd').textContent = `R$ ${Math.round(churn).toLocaleString('pt-BR')}`;
             document.getElementById('kpi-mrr-net').textContent = `R$ ${Math.round(mrrConq - churn).toLocaleString('pt-BR')}`;
             document.getElementById('kpi-upsell').textContent = `R$ ${Math.round(upsell).toLocaleString('pt-BR')}`;
             document.getElementById('kpi-ticket').textContent = `R$ ${Math.round(fechados > 0 ? mrrConq/fechados : 0).toLocaleString('pt-BR')}`;
-            document.getElementById('kpi-adesao').textContent = `R$ ${Math.round(adesao).toLocaleString('pt-BR')}`;
+            document.getElementById('kpi-adesao').textContent = `R$ ${Math.round(adsao).toLocaleString('pt-BR')}`;
             document.getElementById('kpi-fechados').textContent = fechados;
             document.getElementById('kpi-fechados-cancelados').textContent = cancelados;
             document.getElementById('kpi-carteira').textContent = carteiraTotal;
             document.getElementById('badge-churn-rate').textContent = `${((churn / (mrrConq || 1)) * 100).toFixed(1)}%`;
 
-            document.getElementById('tbody-detalhamento').innerHTML = f.filter(d => d.status === 'Venda').sort((a,b) => b.data - a.data).map(d => `
+            document.getElementById('tbody-detalhamento').innerHTML = f_vendas_ganhas.sort((a,b) => b.data - a.data).map(d => `
                 <tr><td>${d.data.toLocaleDateString('pt-BR')}</td><td>${d.cnpj}</td><td>${d.cliente}</td><td>${d.vendedor}</td><td>${d.sdr}</td><td>${d.produto}</td><td>R$ ${Math.round(d.mrr).toLocaleString('pt-BR')}</td><td>R$ ${Math.round(d.adesao).toLocaleString('pt-BR')}</td><td>R$ ${Math.round(d.upsell).toLocaleString('pt-BR')}</td></tr>
             `).join('');
 
@@ -539,8 +472,7 @@
 
             updateCharts(f, mesesSelecionados);
             updateRankings(f);
-            renderPartnershipVisualizations(f);
-            renderGeoList();
+            renderPartnershipViz(f_vendas_ganhas);
         }
 
         function updateCharts(f, mesesEixo) {
@@ -554,13 +486,13 @@
             const chartOptions = { responsive: true, maintainAspectRatio: false, scales: { y: { ticks: { color: '#FFF', font: { size: 8 } } }, x: { type: 'category', ticks: { color: '#FFF', font: { size: 8 } } } }, plugins: { legend: { labels: { color: '#FFF', font: { size: 9 } } } } };
             
             let accMrr = 0, accContratos = 0;
-            const mrrData = meses_labels.map(m => { accMrr += f.filter(d => d.mes === m && d.status === 'Venda').reduce((s,d) => s + d.mrr, 0); return accMrr; });
-            const contratosData = meses_labels.map(m => { accContratos += f.filter(d => d.mes === m && d.status === 'Venda').length; return accContratos; });
+            const mrrData = meses_labels.map(m => { accMrr += f.filter(d => d.mes === m && d.status === 'Venda' && d.statusId === 2).reduce((s,d) => s + d.mrr, 0); return accMrr; });
+            const contratosData = meses_labels.map(m => { accContratos += f.filter(d => d.mes === m && d.status === 'Venda' && d.statusId === 2).length; return accContratos; });
             
             renderChart('chart-mrr-meta', 'bar', { labels: meses_labels, datasets: [{ label: 'MRR Acumulado', data: mrrData, backgroundColor: '#89CFF0', order: 2 }, { label: 'Meta', data: meses_labels.map((_, i) => (i + 1) * config.meta_mrr), type: 'line', borderColor: '#FFF', borderWidth: 1.5, pointRadius: 0, order: 1 }] }, chartOptions);
             renderChart('chart-contratos-meta', 'bar', { labels: meses_labels, datasets: [{ label: 'Contratos Acumulados', data: contratosData, backgroundColor: '#89CFF0', order: 2 }, { label: 'Meta', data: meses_labels.map((_, i) => (i + 1) * 17), type: 'line', borderColor: '#FFF', borderWidth: 1.5, pointRadius: 0, order: 1 }] }, chartOptions);
             
-            const evolData = (valKey, status) => meses_labels.map(m => f.filter(d => d.mes === m && (status ? (status === 'Churn' ? (d.status === 'Churn' && d.estagio === 'Cancelado') : d.status === status) : true)).reduce((s,d) => s + d[valKey], 0));
+            const evolData = (valKey, status) => meses_labels.map(m => f.filter(d => d.mes === m && (status ? (status === 'Churn' ? (d.status === 'Churn' && d.estagio === 'Cancelado') : (d.status === status && d.statusId === 2)) : true)).reduce((s,d) => s + d[valKey], 0));
             renderChart('chart-evolucao-mrr', 'bar', { labels: meses_labels, datasets: [{ label: 'MRR Mensal', data: evolData('mrr', 'Venda'), backgroundColor: '#89CFF0' }] }, chartOptions);
             renderChart('chart-evolucao-upsell', 'bar', { labels: meses_labels, datasets: [{ label: 'Upsell Mensal', data: evolData('upsell', null), backgroundColor: '#89CFF0' }] }, chartOptions);
             renderChart('chart-evolucao-churn', 'bar', { labels: meses_labels, datasets: [{ label: 'Churn Mensal', data: evolData('mrr', 'Churn'), backgroundColor: '#E74C3C' }] }, chartOptions);
@@ -569,227 +501,90 @@
         function updateRankings(f) {
             const getRank = (key) => {
                 const map = {};
-                f.filter(d => d.status === 'Venda').forEach(d => {
+                f.filter(d => d.status === 'Venda' && d.statusId === 2).forEach(d => {
                     const k = d[key]; if (k === 'N/A' || !k) return;
-                    if (!map[k]) map[k] = { name: k, val: 0, vol: 0, ciclo: 0 };
-                    map[k].val += d.mrr; map[k].vol += 1; map[k].ciclo += d.ciclo;
+                    if (!map[k]) map[k] = { name: k, val: 0, vol: 0 };
+                    map[k].val += d.mrr; map[k].vol += 1;
                 });
                 return Object.values(map);
             };
-            const renderRank = (id, data, sortKey, isMoeda, isCiclo) => {
-                const sorted = data.sort((a,b) => isCiclo ? a[sortKey] - b[sortKey] : b[sortKey] - a[sortKey]).slice(0, 5);
+            const renderRank = (id, data, sortKey, isMoeda) => {
+                const sorted = data.sort((a,b) => b[sortKey] - a[sortKey]).slice(0, 5);
                 const maxVal = sorted.length > 0 ? sorted[0][sortKey] : 1;
-                const container = document.getElementById(id);
-                if (!container) return;
-                container.innerHTML = sorted.map((r, i) => {
-                    const pct = isCiclo ? 100 : (r[sortKey] / maxVal) * 100;
-                    const val = isCiclo ? Math.round(r.ciclo / r.vol) : r[sortKey];
-                    const displayVal = isMoeda ? 'R$ '+Math.round(val).toLocaleString('pt-BR') : (isCiclo ? val + ' dias' : val);
+                document.getElementById(id).innerHTML = sorted.map((r, i) => {
+                    const pct = (r[sortKey] / maxVal) * 100;
+                    const displayVal = isMoeda ? 'R$ '+Math.round(r[sortKey]).toLocaleString('pt-BR') : r[sortKey];
                     return `<div class="bar-container"><div class="bar-fill" style="width: ${pct}%"></div><div class="bar-content"><span class="bar-label">${i+1}. ${r.name}</span><span class="bar-value">(${displayVal})</span></div></div>`;
                 }).join('') || '<p class="text-[7px] opacity-30">Sem dados</p>';
                 return sorted[0];
             };
             
-            const vendData = getRank('vendedor'), sdrData = getRank('sdr');
-            const topVend = renderRank('rank-vend-mrr', vendData, 'val', true);
-            const topSdr = renderRank('rank-sdr-mrr', sdrData, 'val', true);
-            renderRank('rank-ciclo-venda', vendData, 'ciclo', false, true);
-            
-            const funilSdr = sdrData.sort((a,b) => b.vol - a.vol);
-            const maxVol = funilSdr.length > 0 ? funilSdr[0].vol : 1;
-            document.getElementById('rank-funil-sdr').innerHTML = funilSdr.map((r) => {
-                const pct = (r.vol / maxVol) * 100;
-                return `<div class="funnel-row"><div class="funnel-bar" style="width: ${Math.max(30, pct)}%;"><span class="funnel-label">${r.name} (${r.vol})</span></div></div>`;
-            }).join('') || '<p class="text-[7px] opacity-30">Sem dados</p>';
+            const topVend = renderRank('rank-vend-mrr', getRank('vendedor'), 'val', true);
+            const topSdr = renderRank('rank-sdr-mrr', getRank('sdr'), 'val', true);
+            renderRank('rank-vend-vol', getRank('vendedor'), 'vol', false);
+            renderRank('rank-sdr-vol', getRank('sdr'), 'vol', false);
 
             if (topVend) { document.getElementById('mvp-vendedor-name').textContent = topVend.name; document.getElementById('mvp-vendedor-val').textContent = `R$ ${Math.round(topVend.val).toLocaleString('pt-BR')}`; }
             if (topSdr) { document.getElementById('mvp-sdr-name').textContent = topSdr.name; document.getElementById('mvp-sdr-val').textContent = `R$ ${Math.round(topSdr.val).toLocaleString('pt-BR')}`; }
         }
 
-        function renderPartnershipVisualizations(f) {
-            const vendas = f.filter(d => d.status === 'Venda');
-            
-            // Criar matriz de cruzamento SDR x Vendedor
-            const matriz = {};
-            const vendedores = new Set();
-            const sdrs = new Set();
-            
-            vendas.forEach(d => {
-                const vend = d.vendedor || 'N/A';
-                const sdr = d.sdr || 'N/A';
-                if (vend === 'N/A' || sdr === 'N/A') return;
-                
-                vendedores.add(vend);
-                sdrs.add(sdr);
-                
-                const key = `${sdr}|${vend}`;
-                if (!matriz[key]) matriz[key] = 0;
-                matriz[key]++;
+        function renderPartnershipViz(f_ganhas) {
+            const matrix = {};
+            const sdrs = new Set(), vends = new Set();
+            f_ganhas.forEach(d => {
+                const s = d.sdr || 'N/A', v = d.vendedor || 'N/A';
+                if (s === 'N/A' || v === 'N/A') return;
+                sdrs.add(s); vends.add(v);
+                const key = `${s}|${v}`; matrix[key] = (matrix[key] || 0) + 1;
             });
-            
-            const vendedoresArr = Array.from(vendedores).sort();
-            const sdrsArr = Array.from(sdrs).sort();
-            
-            // 1. HEATMAP
-            renderHeatmap(matriz, sdrsArr, vendedoresArr);
-            
-            // 2. BARRAS EMPILHADAS
-            renderStackedChart(matriz, sdrsArr, vendedoresArr);
-            
-            // 3. SANKEY
-            renderSankey(matriz, sdrsArr, vendedoresArr);
-        }
 
-        function renderHeatmap(matriz, sdrs, vendedores) {
+            const sdrArr = Array.from(sdrs).sort(), vendArr = Array.from(vends).sort();
+            
+            // 1. Heatmap
             let html = '<table class="heatmap-table"><tr><th>SDR / Vendedor</th>';
-            vendedores.forEach(v => html += `<th>${v.substring(0, 8)}</th>`);
+            vendArr.forEach(v => html += `<th>${v.substring(0,8)}</th>`);
             html += '</tr>';
-            
-            const maxVal = Math.max(...Object.values(matriz), 1);
-            
-            sdrs.forEach(sdr => {
-                html += `<tr><th>${sdr.substring(0, 8)}</th>`;
-                vendedores.forEach(vend => {
-                    const val = matriz[`${sdr}|${vend}`] || 0;
+            const maxVal = Math.max(...Object.values(matrix), 1);
+            sdrArr.forEach(s => {
+                html += `<tr><td class="row-label">${s}</td>`;
+                vendArr.forEach(v => {
+                    const val = matrix[`${s}|${v}`] || 0;
                     const intensity = val === 0 ? 0 : Math.ceil((val / maxVal) * 5);
-                    const classe = `heatmap-${intensity}`;
-                    html += `<td class="heatmap-cell ${classe}" title="${sdr} → ${vend}: ${val} contratos">${val}</td>`;
+                    html += `<td class="heatmap-cell heatmap-${intensity}">${val}</td>`;
                 });
                 html += '</tr>';
             });
-            html += '</table>';
-            document.getElementById('heatmap-container').innerHTML = html;
-        }
+            document.getElementById('heatmap-container').innerHTML = html + '</table>';
 
-        function renderStackedChart(matriz, sdrs, vendedores) {
-            const datasets = sdrs.map((sdr, idx) => {
-                const colors = ['#89CFF0', '#2980B9', '#1ABC9C', '#F39C12', '#E74C3C', '#9B59B6', '#34495E', '#16A085'];
-                return {
-                    label: sdr,
-                    data: vendedores.map(vend => matriz[`${sdr}|${vend}`] || 0),
-                    backgroundColor: colors[idx % colors.length]
-                };
+            // 2. Stacked Chart
+            const datasets = sdrArr.map((s, i) => ({
+                label: s,
+                data: vendArr.map(v => matrix[`${s}|${v}`] || 0),
+                backgroundColor: `rgba(137, 207, 240, ${0.2 + (i * 0.15)})`,
+                borderWidth: 0
+            }));
+            if (appState.charts['chart-stacked-partners']) appState.charts['chart-stacked-partners'].destroy();
+            appState.charts['chart-stacked-partners'] = new Chart(document.getElementById('chart-stacked-partners'), {
+                type: 'bar',
+                data: { labels: vendArr.map(v => v.substring(0,10)), datasets },
+                options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, scales: { x: { stacked: true, ticks: { color: '#FFF' } }, y: { stacked: true, ticks: { color: '#FFF' } } }, plugins: { legend: { position: 'right', labels: { color: '#FFF', font: { size: 8 } } } } }
             });
-            
-            if (appState.charts['chart-stacked-partnerships']) appState.charts['chart-stacked-partnerships'].destroy();
-            const ctx = document.getElementById('chart-stacked-partnerships');
-            if (ctx) {
-                appState.charts['chart-stacked-partnerships'] = new Chart(ctx, {
-                    type: 'bar',
-                    data: {
-                        labels: vendedores,
-                        datasets: datasets
-                    },
-                    options: {
-                        indexAxis: 'y',
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        scales: {
-                            x: { stacked: true, ticks: { color: '#FFF' } },
-                            y: { stacked: true, ticks: { color: '#FFF' } }
-                        },
-                        plugins: {
-                            legend: { labels: { color: '#FFF', font: { size: 9 } } }
-                        }
-                    }
-                });
-            }
-        }
 
-        function renderSankey(matriz, sdrs, vendedores) {
-            const nodes = [...sdrs.map(s => ({ name: `SDR: ${s}`, color: '#2980B9' })), ...vendedores.map(v => ({ name: `Vend: ${v}`, color: '#89CFF0' }))];
-            const links = [];
-            
-            sdrs.forEach((sdr, sdrIdx) => {
-                vendedores.forEach((vend, vendIdx) => {
-                    const val = matriz[`${sdr}|${vend}`] || 0;
-                    if (val > 0) {
-                        links.push({
-                            source: sdrIdx,
-                            target: sdrs.length + vendIdx,
-                            value: val
-                        });
-                    }
+            // 3. Sankey Diagram (Plotly)
+            const nodes = [...sdrArr, ...vendArr];
+            const links = { source: [], target: [], value: [] };
+            sdrArr.forEach((s, si) => {
+                vendArr.forEach((v, vi) => {
+                    const val = matrix[`${s}|${v}`] || 0;
+                    if (val > 0) { links.source.push(si); links.target.push(sdrArr.length + vi); links.value.push(val); }
                 });
             });
-            
-            const data = [{
-                type: 'sankey',
-                node: {
-                    pad: 15,
-                    thickness: 20,
-                    line: { color: 'black' },
-                    label: nodes.map(n => n.name),
-                    color: nodes.map(n => n.color)
-                },
-                link: {
-                    source: links.map(l => l.source),
-                    target: links.map(l => l.target),
-                    value: links.map(l => l.value),
-                    color: links.map(() => 'rgba(137, 207, 240, 0.4)')
-                }
-            }];
-            
-            const layout = {
-                title: '',
-                font: { color: '#FFF', size: 10 },
-                paper_bgcolor: 'rgba(10, 30, 46, 0)',
-                plot_bgcolor: 'rgba(10, 30, 46, 0)',
-                margin: { l: 50, r: 50, t: 20, b: 20 }
-            };
-            
-            Plotly.newPlot('sankey-container', data, layout, { responsive: true, displayModeBar: false });
+            Plotly.newPlot('sankey-container', [{
+                type: "sankey", orientation: "h",
+                node: { pad: 15, thickness: 20, line: { color: "black", width: 0.5 }, label: nodes, color: "#89CFF0" },
+                link: { source: links.source, target: links.target, value: links.value, color: "rgba(137, 207, 240, 0.4)" }
+            }], { font: { size: 10, color: "#FFF" }, paper_bgcolor: 'rgba(0,0,0,0)', plot_bgcolor: 'rgba(0,0,0,0)', margin: { l: 0, r: 0, t: 20, b: 20 } }, { displayModeBar: false });
         }
-
-        function renderGeoList() {
-            const stateList = document.getElementById('geo-state-list');
-            const cityList = document.getElementById('geo-city-list');
-            
-            const fechadosIds = new Set(appState.raw_data.filter(d => d.status === 'Venda').map(d => d.contactId));
-            const geoMap = {};
-
-            appState.contacts.forEach(c => {
-                const uf = c.estado || 'NI';
-                if (uf === 'NI') return;
-
-                if (appState.empresa === 'Victec' && uf !== 'RJ') {
-                    if (!fechadosIds.has(c.id)) return;
-                }
-
-                if (!geoMap[uf]) geoMap[uf] = { total: 0, fechados: 0, cidades: {} };
-                geoMap[uf].total++;
-                if (fechadosIds.has(c.id)) geoMap[uf].fechados++;
-                
-                const cid = c.cidade || 'Não Informada';
-                if (!geoMap[uf].cidades[cid]) geoMap[uf].cidades[cid] = { total: 0, fechados: 0 };
-                geoMap[uf].cidades[cid].total++;
-                if (fechadosIds.has(c.id)) geoMap[uf].cidades[cid].fechados++;
-            });
-
-            const sortedStates = Object.entries(geoMap).sort((a,b) => b[1].total - a[1].total);
-            stateList.innerHTML = sortedStates.map(([uf, data]) => `
-                <div class="geo-item ${appState.activeState === uf ? 'active' : ''}" onclick="selectGeoState('${uf}')">
-                    <div class="flex justify-between text-[10px] font-bold"><span>${uf}</span><span class="text-val">${data.total} Clientes</span></div>
-                    <div class="text-[7px] opacity-60 text-val">${data.fechados} Fechados (${((data.fechados/data.total)*100).toFixed(1)}%)</div>
-                </div>
-            `).join('') || '<p class="text-center opacity-30 mt-10 text-[9px]">Sem dados geográficos</p>';
-
-            if (appState.activeState && geoMap[appState.activeState]) {
-                const data = geoMap[appState.activeState];
-                const sortedCidades = Object.entries(data.cidades).sort((a,b) => b[1].total - a[1].total);
-                cityList.innerHTML = sortedCidades.map(([cid, d]) => `
-                    <div class="mb-2 p-2 bg-white/5 rounded">
-                        <div class="flex justify-between text-[10px] font-bold"><span>${cid}</span><span>${d.total} Clientes</span></div>
-                        <div class="w-full bg-black/30 h-1.5 rounded mt-1"><div class="bg-green-500 h-full rounded" style="width: ${(d.fechados/d.total)*100}%"></div></div>
-                        <div class="text-[7px] mt-1 opacity-50">${d.fechados} Fechados / ${d.total - d.fechados} Inexplorados</div>
-                    </div>
-                `).join('');
-            } else {
-                cityList.innerHTML = '<div class="flex items-center justify-center h-full opacity-30 text-[9px]">Selecione um estado</div>';
-            }
-        }
-
-        function selectGeoState(uf) { appState.activeState = uf; renderGeoList(); }
 
         function exportTable(id, name) {
             let csv = [];
@@ -818,7 +613,7 @@
             else applyFilters();
         }
 
-        function changeEmpresa() { appState.empresa = document.getElementById('empresa-select').value; appState.activeState = null; loadData(false); }
+        function changeEmpresa() { appState.empresa = document.getElementById('empresa-select').value; loadData(false); }
 
         async function loadInadimplencia() {
             showLoading(`Lendo Inadimplência...`);
