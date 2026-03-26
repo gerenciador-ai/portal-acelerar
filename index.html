@@ -431,8 +431,14 @@
                     const getProp = (id) => props.find(p => p.FieldId === id);
                     const vendedor = getProp(FIELDS.VENDEDOR_REAL)?.UserValueName || d.Owner?.Name || 'N/A';
                     const sdr = getProp(FIELDS.SDR_REAL)?.UserValueName || 'SDR Não Identificado';
+                    // Garantir que a data de criação seja usada para o filtro de volume
                     const dataCriacao = new Date(d.CreateDate);
-                    return { vendedor, sdr, ano: dataCriacao.getFullYear(), mes: MESES_PT[dataCriacao.getMonth()+1] };
+                    return { 
+                        vendedor, 
+                        sdr, 
+                        ano: dataCriacao.getFullYear(), 
+                        mes: MESES_PT[dataCriacao.getMonth()+1] 
+                    };
                 };
                 appState.volumeData = volumeDeals.map(d => mapDealVolume(d));
                 if (appState.page === 'desempenho') applyFilters();
