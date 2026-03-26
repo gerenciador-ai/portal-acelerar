@@ -269,6 +269,7 @@
                         </div>
                     </div>
                 </div>
+                <!-- PÁGINA: INADIMPLÊNCIA -->
                 <div id="page-inadimplencia" style="display: none;">
                     <h1 class="text-md font-bold text-blue-300 mb-4">📋 Inadimplência Comercial</h1>
                     <div class="kpi-row">
@@ -276,9 +277,24 @@
                         <div class="kpi-card"><div class="label">Clientes Inadimplentes</div><div class="value" id="kpi-clientes-inad">0</div></div>
                         <div class="kpi-card" style="border-left: 2px solid #F1C40F;"><div class="label">Repasse (30%)</div><div class="value" id="kpi-repasse" style="color: #F1C40F;">R$ 0</div></div>
                     </div>
+
+                    <!-- Novo: Gráfico de Aging (Rosca) -->
+                    <div class="chart-container" style="height: 300px;" id="chart-aging-inadimplencia"></div>
+                    
+                    <!-- Novo: Tabela de Resumo por Cliente -->
+                    <h3 class="text-sm font-bold text-blue-300 mt-6 mb-3">👥 Resumo por Cliente</h3>
+                    <div class="table-container">
+                        <table id="table-resumo-cliente">
+                            <thead><tr><th>Cliente</th><th>Valor Total</th><th>Parcelas</th><th>Pior Faixa</th></tr></thead>
+                            <tbody id="tbody-resumo-cliente"></tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Detalhamento de Títulos -->
+                    <h3 class="text-sm font-bold text-blue-300 mt-6 mb-3">📋 Detalhamento de Títulos</h3>
                     <div class="table-container">
                         <table id="table-inadimplencia">
-                            <thead><tr><th>Cliente</th><th>Valor Aberto</th><th>Atraso</th><th>Faixa</th></tr></thead>
+                            <thead><tr><th>Vencimento</th><th>Cliente</th><th>Valor Aberto</th><th>Atraso</th><th>Faixa</th></tr></thead>
                             <tbody id="tbody-inadimplencia"></tbody>
                         </table>
                     </div>
