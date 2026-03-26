@@ -243,9 +243,9 @@
                     </div>
                     <!-- SEÇÃO DE PARCERIAS SDR-VENDEDOR (V13.7) -->
                     <div class="grid grid-cols-1 gap-4 mb-4">
-                        <!-- 1. MATRIZ DE COLABORAÇÃO (HEATMAP) -->
+                        <!-- 1. NEGÓCIOS CONVERTIDOS -->
                         <div class="partnership-viz">
-                            <h4>🤝 Matriz de Colaboração (Heatmap)</h4>
+                            <h4>🏆 Auditoria de Negócios Convertidos (Ganhos)</h4>
                             <p class="text-[7px] opacity-50 mb-2">Intensidade = Volume de Contratos</p>
                             <div id="heatmap-container" style="overflow-x: auto;"></div>
                         </div>
@@ -569,19 +569,37 @@
         function renderHeatmap(matriz, sdrs, vendedores) {
             let html = '<table class="heatmap-table"><tr><th>SDR / Vendedor</th>';
             vendedores.forEach(v => html += `<th>${v}</th>`);
-            html += '</tr>';
+            html += '<th style="background: rgba(137, 207, 240, 0.3);">TOTAL</th></tr>';
+            
+            const colTotals = {};
+            vendedores.forEach(v => colTotals[v] = 0);
+            let grandTotal = 0;
+
             const maxVal = Math.max(...Object.values(matriz), 1);
+            
             sdrs.forEach(sdr => {
+                let rowTotal = 0;
                 html += `<tr><th>${sdr}</th>`;
                 vendedores.forEach(vend => {
                     const val = matriz[`${sdr}|${vend}`] || 0;
+                    rowTotal += val;
+                    colTotals[vend] += val;
+                    
                     const intensity = val === 0 ? 0 : Math.ceil((val / maxVal) * 5);
                     const classe = `heatmap-${intensity}`;
                     html += `<td class="heatmap-cell ${classe}" title="${sdr} → ${vend}: ${val} contratos">${val}</td>`;
                 });
-                html += '</tr>';
+                grandTotal += rowTotal;
+                html += `<td style="background: rgba(137, 207, 240, 0.2); font-weight: 800;">${rowTotal}</td></tr>`;
             });
-            html += '</table>';
+
+            // Linha de Totais
+            html += `<tr><th style="background: rgba(137, 207, 240, 0.3);">TOTAL</th>`;
+            vendedores.forEach(v => {
+                html += `<td style="background: rgba(137, 207, 240, 0.2); font-weight: 800;">${colTotals[v]}</td>`;
+            });
+            html += `<td style="background: #89CFF0; color: #0B2A4E; font-weight: 900;">${grandTotal}</td></tr></table>`;
+            
             const container = document.getElementById('heatmap-container');
             if (container) container.innerHTML = html;
         }
