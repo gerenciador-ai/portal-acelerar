@@ -423,15 +423,27 @@
         }
         async function fetchVolumeGeral() {
             const config = PIPELINES[appState.empresa];
+            console.log(`[AUDITORIA] Iniciando busca de volume para Pipeline: ${config.vendas}`);
             try {
                 const results = await fetchPloomes(`Deals?$filter=PipelineId eq ${config.vendas} and (StatusId eq 1 or StatusId eq 3)&$expand=OtherProperties,Owner,Contact&$top=2000`);
                 const volumeDeals = results || [];
+                console.log(`[AUDITORIA] API retornou ${volumeDeals.length} negócios (Status 1 ou 3)`);
+                
+                if (volumeDeals.length > 0) {
+                    console.log(`[AUDITORIA] Amostra do 1º negócio:`, {
+                        id: volumeDeals[0].Id,
+                        title: volumeDeals[0].Title,
+                        statusId: volumeDeals[0].StatusId,
+                        createDate: volumeDeals[0].CreateDate,
+                        propsCount: volumeDeals[0].OtherProperties?.length || 0
+                    });
+                }
+
                 const mapDealVolume = (d) => {
                     const props = d.OtherProperties || [];
                     const getProp = (id) => props.find(p => p.FieldId === id);
                     const vendedor = getProp(FIELDS.VENDEDOR_REAL)?.UserValueName || d.Owner?.Name || 'N/A';
                     const sdr = getProp(FIELDS.SDR_REAL)?.UserValueName || 'SDR Não Identificado';
-                    // Garantir que a data de criação seja usada para o filtro de volume
                     const dataCriacao = new Date(d.CreateDate);
                     return { 
                         vendedor, 
@@ -441,8 +453,11 @@
                     };
                 };
                 appState.volumeData = volumeDeals.map(d => mapDealVolume(d));
+                console.log(`[AUDITORIA] Volume mapeado com sucesso: ${appState.volumeData.length} registros.`);
                 if (appState.page === 'desempenho') applyFilters();
-            } catch (e) { console.error("Volume Error:", e); }
+            } catch (e) { 
+                console.error("[AUDITORIA] Erro crítico na busca de volume:", e); 
+            }
         }
         function renderDashboard() {
             const anos = [...new Set(appState.raw_data.map(d => d.ano))].sort((a,b) => b-a);
