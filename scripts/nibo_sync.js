@@ -5,14 +5,25 @@ const path = require('path');
 async function syncNibo() {
     console.log("🚀 Iniciando Sincronização Nibo de Alta Precisão...");
     
+    // CONFIGURAÇÃO DAS EMPRESAS
     const CONFIG = [
         { name: 'vmctech', key: 'BBC8B184DE0C41F8BF2EA9162263E72D' },
         { name: 'victec', key: 'A967D3D9A45E4B8890F0437FEDCF6872' }
     ];
     
-    const CATEGORIA_ALVO = "311014001";
+    const CATEGORIA_ALVO = "311014001"; // Receita de Serviços - Mercado Interno
     const hoje = new Date();
     const hojeZero = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate());
+
+    // DEFINIR CAMINHO DA PASTA DATA (FORÇADO NA RAIZ DO PROJETO)
+    // No GitHub Actions, o process.cwd() é a raiz do repositório
+    const dataDir = path.join(process.cwd(), 'data');
+    console.log(`📂 Pasta de destino configurada: ${dataDir}`);
+
+    if (!fs.existsSync(dataDir)) {
+        console.log(`📁 Criando pasta data...`);
+        fs.mkdirSync(dataDir, { recursive: true });
+    }
 
     for (const empresa of CONFIG) {
         console.log(`\n📦 Processando Empresa: ${empresa.name.toUpperCase()}...`);
@@ -24,13 +35,16 @@ async function syncNibo() {
             });
 
             const itens = res.data.items || [];
+            console.log(`📥 Recebidos ${itens.length} itens do Nibo.`);
             
+            // FILTRAR APENAS CATEGORIA ALVO, COM VALOR ABERTO E VENCIDOS (ANTES DE HOJE)
             const titulosAberto = itens.filter(item => {
                 const catNome = item.category?.name || "";
                 const vencimentoStr = item.dueDate;
                 if (!vencimentoStr) return false;
                 
                 const vencimento = new Date(vencimentoStr);
+                // Lógica: Categoria contém o código E valor aberto > 0 E vencimento < hoje
                 return catNome.includes(CATEGORIA_ALVO) && item.openValue > 0 && vencimento < hojeZero;
             });
 
@@ -107,23 +121,19 @@ async function syncNibo() {
                     })
             };
 
-            const dataDir = path.join(process.cwd(), 'data');
-            if (!fs.existsSync(dataDir)) {
-                console.log(`📁 Criando pasta data em: ${dataDir}`);
-                fs.mkdirSync(dataDir, { recursive: true });
-            }
-            
             const fileName = `inadimplencia_${empresa.name}.json`;
             const filePath = path.join(dataDir, fileName);
             fs.writeFileSync(filePath, JSON.stringify(result, null, 2));
             
-            console.log(`✅ Sucesso: Arquivo ${fileName} salvo em ${filePath}`);
-            console.log(`🔍 Tamanho do arquivo: ${fs.statSync(filePath).size} bytes`);
+            console.log(`✅ Sucesso: Gerado ${fileName} em ${filePath}`);
+            console.log(`📊 Total Aberto: R$ ${totalAberto.toFixed(2)} | Clientes: ${clientesUnicos.size}`);
 
         } catch (e) {
             console.error(`❌ Erro na Empresa ${empresa.name}:`, e.message);
         }
     }
+    
+    console.log("\n✨ Sincronização Concluída!");
 }
 
 syncNibo();
