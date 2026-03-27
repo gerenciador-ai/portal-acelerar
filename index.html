@@ -306,9 +306,10 @@
         const API_KEY = '29E5423CAF1E5B85B4098B699811A9D801F612E5B2781EB8033CC0BAB439EC95E4FFAA8E605F741387DE21374E42EA2DDFF191ED954DC87D10757FA4D8D8AD4F';
         const INADIMPLENCIA_SHEET_ID = { 'VMC Tech': '1Nqmn2c9p0QFu8LFIqFQ0EBxA8klHFUsVjAW15la-Fjg', 'Victec': '1Y28LP_ZPqWKMjXqf88ahzaDET_DneOYhxuNOmyinxus' };
         const PIPELINES = {
-            'VMC Tech': { vendas: 110064393, churn: 110065017, meta_mrr: 8000, logo: 'https://raw.githubusercontent.com/gerenciador-ai/Relat-rios-Comercial/main/logo_vmctech.png' },
-            'Victec': { vendas: 110023047, churn: 110042202, meta_mrr: 10000, logo: 'https://raw.githubusercontent.com/gerenciador-ai/Relat-rios-Comercial/main/logo_victec.png' }
+            'VMC Tech': { vendas: 45718, churn: 48615, meta_mrr: 40000, logo: 'https://raw.githubusercontent.com/gerenciador-ai/Relat-rios-Comercial/main/logo_acelerar_sidebar.png' },
+            'Victec': { vendas: 110023047, churn: 110042202, meta_mrr: 30000, logo: 'https://raw.githubusercontent.com/gerenciador-ai/Relat-rios-Comercial/main/logo_victec_sidebar.png' }
         };
+
         
         const FIELDS = { 
             VENDEDOR_REAL: 110777788, 
@@ -452,14 +453,10 @@
                 const mapDealVolume = (d) => {
                     const props = d.OtherProperties || [];
                     const getProp = (id) => props.find(p => p.FieldId === id);
-                    
-                    // Captura o Vendedor (Prioriza campo real, depois dono do card)
                     const vendedor = getProp(FIELDS.VENDEDOR_REAL)?.UserValueName || d.Owner?.Name || 'N/A';
-                    
-                    // Captura o SDR (Campo real 110777789)
                     const sdr = getProp(FIELDS.SDR_REAL)?.UserValueName || 'SDR Não Identificado';
                     
-                    // LÓGICA DE DATA: Prioriza 'Data de Entrada - Agenda' (110777879), senão usa CreateDate
+                    // LÓGICA CORRETA: Usa o campo 110777879 (Data de Entrada - Agenda)
                     const dataAgendaRaw = getProp(110777879)?.DateTimeValue || d.CreateDate;
                     const dataAgenda = new Date(dataAgendaRaw);
                     
