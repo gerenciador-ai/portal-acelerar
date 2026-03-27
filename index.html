@@ -727,10 +727,11 @@
         }
         function changeEmpresa() { appState.empresa = document.getElementById('empresa-select').value; appState.activeState = null; loadData(false); }
         async function loadInadimplencia() {
-            showLoading(`Sincronizando com Nibo (VMC Tech)...`);
+            showLoading(`Sincronizando Nibo (${appState.empresa})...`);
             try {
-                // 1. Busca o JSON gerado pela automação do GitHub
-                const res = await axios.get('data/inadimplencia.json');
+                // 1. Define o arquivo correto baseado na empresa selecionada
+                const fileName = appState.empresa === 'vmctech' ? 'inadimplencia_vmctech.json' : 'inadimplencia_victec.json';
+                const res = await axios.get(`data/${fileName}`);
                 const data = res.data;
 
                 // 2. Preenchimento dos KPIs Superiores
