@@ -452,17 +452,25 @@
                 const mapDealVolume = (d) => {
                     const props = d.OtherProperties || [];
                     const getProp = (id) => props.find(p => p.FieldId === id);
+                    
+                    // Captura o Vendedor (Prioriza campo real, depois dono do card)
                     const vendedor = getProp(FIELDS.VENDEDOR_REAL)?.UserValueName || d.Owner?.Name || 'N/A';
+                    
+                    // Captura o SDR (Campo real 110777789)
                     const sdr = getProp(FIELDS.SDR_REAL)?.UserValueName || 'SDR Não Identificado';
-                    // Usando rigorosamente a CreateDate (Data de Criação) para o Volume Geral
-                    const dataCriacao = new Date(d.CreateDate);
+                    
+                    // LÓGICA DE DATA: Prioriza 'Data de Entrada - Agenda' (110777879), senão usa CreateDate
+                    const dataAgendaRaw = getProp(110777879)?.DateTimeValue || d.CreateDate;
+                    const dataAgenda = new Date(dataAgendaRaw);
+                    
                     return { 
                         vendedor, 
                         sdr, 
-                        ano: dataCriacao.getFullYear(), 
-                        mes: MESES_PT[dataCriacao.getMonth()+1] 
+                        ano: dataAgenda.getFullYear(), 
+                        mes: MESES_PT[dataAgenda.getMonth()+1] 
                     };
                 };
+
                 appState.volumeData = volumeDeals.map(d => mapDealVolume(d));
                 console.log(`[AUDITORIA] Volume mapeado com sucesso: ${appState.volumeData.length} registros.`);
                 if (appState.page === 'desempenho') applyFilters();
