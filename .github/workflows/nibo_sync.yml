@@ -13,11 +13,13 @@ jobs:
       - name: Install Dependencies
         run: npm install axios
       - name: Run Nibo Sync Script
-        run: node scripts/nibo_sync.js
+        run: |
+          mkdir -p data
+          node scripts/nibo_sync.js
       - name: Commit and Push Changes
         run: |
           git config user.name "Acelerar Bot"
           git config user.email "bot@acelerar.tech"
-          git add data/*.json
-          git commit -m "auto: Atualização Multi-Empresa Nibo" || echo "Nenhuma mudança detectada nos arquivos JSON"
+          git add data/
+          git commit -m "auto: Atualização Multi-Empresa Nibo" || echo "Nenhuma mudança detectada"
           git push
