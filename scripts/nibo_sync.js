@@ -23,7 +23,7 @@ async function syncNibo() {
         try {
             let todosItens = [];
             let skip = 0;
-            const top = 500; // Buscar em blocos menores para evitar Erro 500
+            const top = 200; // Buscar em blocos menores para evitar Erro 500
             let continua = true;
 
             while (continua) {
