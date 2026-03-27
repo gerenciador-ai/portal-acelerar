@@ -740,7 +740,7 @@
                 const elRepasse = document.getElementById('kpi-repasse');
                 if (elRepasse) elRepasse.textContent = `R$ ${Math.round(data.kpis.repasse_sittax).toLocaleString('pt-BR')}`;
 
-                // 3. Renderização do Gráfico de Rosca (Plotly) - Versão Ajustada e Centralizada
+                // 3. Renderização do Gráfico de Rosca (Plotly) - Versão Final Ajustada
                 if (data.aging_chart && document.getElementById('chart-aging-inadimplencia')) {
                     const dataPlotly = [{
                         values: data.aging_chart.values,
@@ -755,25 +755,23 @@
                     const layoutPlotly = {
                         title: {
                             text: 'Distribuição por Pior Faixa',
-                            font: { color: '#89CFF0', size: 14, weight: 'bold' },
-                            pad: { b: 20 }
+                            font: { color: '#89CFF0', size: 16, weight: 'bold' },
+                            pad: { t: 20, b: 30 } // Espaço extra para o título não encavalar
                         },
                         paper_bgcolor: 'rgba(0,0,0,0)',
                         plot_bgcolor: 'rgba(0,0,0,0)',
-                        font: { color: '#FFF', size: 11 },
+                        font: { color: '#FFF', size: 12 },
                         showlegend: true,
-                        legend: { orientation: 'h', x: 0.5, xanchor: 'center', y: -0.1 },
-                        margin: { t: 50, b: 50, l: 10, r: 10 },
-                        height: 350,
-                        width: 500,
-                        autosize: false
+                        legend: { 
+                            orientation: 'h', 
+                            x: 0.5, 
+                            xanchor: 'center', 
+                            y: -0.2 // Move a legenda mais para baixo
+                        },
+                        margin: { t: 80, b: 80, l: 20, r: 20 }, // Margens generosas para o gráfico respirar
+                        height: 400, // Altura interna do gráfico
+                        autosize: true
                     };
-
-                    // Garante a centralização do container
-                    const chartDiv = document.getElementById('chart-aging-inadimplencia');
-                    chartDiv.style.display = 'flex';
-                    chartDiv.style.justifyContent = 'center';
-                    chartDiv.style.alignItems = 'center';
 
                     Plotly.newPlot('chart-aging-inadimplencia', dataPlotly, layoutPlotly, {responsive: true, displayModeBar: false});
                 }
