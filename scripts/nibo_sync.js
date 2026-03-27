@@ -3,48 +3,57 @@ const fs = require('fs');
 const path = require('path');
 
 async function syncNibo() {
-    console.log("🚀 Iniciando Sincronização Nibo de Alta Precisão...");
+    console.log("🚀 Iniciando Sincronização Nibo de Alta Precisão (Modo Paginação)...");
     
-    // CONFIGURAÇÃO DAS EMPRESAS
     const CONFIG = [
         { name: 'vmctech', key: 'BBC8B184DE0C41F8BF2EA9162263E72D' },
         { name: 'victec', key: 'A967D3D9A45E4B8890F0437FEDCF6872' }
     ];
     
-    const CATEGORIA_ALVO = "311014001"; // Receita de Serviços - Mercado Interno
+    const CATEGORIA_ALVO = "311014001";
     const hoje = new Date();
     const hojeZero = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate());
-
-    // DEFINIR CAMINHO DA PASTA DATA (FORÇADO NA RAIZ DO PROJETO)
-    // No GitHub Actions, o process.cwd() é a raiz do repositório
     const dataDir = path.join(process.cwd(), 'data');
-    console.log(`📂 Pasta de destino configurada: ${dataDir}`);
 
-    if (!fs.existsSync(dataDir)) {
-        console.log(`📁 Criando pasta data...`);
-        fs.mkdirSync(dataDir, { recursive: true });
-    }
+    if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
 
     for (const empresa of CONFIG) {
         console.log(`\n📦 Processando Empresa: ${empresa.name.toUpperCase()}...`);
         
         try {
-            const url = "https://api.nibo.com.br/empresas/v1/schedules?$top=2000";
-            const res = await axios.get(url, {
-                headers: { 'apitoken': empresa.key, 'accept': 'application/json' }
-            });
+            let todosItens = [];
+            let skip = 0;
+            const top = 500; // Buscar em blocos menores para evitar Erro 500
+            let continua = true;
 
-            const itens = res.data.items || [];
-            console.log(`📥 Recebidos ${itens.length} itens do Nibo.`);
+            while (continua) {
+                console.log(`📡 Buscando bloco (skip: ${skip})...`);
+                const url = `https://api.nibo.com.br/empresas/v1/schedules?$top=${top}&$skip=${skip}`;
+                const res = await axios.get(url, {
+                    headers: { 'apitoken': empresa.key, 'accept': 'application/json' },
+                    timeout: 30000 // 30 segundos de timeout
+                });
+
+                const itens = res.data.items || [];
+                todosItens = todosItens.concat(itens);
+                
+                console.log(`📥 Recebidos ${itens.length} itens neste bloco.`);
+                
+                if (itens.length < top) {
+                    continua = false;
+                } else {
+                    skip += top;
+                }
+            }
+
+            console.log(`✅ Total de itens recebidos: ${todosItens.length}`);
             
-            // FILTRAR APENAS CATEGORIA ALVO, COM VALOR ABERTO E VENCIDOS (ANTES DE HOJE)
-            const titulosAberto = itens.filter(item => {
+            const titulosAberto = todosItens.filter(item => {
                 const catNome = item.category?.name || "";
                 const vencimentoStr = item.dueDate;
                 if (!vencimentoStr) return false;
                 
                 const vencimento = new Date(vencimentoStr);
-                // Lógica: Categoria contém o código E valor aberto > 0 E vencimento < hoje
                 return catNome.includes(CATEGORIA_ALVO) && item.openValue > 0 && vencimento < hojeZero;
             });
 
@@ -132,8 +141,6 @@ async function syncNibo() {
             console.error(`❌ Erro na Empresa ${empresa.name}:`, e.message);
         }
     }
-    
-    console.log("\n✨ Sincronização Concluída!");
 }
 
 syncNibo();
