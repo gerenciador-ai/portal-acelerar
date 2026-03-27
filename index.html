@@ -347,8 +347,9 @@
         async function openModule(m) {
             document.getElementById('hub-section').classList.add('hidden');
             document.getElementById('dashboard-section').style.display = 'block';
-            await loadData(false);
-            fetchVolumeGeral();
+            // Inicia com sincronização forçada para garantir dados prontos
+            await loadData(true);
+            await fetchVolumeGeral();
             switchPage('performance');
         }
         function returnToHub() {
