@@ -454,22 +454,15 @@
                     const getProp = (id) => props.find(p => p.FieldId === id);
                     const vendedor = getProp(FIELDS.VENDEDOR_REAL)?.UserValueName || d.Owner?.Name || 'N/A';
                     const sdr = getProp(FIELDS.SDR_REAL)?.UserValueName || 'SDR Não Identificado';
-                    
-                    // LÓGICA ROBUSTA: 
-                    // 1. Tenta 'Data de Entrada - Agenda' (110777879)
-                    // 2. Se não tiver, tenta 'FinishDate' (Data de Fechamento)
-                    // 3. Se não tiver, usa 'CreateDate'
-                    const dataRealRaw = getProp(110777879)?.DateTimeValue || d.FinishDate || d.CreateDate;
-                    const dataReal = new Date(dataRealRaw);
-                    
+                    // Usando rigorosamente a CreateDate (Data de Criação) para o Volume Geral
+                    const dataCriacao = new Date(d.CreateDate);
                     return { 
                         vendedor, 
                         sdr, 
-                        ano: dataReal.getFullYear(), 
-                        mes: MESES_PT[dataReal.getMonth()+1] 
+                        ano: dataCriacao.getFullYear(), 
+                        mes: MESES_PT[dataCriacao.getMonth()+1] 
                     };
                 };
-
                 appState.volumeData = volumeDeals.map(d => mapDealVolume(d));
                 console.log(`[AUDITORIA] Volume mapeado com sucesso: ${appState.volumeData.length} registros.`);
                 if (appState.page === 'desempenho') applyFilters();
