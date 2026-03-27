@@ -619,20 +619,11 @@
             
             const ano = parseInt(document.getElementById('ano-select').value);
             const meses = Array.from(document.querySelectorAll('#meses-container input:checked')).map(i => i.value);
-            // CORREÇÃO: Filtrar apenas por Ganhos e Perdidos e usar a data da agenda/conclusão
-            const volumeFiltered = appState.raw_data.filter(d => {
-                const statusValido = d.status === 'Venda' || d.status === 'Perdido';
-                const d_ano = new Date(d.date).getFullYear();
-                const d_mes = (new Date(d.date).getMonth() + 1).toString().padStart(2, '0');
-                return statusValido && d_ano === ano && meses.includes(d_mes);
-            });
+            const volumeFiltered = appState.volumeData.filter(d => d.ano === ano && meses.includes(d.mes));
             const matrizVol = {}; const vendsVol = new Set(); const sdrsVol = new Set();
             volumeFiltered.forEach(d => {
-                const vend = d.vendedor || 'N/A';
-                const sdr = d.sdr || 'N/A';
-                if (vend === 'N/A' || sdr === 'N/A') return;
-                vendsVol.add(vend); sdrsVol.add(sdr);
-                const key = `${sdr}|${vend}`;
+                vendsVol.add(d.vendedor); sdrsVol.add(d.sdr);
+                const key = `${d.sdr}|${d.vendedor}`;
                 matrizVol[key] = (matrizVol[key] || 0) + 1;
             });
             renderHeatmapGeneric(matrizVol, Array.from(sdrsVol).sort(), Array.from(vendsVol).sort(), 'heatmap-volume-container');
