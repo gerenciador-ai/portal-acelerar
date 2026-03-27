@@ -726,11 +726,11 @@
             else applyFilters();
         }
         function changeEmpresa() { appState.empresa = document.getElementById('empresa-select').value; appState.activeState = null; loadData(false); }
-            showLoading(`Sincronizando Nibo (${appState.empresa})...`);
+        async function loadInadimplencia() {
+            showLoading(`Sincronizando com Nibo (VMC Tech)...`);
             try {
-                // 1. Define o arquivo correto baseado na empresa selecionada
-                const fileName = appState.empresa === 'vmctech' ? 'inadimplencia_vmctech.json' : 'inadimplencia_victec.json';
-                const res = await axios.get(`data/${fileName}`);
+                // 1. Busca o JSON gerado pela automação do GitHub
+                const res = await axios.get('data/inadimplencia.json');
                 const data = res.data;
 
                 // 2. Preenchimento dos KPIs Superiores
@@ -740,7 +740,7 @@
                 const elRepasse = document.getElementById('kpi-repasse');
                 if (elRepasse) elRepasse.textContent = `R$ ${Math.round(data.kpis.repasse_sittax).toLocaleString('pt-BR')}`;
 
-                // 3. Renderização do Gráfico de Rosca (Plotly)
+                // 3. Renderização do Gráfico de Rosca (Plotly) - Versão Final Ajustada
                 if (data.aging_chart && document.getElementById('chart-aging-inadimplencia')) {
                     const dataPlotly = [{
                         values: data.aging_chart.values,
@@ -751,23 +751,34 @@
                         textinfo: 'percent',
                         hoverinfo: 'label+value'
                     }];
+
                     const layoutPlotly = {
-                        title: { text: 'Distribuição por Pior Faixa', font: { color: '#89CFF0', size: 16, weight: 'bold' }, pad: { t: 20, b: 30 } },
+                        title: {
+                            text: 'Distribuição por Pior Faixa',
+                            font: { color: '#89CFF0', size: 16, weight: 'bold' },
+                            pad: { t: 20, b: 30 } // Espaço extra para o título não encavalar
+                        },
                         paper_bgcolor: 'rgba(0,0,0,0)',
                         plot_bgcolor: 'rgba(0,0,0,0)',
                         font: { color: '#FFF', size: 12 },
                         showlegend: true,
-                        legend: { orientation: 'h', x: 0.5, xanchor: 'center', y: -0.2 },
-                        margin: { t: 80, b: 80, l: 20, r: 20 },
-                        height: 400,
+                        legend: { 
+                            orientation: 'h', 
+                            x: 0.5, 
+                            xanchor: 'center', 
+                            y: -0.2 // Move a legenda mais para baixo
+                        },
+                        margin: { t: 80, b: 80, l: 20, r: 20 }, // Margens generosas para o gráfico respirar
+                        height: 400, // Altura interna do gráfico
                         autosize: true
                     };
+
                     Plotly.newPlot('chart-aging-inadimplencia', dataPlotly, layoutPlotly, {responsive: true, displayModeBar: false});
                 }
 
                 // 4. Preenchimento da Tabela: Resumo por Cliente
                 const tbodyResumo = document.getElementById('tbody-resumo-cliente');
-                if (tbodyResumo) {
+                if (tbodyResumo && data.resumo_clientes) {
                     tbodyResumo.innerHTML = data.resumo_clientes.map(r => `
                         <tr>
                             <td>${r.nome}</td>
@@ -780,7 +791,7 @@
 
                 // 5. Preenchimento da Tabela: Detalhamento de Títulos
                 const tbodyInad = document.getElementById('tbody-inadimplencia');
-                if (tbodyInad) {
+                if (tbodyInad && data.detalhamento_titulos) {
                     tbodyInad.innerHTML = data.detalhamento_titulos.map(r => `
                         <tr>
                             <td>${new Date(r.vencimento).toLocaleDateString('pt-BR')}</td>
@@ -794,6 +805,7 @@
 
             } catch (e) { 
                 console.error("Erro na leitura do JSON Nibo:", e);
+                // Não exibe alert para não travar a experiência do usuário se o arquivo ainda não existir
             }
             hideLoading();
         }
