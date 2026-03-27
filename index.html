@@ -725,7 +725,12 @@
             if (p === 'inadimplencia') loadInadimplencia();
             else applyFilters();
         }
-        function changeEmpresa() { appState.empresa = document.getElementById('empresa-select').value; appState.activeState = null; loadData(false); }
+                function changeEmpresa() { 
+            appState.empresa = document.getElementById('empresa-select').value; 
+            appState.activeState = null; 
+            loadData(false); 
+            if (appState.page === 'inadimplencia') loadInadimplencia(); 
+        }
         async function loadInadimplencia() {
             showLoading(`Sincronizando Nibo (${appState.empresa})...`);
             try {
