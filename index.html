@@ -735,7 +735,7 @@
             showLoading(`Sincronizando Nibo (${appState.empresa})...`);
             try {
                 // 1. Define o arquivo correto baseado na empresa selecionada
-                const fileName = appState.empresa === 'vmctech' ? 'inadimplencia_vmctech.json' : 'inadimplencia_victec.json';
+                const fileName = appState.empresa === 'VMC Tech' ? 'inadimplencia_vmctech.json' : 'inadimplencia_victec.json';
                 const res = await axios.get(`data/${fileName}`);
                 const data = res.data;
 
