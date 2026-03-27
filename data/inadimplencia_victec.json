@@ -1,0 +1,389 @@
+{
+  "updated_at": "2026-03-27T00:13:33.046Z",
+  "kpis": {
+    "total_aberto": 17954,
+    "clientes_inadimplentes": 31,
+    "repasse_sittax": 5386.2
+  },
+  "aging_chart": {
+    "labels": [
+      "0-30 dias",
+      "31-60 dias",
+      "61-90 dias",
+      ">90 dias"
+    ],
+    "values": [
+      0,
+      0,
+      0,
+      31
+    ]
+  },
+  "resumo_clientes": [
+    {
+      "nome": "ALEM DO ESPELHO CONTABILIDADE LTDA",
+      "valor": 1988,
+      "parcelas": 4,
+      "faixa": ">90 dias"
+    },
+    {
+      "nome": "DONA DANTAS CONTABILIDADE LTDA",
+      "valor": 1590,
+      "parcelas": 2,
+      "faixa": ">90 dias"
+    },
+    {
+      "nome": "HSS CONTABILIDADE E ASSESSORIA LTDA",
+      "valor": 600,
+      "parcelas": 2,
+      "faixa": ">90 dias"
+    },
+    {
+      "nome": "CONTABILIDADE ENY LTDA",
+      "valor": 778,
+      "parcelas": 2,
+      "faixa": ">90 dias"
+    },
+    {
+      "nome": "CFC Assessoria Contábil Ltda",
+      "valor": 994,
+      "parcelas": 2,
+      "faixa": ">90 dias"
+    },
+    {
+      "nome": "CONTABIL LORENA LTDA",
+      "valor": 994,
+      "parcelas": 2,
+      "faixa": ">90 dias"
+    },
+    {
+      "nome": "LUAL CONTABILIDADE LTDA",
+      "valor": 994,
+      "parcelas": 2,
+      "faixa": ">90 dias"
+    },
+    {
+      "nome": "LAB ASSESSORIA CONTÁBIL LTDA",
+      "valor": 1590,
+      "parcelas": 2,
+      "faixa": ">90 dias"
+    },
+    {
+      "nome": "FERNANDES E GIEHL ASSESSORIA CONTABIL LTDA",
+      "valor": 1270,
+      "parcelas": 2,
+      "faixa": ">90 dias"
+    },
+    {
+      "nome": "HELOISA BARBOSA",
+      "valor": 10,
+      "parcelas": 1,
+      "faixa": ">90 dias"
+    },
+    {
+      "nome": "CF D. DE CAXIAS CONTABILIDADE E AUDITORIA LTDA",
+      "valor": 1476,
+      "parcelas": 1,
+      "faixa": ">90 dias"
+    },
+    {
+      "nome": "Congep Contabilidade e Planejamento Ltda",
+      "valor": 300,
+      "parcelas": 1,
+      "faixa": ">90 dias"
+    },
+    {
+      "nome": "NUBEC CONTABILIDADE E GESTAO EMPRESARIAL LTDA",
+      "valor": 497,
+      "parcelas": 1,
+      "faixa": ">90 dias"
+    },
+    {
+      "nome": "FOURCONT SOLUÇÕES CONTABEIS LTS",
+      "valor": 300,
+      "parcelas": 1,
+      "faixa": ">90 dias"
+    },
+    {
+      "nome": "J F ROCHA ASSESSORIA CONTABIL LTDA",
+      "valor": 497,
+      "parcelas": 1,
+      "faixa": ">90 dias"
+    },
+    {
+      "nome": "CLAUBER BOM ASSESSORIA CONTÁBIL LTDA.",
+      "valor": 389,
+      "parcelas": 1,
+      "faixa": ">90 dias"
+    },
+    {
+      "nome": "PS DE SOUZA CONSULTORIA & SERVIÇOS LTDA",
+      "valor": 497,
+      "parcelas": 1,
+      "faixa": ">90 dias"
+    },
+    {
+      "nome": "Marroig Assessoria Contábil Ltda",
+      "valor": 675,
+      "parcelas": 1,
+      "faixa": ">90 dias"
+    },
+    {
+      "nome": "ORJ Gestão Tributária e Empresarial LTDA",
+      "valor": 970,
+      "parcelas": 1,
+      "faixa": ">90 dias"
+    },
+    {
+      "nome": "FARIA E PANCARDES LTDA",
+      "valor": 450,
+      "parcelas": 1,
+      "faixa": ">90 dias"
+    },
+    {
+      "nome": "36.314.692 SUELY COUTO DA SILVA MARINS",
+      "valor": 300,
+      "parcelas": 1,
+      "faixa": ">90 dias"
+    },
+    {
+      "nome": "Solução Análise Contábil",
+      "valor": 795,
+      "parcelas": 1,
+      "faixa": ">90 dias"
+    }
+  ],
+  "detalhamento_titulos": [
+    {
+      "vencimento": "2025-06-20",
+      "cliente": "ALEM DO ESPELHO CONTABILIDADE LTDA",
+      "valor": 497,
+      "dias": 281,
+      "faixa": ">90 dias"
+    },
+    {
+      "vencimento": "2025-06-20",
+      "cliente": "ALEM DO ESPELHO CONTABILIDADE LTDA",
+      "valor": 497,
+      "dias": 281,
+      "faixa": ">90 dias"
+    },
+    {
+      "vencimento": "2025-07-02",
+      "cliente": "DONA DANTAS CONTABILIDADE LTDA",
+      "valor": 795,
+      "dias": 269,
+      "faixa": ">90 dias"
+    },
+    {
+      "vencimento": "2025-07-02",
+      "cliente": "DONA DANTAS CONTABILIDADE LTDA",
+      "valor": 795,
+      "dias": 269,
+      "faixa": ">90 dias"
+    },
+    {
+      "vencimento": "2025-07-09",
+      "cliente": "ALEM DO ESPELHO CONTABILIDADE LTDA",
+      "valor": 497,
+      "dias": 262,
+      "faixa": ">90 dias"
+    },
+    {
+      "vencimento": "2025-07-09",
+      "cliente": "ALEM DO ESPELHO CONTABILIDADE LTDA",
+      "valor": 497,
+      "dias": 262,
+      "faixa": ">90 dias"
+    },
+    {
+      "vencimento": "2025-07-18",
+      "cliente": "CONTABIL LORENA LTDA",
+      "valor": 497,
+      "dias": 253,
+      "faixa": ">90 dias"
+    },
+    {
+      "vencimento": "2025-07-18",
+      "cliente": "CONTABIL LORENA LTDA",
+      "valor": 497,
+      "dias": 253,
+      "faixa": ">90 dias"
+    },
+    {
+      "vencimento": "2025-07-20",
+      "cliente": "CFC Assessoria Contábil Ltda",
+      "valor": 497,
+      "dias": 251,
+      "faixa": ">90 dias"
+    },
+    {
+      "vencimento": "2025-07-20",
+      "cliente": "LUAL CONTABILIDADE LTDA",
+      "valor": 497,
+      "dias": 251,
+      "faixa": ">90 dias"
+    },
+    {
+      "vencimento": "2025-07-20",
+      "cliente": "LUAL CONTABILIDADE LTDA",
+      "valor": 497,
+      "dias": 251,
+      "faixa": ">90 dias"
+    },
+    {
+      "vencimento": "2025-07-20",
+      "cliente": "CFC Assessoria Contábil Ltda",
+      "valor": 497,
+      "dias": 251,
+      "faixa": ">90 dias"
+    },
+    {
+      "vencimento": "2025-07-22",
+      "cliente": "HELOISA BARBOSA",
+      "valor": 10,
+      "dias": 249,
+      "faixa": ">90 dias"
+    },
+    {
+      "vencimento": "2025-07-24",
+      "cliente": "CONTABILIDADE ENY LTDA",
+      "valor": 389,
+      "dias": 247,
+      "faixa": ">90 dias"
+    },
+    {
+      "vencimento": "2025-07-24",
+      "cliente": "LAB ASSESSORIA CONTÁBIL LTDA",
+      "valor": 795,
+      "dias": 247,
+      "faixa": ">90 dias"
+    },
+    {
+      "vencimento": "2025-07-24",
+      "cliente": "FERNANDES E GIEHL ASSESSORIA CONTABIL LTDA",
+      "valor": 635,
+      "dias": 247,
+      "faixa": ">90 dias"
+    },
+    {
+      "vencimento": "2025-07-24",
+      "cliente": "FERNANDES E GIEHL ASSESSORIA CONTABIL LTDA",
+      "valor": 635,
+      "dias": 247,
+      "faixa": ">90 dias"
+    },
+    {
+      "vencimento": "2025-07-24",
+      "cliente": "CONTABILIDADE ENY LTDA",
+      "valor": 389,
+      "dias": 247,
+      "faixa": ">90 dias"
+    },
+    {
+      "vencimento": "2025-07-24",
+      "cliente": "LAB ASSESSORIA CONTÁBIL LTDA",
+      "valor": 795,
+      "dias": 247,
+      "faixa": ">90 dias"
+    },
+    {
+      "vencimento": "2025-07-25",
+      "cliente": "HSS CONTABILIDADE E ASSESSORIA LTDA",
+      "valor": 300,
+      "dias": 246,
+      "faixa": ">90 dias"
+    },
+    {
+      "vencimento": "2025-07-25",
+      "cliente": "CF D. DE CAXIAS CONTABILIDADE E AUDITORIA LTDA",
+      "valor": 1476,
+      "dias": 246,
+      "faixa": ">90 dias"
+    },
+    {
+      "vencimento": "2025-07-25",
+      "cliente": "Congep Contabilidade e Planejamento Ltda",
+      "valor": 300,
+      "dias": 246,
+      "faixa": ">90 dias"
+    },
+    {
+      "vencimento": "2025-07-25",
+      "cliente": "HSS CONTABILIDADE E ASSESSORIA LTDA",
+      "valor": 300,
+      "dias": 246,
+      "faixa": ">90 dias"
+    },
+    {
+      "vencimento": "2025-07-25",
+      "cliente": "PS DE SOUZA CONSULTORIA & SERVIÇOS LTDA",
+      "valor": 497,
+      "dias": 246,
+      "faixa": ">90 dias"
+    },
+    {
+      "vencimento": "2025-07-25",
+      "cliente": "Marroig Assessoria Contábil Ltda",
+      "valor": 675,
+      "dias": 246,
+      "faixa": ">90 dias"
+    },
+    {
+      "vencimento": "2025-07-25",
+      "cliente": "ORJ Gestão Tributária e Empresarial LTDA",
+      "valor": 970,
+      "dias": 246,
+      "faixa": ">90 dias"
+    },
+    {
+      "vencimento": "2025-07-30",
+      "cliente": "NUBEC CONTABILIDADE E GESTAO EMPRESARIAL LTDA",
+      "valor": 497,
+      "dias": 241,
+      "faixa": ">90 dias"
+    },
+    {
+      "vencimento": "2025-07-30",
+      "cliente": "J F ROCHA ASSESSORIA CONTABIL LTDA",
+      "valor": 497,
+      "dias": 241,
+      "faixa": ">90 dias"
+    },
+    {
+      "vencimento": "2025-07-30",
+      "cliente": "CLAUBER BOM ASSESSORIA CONTÁBIL LTDA.",
+      "valor": 389,
+      "dias": 241,
+      "faixa": ">90 dias"
+    },
+    {
+      "vencimento": "2025-07-30",
+      "cliente": "Solução Análise Contábil",
+      "valor": 795,
+      "dias": 241,
+      "faixa": ">90 dias"
+    },
+    {
+      "vencimento": "2025-08-08",
+      "cliente": "36.314.692 SUELY COUTO DA SILVA MARINS",
+      "valor": 300,
+      "dias": 232,
+      "faixa": ">90 dias"
+    },
+    {
+      "vencimento": "2025-08-10",
+      "cliente": "FARIA E PANCARDES LTDA",
+      "valor": 450,
+      "dias": 230,
+      "faixa": ">90 dias"
+    },
+    {
+      "vencimento": "2025-08-15",
+      "cliente": "FOURCONT SOLUÇÕES CONTABEIS LTS",
+      "valor": 300,
+      "dias": 225,
+      "faixa": ">90 dias"
+    }
+  ]
+}
