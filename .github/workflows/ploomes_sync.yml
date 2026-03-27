@@ -1,0 +1,25 @@
+name: Ploomes Daily Sync
+on:
+  schedule:
+    - cron: '30 11 * * *' # Todo dia às 08:30 (Brasília) - 30min após o Nibo
+  workflow_dispatch: # Botão "Run workflow" manual
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with: {node-version: '18'}
+      - name: Install Dependencies
+        run: npm install axios
+      - name: Run Ploomes Sync Script
+        run: |
+          mkdir -p data
+          node scripts/ploomes_sync.js
+      - name: Commit and Push Changes
+        run: |
+          git config user.name "Acelerar Bot"
+          git config user.email "bot@acelerar.tech"
+          git add data/ploomes_data.json
+          git commit -m "auto: Atualização Ploomes Data" || echo "Nenhuma mudança detectada"
+          git push
