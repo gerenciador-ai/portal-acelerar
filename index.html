@@ -444,23 +444,23 @@
             const pipelineId = config.vendas;
             console.log(`[AUDITORIA] Iniciando busca de volume para Pipeline (${appState.empresa}): ${pipelineId}`);
             try {
-                // Buscando apenas Status 2 (Ganha) e Status 3 (Perdido) conforme definido
+                // Buscando apenas Status 2 (Ganha) e Status 3 (Perdido) para Auditoria de Volume
                 const results = await fetchPloomes(`Deals?$filter=PipelineId eq ${pipelineId} and (StatusId eq 2 or StatusId eq 3)&$expand=OtherProperties,Owner,Contact&$top=2000`);
-                const volumeDeals = results || [];
-                console.log(`[AUDITORIA] API retornou ${volumeDeals.length} negócios (Status 2 ou 3)`);
+                const volumeDeals = (results || []).filter(d => d.StatusId === 2 || d.StatusId === 3);
+                console.log(`[AUDITORIA] API retornou ${volumeDeals.length} negócios concluídos (Ganhos/Perdidos)`);
                 
                 const mapDealVolume = (d) => {
                     const props = d.OtherProperties || [];
                     const getProp = (id) => props.find(p => p.FieldId === id);
                     const vendedor = getProp(FIELDS.VENDEDOR_REAL)?.UserValueName || d.Owner?.Name || 'N/A';
                     const sdr = getProp(FIELDS.SDR_REAL)?.UserValueName || 'SDR Não Identificado';
-                    // Usando rigorosamente a CreateDate (Data de Criação) para o Volume Geral
-                    const dataCriacao = new Date(d.CreateDate);
+                    // Usando a Data de Conclusão (FinishDate) para refletir o trabalho em 2026
+                    const dataTrabalho = d.FinishDate ? new Date(d.FinishDate) : new Date(d.CreateDate);
                     return { 
                         vendedor, 
                         sdr, 
-                        ano: dataCriacao.getFullYear(), 
-                        mes: MESES_PT[dataCriacao.getMonth()+1] 
+                        ano: dataTrabalho.getFullYear(), 
+                        mes: MESES_PT[dataTrabalho.getMonth()+1] 
                     };
                 };
                 appState.volumeData = volumeDeals.map(d => mapDealVolume(d));
