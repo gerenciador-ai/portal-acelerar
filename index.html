@@ -455,8 +455,7 @@
                     const vendedor = getProp(FIELDS.VENDEDOR_REAL)?.UserValueName || d.Owner?.Name || 'N/A';
                     const sdr = getProp(FIELDS.SDR_REAL)?.UserValueName || 'SDR Não Identificado';
                     // Usando a Data de Conclusão (FinishDate) para refletir o trabalho em 2026
-                    const propDataAgenda = props.find(p => p.FieldId === 110778042);
-                    const dataTrabalho = propDataAgenda?.DateTimeValue ? new Date(propDataAgenda.DateTimeValue) : (d.FinishDate ? new Date(d.FinishDate) : new Date(d.CreateDate));
+                    const dataTrabalho = d.FinishDate ? new Date(d.FinishDate) : new Date(d.CreateDate);
                     return { 
                         vendedor, 
                         sdr, 
