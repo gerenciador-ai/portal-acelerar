@@ -107,12 +107,14 @@ async function syncNibo() {
                     })
             };
 
-            const dataDir = path.join(__dirname, '../data');
-            if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir);
+            // CORREÇÃO: Usar caminho absoluto a partir da raiz do repositório para garantir o commit
+            const dataDir = path.resolve(process.cwd(), 'data');
+            if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
             const fileName = `inadimplencia_${empresa.name}.json`;
-            fs.writeFileSync(path.join(dataDir, fileName), JSON.stringify(result, null, 2));
+            const filePath = path.join(dataDir, fileName);
+            fs.writeFileSync(filePath, JSON.stringify(result, null, 2));
             
-            console.log(`✅ Sucesso: Gerado ${fileName} com ${titulosAberto.length} títulos.`);
+            console.log(`✅ Sucesso: Gerado ${fileName} com ${titulosAberto.length} títulos em ${filePath}`);
 
         } catch (e) {
             console.error(`❌ Erro na Empresa ${empresa.name}:`, e.message);
