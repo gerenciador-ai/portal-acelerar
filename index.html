@@ -726,10 +726,12 @@
             if (p === 'inadimplencia') loadInadimplencia();
             else applyFilters();
         }
-                function changeEmpresa() { 
+        async function changeEmpresa() { 
             appState.empresa = document.getElementById('empresa-select').value; 
             appState.activeState = null; 
-            loadData(false); 
+            // Recarrega Performance e Desempenho do Time automaticamente para a nova empresa
+            await loadData(true); 
+            await fetchVolumeGeral();
             if (appState.page === 'inadimplencia') loadInadimplencia(); 
         }
         async function loadInadimplencia() {
