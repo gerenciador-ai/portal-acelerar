@@ -383,93 +383,40 @@
             }
         }
         async function refreshData(fullSync) {
-            showLoading(fullSync ? `Sincronizando Base Completa...` : `Sincronizando Negócios...`);
-            const config = PIPELINES[appState.empresa];
-            
-            const promises = [
-                fetchPloomes(`Deals?$filter=PipelineId eq ${config.vendas} and StatusId eq 2&$expand=OtherProperties,Owner,Contact&$top=2000`),
-                fetchPloomes(`Deals?$filter=PipelineId eq ${config.churn}&$expand=OtherProperties,Owner,Stage,Contact&$top=2000`)
-            ];
-            if (fullSync) {
-                promises.push(fetchPloomes(`Contacts?$select=Id,Name,CNPJ,CPF,City,State&$expand=City,State&$top=2000`));
-            }
-            const results = await Promise.all(promises);
-            const vendas = results[0];
-            const churn = results[1];
-            
-            if (fullSync) {
-                appState.contacts = results[2].map(c => ({ 
-                    id: c.Id, name: c.Name, cnpj: c.CNPJ || c.CPF, 
-                    cidade: c.City?.Name, 
-                    estado: c.State?.Short || (c.City?.State?.Short) || 'NI' 
+            showLoading(`Carregando Dados Otimizados (${appState.empresa})...`);
+            try {
+                // 1. LÊ O ARQUIVO JSON GERADO PELO GITHUB (MUITO MAIS RÁPIDO)
+                const res = await axios.get(`data/ploomes_data.json`);
+                const allData = res.data.deals;
+                
+                // 2. Filtra os dados apenas para a empresa selecionada (VMC ou Victec)
+                appState.raw_data = allData.filter(d => d.empresa === appState.empresa);
+                
+                // 3. Carrega o volumeData (Auditoria de Volume) já filtrado para a empresa
+                appState.volumeData = res.data.volumeData.filter(d => d.empresa === appState.empresa);
+                
+                // 4. Mantém a compatibilidade com o cache local
+                localStorage.setItem(`acelerar_v13_7_${appState.empresa}`, JSON.stringify({ 
+                    deals: appState.raw_data, 
+                    contacts: appState.contacts || [] 
                 }));
-            } else {
-                const cached = JSON.parse(localStorage.getItem(`acelerar_v13_7_${appState.empresa}`));
-                appState.contacts = cached ? cached.contacts : [];
+                localStorage.setItem(`acelerar_v13_7_${appState.empresa}_time`, new Date().getTime().toString());
+                
+                document.getElementById('cache-info').textContent = `Sinc: ${new Date().toLocaleString('pt-BR')}`;
+                
+                // 5. Renderiza o Dashboard com os novos dados
+                renderDashboard();
+                
+            } catch (e) {
+                console.error("Erro ao ler ploomes_data.json:", e);
+                // Caso o arquivo ainda não exista no GitHub, avisamos o usuário
+                alert("Dados do Ploomes não encontrados no servidor. Certifique-se de que o workflow 'Ploomes Daily Sync' rodou com sucesso no GitHub.");
             }
-            const mapDeal = (d, type) => {
-                const props = d.OtherProperties || [];
-                const getProp = (id) => props.find(p => p.FieldId === id);
-                const propProduto = getProp(FIELDS.PRODUTO);
-                let produto = propProduto ? (propProduto.ObjectValueName || propProduto.ValueName || propProduto.Value || "") : "";
-                if (!produto || produto === "") produto = "Sittax Simples";
-                let mrr = sanitizeVal(getProp(FIELDS.MRR)?.DecimalValue);
-                let adesao = sanitizeVal(getProp(FIELDS.ADESAO_S)?.DecimalValue) || sanitizeVal(getProp(FIELDS.ADESAO_R)?.DecimalValue);
-                let upsell = sanitizeVal(getProp(FIELDS.UPSELL)?.DecimalValue);
-                const vendedor = getProp(FIELDS.VENDEDOR_REAL)?.UserValueName || 'N/A';
-                const sdr = getProp(FIELDS.SDR_REAL)?.UserValueName || 'N/A';
-                const dataCriacao = new Date(d.CreateDate);
-                let dateStr = type === 'Venda' ? (getProp(FIELDS.DATA_ATIVACAO)?.DateTimeValue || d.FinishDate || d.CreateDate || '') : (getProp(FIELDS.DATA_CANCELAMENTO)?.DateTimeValue || d.FinishDate || d.CreateDate || '');
-                const dataAtivacao = new Date(dateStr);
-                const ciclo = Math.max(0, Math.round((dataAtivacao - dataCriacao) / (1000 * 60 * 60 * 24)));
-                return {
-                    id: d.Id, cliente: d.Title, cnpj: d.Contact?.CNPJ || d.Contact?.CPF || 'N/A',
-                    contactId: d.ContactId, data: dataAtivacao, dataCriacao: dataCriacao, ciclo: ciclo,
-                    vendedor: vendedor, sdr: sdr, mrr: mrr, upsell: upsell, adesao: adesao, produto: produto, 
-                    status: type, estagio: d.Stage?.Name || '', ano: dataAtivacao.getFullYear(), mes: MESES_PT[dataAtivacao.getMonth()+1]
-                };
-            };
-            appState.raw_data = [...vendas.map(d => mapDeal(d, 'Venda')), ...churn.map(d => mapDeal(d, 'Churn'))];
-            
-            localStorage.setItem(`acelerar_v13_7_${appState.empresa}`, JSON.stringify({ deals: appState.raw_data, contacts: appState.contacts }));
-            localStorage.setItem(`acelerar_v13_7_${appState.empresa}_time`, new Date().getTime().toString());
-            
-            document.getElementById('cache-info').textContent = `Sinc: ${new Date().toLocaleString('pt-BR')}`;
-            renderDashboard();
             hideLoading();
         }
         async function fetchVolumeGeral() {
-            // Lógica dinâmica: busca o PipelineId da empresa ativa no appState
-            const config = PIPELINES[appState.empresa];
-            if (!config) return;
-            const pipelineId = config.vendas;
-            console.log(`[AUDITORIA] Iniciando busca de volume para Pipeline (${appState.empresa}): ${pipelineId}`);
-            try {
-                // Buscando apenas Status 2 (Ganha) e Status 3 (Perdido) para Auditoria de Volume
-                const results = await fetchPloomes(`Deals?$filter=PipelineId eq ${pipelineId} and (StatusId eq 2 or StatusId eq 3)&$expand=OtherProperties,Owner,Contact&$top=2000`);
-                const volumeDeals = (results || []).filter(d => d.StatusId === 2 || d.StatusId === 3);
-                console.log(`[AUDITORIA] API retornou ${volumeDeals.length} negócios concluídos (Ganhos/Perdidos)`);
-                
-                const mapDealVolume = (d) => {
-                    const props = d.OtherProperties || [];
-                    const getProp = (id) => props.find(p => p.FieldId === id);
-                    const vendedor = getProp(FIELDS.VENDEDOR_REAL)?.UserValueName || d.Owner?.Name || 'N/A';
-                    const sdr = getProp(FIELDS.SDR_REAL)?.UserValueName || 'SDR Não Identificado';
-                    // Usando a Data de Conclusão (FinishDate) para refletir o trabalho em 2026
-                    const dataTrabalho = d.FinishDate ? new Date(d.FinishDate) : new Date(d.CreateDate);
-                    return { 
-                        vendedor, 
-                        sdr, 
-                        ano: dataTrabalho.getFullYear(), 
-                        mes: MESES_PT[dataTrabalho.getMonth()+1] 
-                    };
-                };
-                appState.volumeData = volumeDeals.map(d => mapDealVolume(d));
-                console.log(`[AUDITORIA] Volume mapeado com sucesso: ${appState.volumeData.length} registros.`);
-                if (appState.page === 'desempenho') applyFilters();
-            } catch (e) { 
-                console.error("[AUDITORIA] Erro crítico na busca de volume:", e); 
-            }
+            // O volume agora é carregado automaticamente pelo refreshData() via JSON
+            if (appState.page === 'desempenho') applyFilters();
         }
         function renderDashboard() {
             const anos = [...new Set(appState.raw_data.map(d => d.ano))].sort((a,b) => b-a);
