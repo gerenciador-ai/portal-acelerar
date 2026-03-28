@@ -383,38 +383,42 @@
             }
         }
         async function refreshData(fullSync) {
-            showLoading(`Carregando Dados Otimizados (${appState.empresa})...`);
+            showLoading(`Sincronizando Ploomes (${appState.empresa})...`);
             try {
-                // 1. LÊ O ARQUIVO JSON GERADO PELO GITHUB (MUITO MAIS RÁPIDO)
-                const res = await axios.get(`data/ploomes_data.json`);
-
-                // Traduzindo a palavra "Ganha" para "Venda" para o portal entender os valores
-                const allData = res.data.deals.map(d => {
-                    if (d.status === 'Ganha') d.status = 'Venda';
-                    return d;
+                const config = PIPELINES[appState.empresa];
+                if (!config) return;
+                const pipelineIds = [config.vendas, config.churn, config.onboarding].filter(Boolean);
+                
+                // Busca os dados direto do Ploomes (como era antes, mas com filtro de 2026)
+                const results = await fetchPloomes(`Deals?$filter=PipelineId in (${pipelineIds.join(',')}) and (StatusId eq 2 or StatusId eq 3)&$expand=OtherProperties,Owner,Contact,Status,Stage&$top=2000`);
+                
+                appState.raw_data = (results || []).map(d => {
+                    const props = d.OtherProperties || [];
+                    const getProp = (id) => props.find(p => p.FieldId === id);
+                    const vendedor = getProp(FIELDS.VENDEDOR_REAL)?.UserValueName || d.Owner?.Name || 'N/A';
+                    const sdr = getProp(FIELDS.SDR_REAL)?.UserValueName || 'SDR Não Identificado';
+                    
+                    // Lógica de 2026: Prioriza Data da Reunião (ID 110778042) ou Conclusão
+                    const propDataAgenda = getProp(110778042);
+                    const dataTrabalho = propDataAgenda?.DateTimeValue ? new Date(propDataAgenda.DateTimeValue) : (d.FinishDate ? new Date(d.FinishDate) : new Date(d.CreateDate));
+                    
+                    return {
+                        ...d,
+                        vendedor, sdr,
+                        ano: dataTrabalho.getFullYear(),
+                        mes: MESES_PT[dataTrabalho.getMonth() + 1],
+                        status: d.Status?.Name === 'Ganha' ? 'Venda' : (d.Status?.Name || 'N/A')
+                    };
                 });
-                
-                appState.raw_data = allData.filter(d => d.empresa === appState.empresa);
-                
-                // 3. Carrega o volumeData (Auditoria de Volume) já filtrado para a empresa
-                appState.volumeData = res.data.volumeData.filter(d => d.empresa === appState.empresa);
-                
-                // 4. Mantém a compatibilidade com o cache local
-                localStorage.setItem(`acelerar_v13_7_${appState.empresa}`, JSON.stringify({ 
-                    deals: appState.raw_data, 
-                    contacts: appState.contacts || [] 
-                }));
-                localStorage.setItem(`acelerar_v13_7_${appState.empresa}_time`, new Date().getTime().toString());
-                
-                document.getElementById('cache-info').textContent = `Sinc: ${new Date().toLocaleString('pt-BR')}`;
-                
-                // 5. Renderiza o Dashboard com os novos dados
+
+                // Alimenta o Volume (Auditoria) com os mesmos dados
+                appState.volumeData = appState.raw_data;
+
+                localStorage.setItem(`acelerar_v13_7_${appState.empresa}`, JSON.stringify({ deals: appState.raw_data, contacts: appState.contacts || [] }));
                 renderDashboard();
-                
             } catch (e) {
-                console.error("Erro ao ler ploomes_data.json:", e);
-                // Caso o arquivo ainda não exista no GitHub, avisamos o usuário
-                alert("Dados do Ploomes não encontrados no servidor. Certifique-se de que o workflow 'Ploomes Daily Sync' rodou com sucesso no GitHub.");
+                console.error("Erro na sincronização:", e);
+                alert("Erro ao conectar com o Ploomes. Verifique sua internet.");
             }
             hideLoading();
         }
