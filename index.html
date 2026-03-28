@@ -387,9 +387,13 @@
             try {
                 // 1. LÊ O ARQUIVO JSON GERADO PELO GITHUB (MUITO MAIS RÁPIDO)
                 const res = await axios.get(`data/ploomes_data.json`);
-                const allData = res.data.deals;
+
+                // Traduzindo a palavra "Ganha" para "Venda" para o portal entender os valores
+                const allData = res.data.deals.map(d => {
+                    if (d.status === 'Ganha') d.status = 'Venda';
+                    return d;
+                });
                 
-                // 2. Filtra os dados apenas para a empresa selecionada (VMC ou Victec)
                 appState.raw_data = allData.filter(d => d.empresa === appState.empresa);
                 
                 // 3. Carrega o volumeData (Auditoria de Volume) já filtrado para a empresa
