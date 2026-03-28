@@ -386,39 +386,69 @@
             showLoading(`Sincronizando Ploomes (${appState.empresa})...`);
             try {
                 const config = PIPELINES[appState.empresa];
-                if (!config) return;
+                if (!config) {
+                    console.error("Empresa não configurada:", appState.empresa);
+                    return;
+                }
                 const pipelineIds = [config.vendas, config.churn, config.onboarding].filter(Boolean);
                 
-                // Busca os dados direto do Ploomes (como era antes, mas com filtro de 2026)
+                // Busca os dados brutos do Ploomes
                 const results = await fetchPloomes(`Deals?$filter=PipelineId in (${pipelineIds.join(',')}) and (StatusId eq 2 or StatusId eq 3)&$expand=OtherProperties,Owner,Contact,Status,Stage&$top=2000`);
                 
+                if (!results || results.length === 0) {
+                    console.warn("Nenhum negócio encontrado para os critérios selecionados.");
+                }
+
                 appState.raw_data = (results || []).map(d => {
                     const props = d.OtherProperties || [];
                     const getProp = (id) => props.find(p => p.FieldId === id);
-                    const vendedor = getProp(FIELDS.VENDEDOR_REAL)?.UserValueName || d.Owner?.Name || 'N/A';
-                    const sdr = getProp(FIELDS.SDR_REAL)?.UserValueName || 'SDR Não Identificado';
                     
-                    // Lógica de 2026: Prioriza Data da Reunião (ID 110778042) ou Conclusão
+                    // Mapeamento de Vendedor e SDR
+                    const vendedor = getProp(110777788)?.UserValueName || d.Owner?.Name || 'N/A';
+                    const sdr = getProp(110777789)?.UserValueName || 'SDR Não Identificado';
+                    
+                    // Lógica de Data para 2026 (Prioriza Data da Reunião ID 110778042)
                     const propDataAgenda = getProp(110778042);
                     const dataTrabalho = propDataAgenda?.DateTimeValue ? new Date(propDataAgenda.DateTimeValue) : (d.FinishDate ? new Date(d.FinishDate) : new Date(d.CreateDate));
                     
+                    // Tradução de Status para o Portal entender (Ganha -> Venda)
+                    let statusNome = d.Status?.Name || 'N/A';
+                    if (statusNome === 'Ganha') statusNome = 'Venda';
+
                     return {
-                        ...d,
-                        vendedor, sdr,
+                        id: d.Id,
+                        cliente: d.Title,
+                        data: dataTrabalho.toISOString(),
+                        vendedor: vendedor,
+                        sdr: sdr,
+                        mrr: parseFloat(getProp(110778108)?.DecimalValue || 0),
+                        upsell: parseFloat(getProp(111433407)?.DecimalValue || 0),
+                        adesao: parseFloat(getProp(110778105)?.DecimalValue || getProp(111431861)?.DecimalValue || 0),
+                        produto: getProp(111431860)?.ObjectValueName || "Sittax Simples",
+                        status: statusNome,
+                        statusId: d.StatusId,
                         ano: dataTrabalho.getFullYear(),
                         mes: MESES_PT[dataTrabalho.getMonth() + 1],
-                        status: d.Status?.Name === 'Ganha' ? 'Venda' : (d.Status?.Name || 'N/A')
+                        empresa: appState.empresa
                     };
                 });
 
-                // Alimenta o Volume (Auditoria) com os mesmos dados
+                // Alimenta o Volume (Auditoria) com os mesmos dados processados
                 appState.volumeData = appState.raw_data;
 
-                localStorage.setItem(`acelerar_v13_7_${appState.empresa}`, JSON.stringify({ deals: appState.raw_data, contacts: appState.contacts || [] }));
+                // Salva no cache local para performance futura
+                localStorage.setItem(`acelerar_v13_7_${appState.empresa}`, JSON.stringify({ 
+                    deals: appState.raw_data, 
+                    contacts: appState.contacts || [] 
+                }));
+                
+                // Atualiza a tela
                 renderDashboard();
+                if (appState.page === 'desempenho') applyFilters();
+                
             } catch (e) {
-                console.error("Erro na sincronização:", e);
-                alert("Erro ao conectar com o Ploomes. Verifique sua internet.");
+                console.error("Erro crítico na sincronização:", e);
+                alert("Erro ao carregar dados do Ploomes. Verifique sua conexão.");
             }
             hideLoading();
         }
