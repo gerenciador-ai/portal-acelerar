@@ -322,7 +322,7 @@
             DATA_CANCELAMENTO: 111417137 
         };
         const MESES_PT = {1:'Jan',2:'Fev',3:'Mar',4:'Abr',5:'Mai',6:'Jun',7:'Jul',8:'Ago',9:'Set',10:'Out',11:'Nov',12:'Dez'};
-        let appState = { empresa: 'VMC Tech', page: 'performance', raw_data: [], volumeData: [], contacts: [], activeState: null, charts: {} };
+        let appState = { empresa: 'VMC Tech', page: 'performance', raw_data: [], volumeData: [], contacts: [], activeState: null, charts: {}, niboData: [], all_data: {} };
         function toggleSidebar() { document.getElementById('sidebar').classList.toggle('collapsed'); }
         function showLoading(t) { document.getElementById('loading-overlay').style.display = 'flex'; document.getElementById('loading-text').textContent = t; }
         function hideLoading() { document.getElementById('loading-overlay').style.display = 'none'; }
@@ -356,87 +356,79 @@
             document.getElementById('dashboard-section').style.display = 'none';
             document.getElementById('hub-section').classList.remove('hidden');
         }
-        async function forceSync() { await loadData(true); fetchVolumeGeral(); }
-        async function loadData(forceDealsOnly = false) {
-            const cacheKey = `acelerar_v13_7_${appState.empresa}`;
-            const cacheTimeKey = `${cacheKey}_time`;
-            const cached = localStorage.getItem(cacheKey);
-            const cachedTime = localStorage.getItem(cacheTimeKey);
-            
+        async function forceSync() { 
+            await loadData(true); 
+        }
+
+        async function loadData(forceRefresh = false) {
+            const globalCacheKey = `acelerar_v1_all_data`;
+            const globalCacheTimeKey = `${globalCacheKey}_time`;
+            const cachedAllData = localStorage.getItem(globalCacheKey);
+            const cachedTime = localStorage.getItem(globalCacheTimeKey);
+
             const now = new Date();
             const lastSync = cachedTime ? new Date(parseInt(cachedTime)) : null;
-            
-            let needsFullSync = !cached || !lastSync;
+
+            let needsFullGlobalSync = !cachedAllData || !lastSync;
             if (lastSync) {
                 const diffHours = (now - lastSync) / (1000 * 60 * 60);
-                if (diffHours > 24) needsFullSync = true;
-                if (lastSync.getDate() !== now.getDate() && now.getHours() >= 8) needsFullSync = true;
+                if (diffHours > 24) needsFullGlobalSync = true;
+                if (lastSync.getDate() !== now.getDate() && now.getHours() >= 8) needsFullGlobalSync = true;
             }
-            if (!needsFullSync && !forceDealsOnly) { 
-                const data = JSON.parse(cached);
-                appState.raw_data = data.deals;
-                appState.contacts = data.contacts;
+
+            if (!needsFullGlobalSync && !forceRefresh) {
+                appState.all_data = JSON.parse(cachedAllData);
                 document.getElementById('cache-info').textContent = `Sinc: ${lastSync.toLocaleString('pt-BR')}`;
-                renderDashboard();
-            } else { 
-                await refreshData(needsFullSync); 
-            }
-        }
-        async function refreshData(fullSync) {
-            showLoading(fullSync ? `Sincronizando Base Completa...` : `Sincronizando Negócios...`);
-            const config = PIPELINES[appState.empresa];
-            
-            const promises = [
-                fetchPloomes(`Deals?$filter=PipelineId eq ${config.vendas} and StatusId eq 2&$expand=OtherProperties,Owner,Contact&$top=2000`),
-                fetchPloomes(`Deals?$filter=PipelineId eq ${config.churn}&$expand=OtherProperties,Owner,Stage,Contact&$top=2000`)
-            ];
-            if (fullSync) {
-                promises.push(fetchPloomes(`Contacts?$select=Id,Name,CNPJ,CPF,City,State&$expand=City,State&$top=2000`));
-            }
-            const results = await Promise.all(promises);
-            const vendas = results[0];
-            const churn = results[1];
-            
-            if (fullSync) {
-                appState.contacts = results[2].map(c => ({ 
-                    id: c.Id, name: c.Name, cnpj: c.CNPJ || c.CPF, 
-                    cidade: c.City?.Name, 
-                    estado: c.State?.Short || (c.City?.State?.Short) || 'NI' 
-                }));
             } else {
-                const cached = JSON.parse(localStorage.getItem(`acelerar_v13_7_${appState.empresa}`));
-                appState.contacts = cached ? cached.contacts : [];
+                await refreshData(needsFullGlobalSync);
             }
-            const mapDeal = (d, type) => {
-                const props = d.OtherProperties || [];
-                const getProp = (id) => props.find(p => p.FieldId === id);
-                const propProduto = getProp(FIELDS.PRODUTO);
-                let produto = propProduto ? (propProduto.ObjectValueName || propProduto.ValueName || propProduto.Value || "") : "";
-                if (!produto || produto === "") produto = "Sittax Simples";
-                let mrr = sanitizeVal(getProp(FIELDS.MRR)?.DecimalValue);
-                let adesao = sanitizeVal(getProp(FIELDS.ADESAO_S)?.DecimalValue) || sanitizeVal(getProp(FIELDS.ADESAO_R)?.DecimalValue);
-                let upsell = sanitizeVal(getProp(FIELDS.UPSELL)?.DecimalValue);
-                const vendedor = getProp(FIELDS.VENDEDOR_REAL)?.UserValueName || 'N/A';
-                const sdr = getProp(FIELDS.SDR_REAL)?.UserValueName || 'N/A';
-                const dataCriacao = new Date(d.CreateDate);
-                let dateStr = type === 'Venda' ? (getProp(FIELDS.DATA_ATIVACAO)?.DateTimeValue || d.FinishDate || d.CreateDate || '') : (getProp(FIELDS.DATA_CANCELAMENTO)?.DateTimeValue || d.FinishDate || d.CreateDate || '');
-                const dataAtivacao = new Date(dateStr);
-                const ciclo = Math.max(0, Math.round((dataAtivacao - dataCriacao) / (1000 * 60 * 60 * 24)));
-                return {
-                    id: d.Id, cliente: d.Title, cnpj: d.Contact?.CNPJ || d.Contact?.CPF || 'N/A',
-                    contactId: d.ContactId, data: dataAtivacao, dataCriacao: dataCriacao, ciclo: ciclo,
-                    vendedor: vendedor, sdr: sdr, mrr: mrr, upsell: upsell, adesao: adesao, produto: produto, 
-                    status: type, estagio: d.Stage?.Name || '', ano: dataAtivacao.getFullYear(), mes: MESES_PT[dataAtivacao.getMonth()+1]
-                };
-            };
-            appState.raw_data = [...vendas.map(d => mapDeal(d, 'Venda')), ...churn.map(d => mapDeal(d, 'Churn'))];
             
-            localStorage.setItem(`acelerar_v13_7_${appState.empresa}`, JSON.stringify({ deals: appState.raw_data, contacts: appState.contacts }));
-            localStorage.setItem(`acelerar_v13_7_${appState.empresa}_time`, new Date().getTime().toString());
-            
-            document.getElementById('cache-info').textContent = `Sinc: ${new Date().toLocaleString('pt-BR')}`;
+            // Filtra os dados para a empresa selecionada sem precisar baixar de novo
+            const data = appState.all_data[appState.empresa];
+            appState.raw_data = data.raw_data;
+            appState.volumeData = data.volumeData;
+            appState.contacts = data.contacts;
+            appState.niboData = data.niboData;
             renderDashboard();
-            hideLoading();
+        }
+
+        async function refreshData(fullSync) {
+            showLoading(`Carregando base completa...`);
+            try {
+                // Carrega VMC Tech e Victec ao mesmo tempo
+                const [vmcPl, vmcNi, vicPl, vicNi] = await Promise.all([
+                    axios.get(`data/ploomes_data_vmctech.json`),
+                    axios.get(`data/inadimplencia_vmctech.json`),
+                    axios.get(`data/ploomes_data_victec.json`),
+                    axios.get(`data/inadimplencia_victec.json`)
+                ]);
+
+                appState.all_data = {
+                    'VMC Tech': {
+                        raw_data: vmcPl.data.deals.map(d => ({...d, data: new Date(d.data), dataCriacao: new Date(d.dataCriacao)})),
+                        volumeData: vmcPl.data.volumeData,
+                        contacts: vmcPl.data.contacts || [],
+                        niboData: vmcNi.data
+                    },
+                    'Victec': {
+                        raw_data: vicPl.data.deals.map(d => ({...d, data: new Date(d.data), dataCriacao: new Date(d.dataCriacao)})),
+                        volumeData: vicPl.data.volumeData,
+                        contacts: vicPl.data.contacts || [],
+                        niboData: vicNi.data
+                    }
+                };
+
+                localStorage.setItem(`acelerar_v1_all_data`, JSON.stringify(appState.all_data));
+                localStorage.setItem(`acelerar_v1_all_data_time`, new Date().getTime().toString());
+
+                document.getElementById('cache-info').textContent = `Sinc: ${new Date().toLocaleString('pt-BR')}`;
+                renderDashboard();
+            } catch (error) {
+                console.error("Erro no carregamento global:", error);
+                alert("Erro ao carregar base de dados. Verifique a pasta data/.");
+            } finally {
+                hideLoading();
+            }
         }
         async function fetchVolumeGeral() {
             // Lógica dinâmica: busca o PipelineId da empresa ativa no appState
@@ -726,13 +718,20 @@
             if (p === 'inadimplencia') loadInadimplencia();
             else applyFilters();
         }
-        async function changeEmpresa() { 
-            appState.empresa = document.getElementById('empresa-select').value; 
-            appState.activeState = null; 
-            // Recarrega Performance e Desempenho do Time automaticamente para a nova empresa
-            await loadData(true); 
-            await fetchVolumeGeral();
-            if (appState.page === 'inadimplencia') loadInadimplencia(); 
+        function changeEmpresa() {
+            appState.empresa = document.getElementById('empresa-select').value;
+            // Apenas troca os dados na tela instantaneamente, sem baixar nada do servidor
+            const data = appState.all_data[appState.empresa];
+            if (data) {
+                appState.raw_data = data.raw_data;
+                appState.volumeData = data.volumeData;
+                appState.contacts = data.contacts;
+                appState.niboData = data.niboData;
+                renderDashboard();
+                if (appState.page === 'inadimplencia') loadInadimplencia();
+            } else {
+                console.error('Dados da empresa não encontrados no carregamento inicial');
+            }
         }
         async function loadInadimplencia() {
             showLoading(`Sincronizando Nibo (${appState.empresa})...`);
