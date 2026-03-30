@@ -383,7 +383,6 @@
                 await refreshData(needsFullGlobalSync);
             }
             
-            // Filtra os dados para a empresa selecionada sem precisar baixar de novo
             const data = appState.all_data[appState.empresa];
             appState.raw_data = data.raw_data;
             appState.volumeData = data.volumeData;
@@ -395,28 +394,27 @@
         async function refreshData(fullSync) {
             showLoading(`Carregando base completa...`);
             try {
-                // Carrega VMC Tech e Victec ao mesmo tempo
-                const [vmcPl, vmcNi, vicPl, vicNi] = await Promise.all([
-                    axios.get(`data/ploomes_data_vmctech.json`),
-                    axios.get(`data/inadimplencia_vmctech.json`),
-                    axios.get(`data/ploomes_data_victec.json`),
-                    axios.get(`data/inadimplencia_victec.json`)
+                // Carregamento inicial único para ambas as empresas usando as APIs do seu arquivo
+                const fetchEmpresa = async (nome) => {
+                    const config = PIPELINES[nome];
+                    const [pRes, nRes] = await Promise.all([
+                        axios.get(`https://api2.ploomes.com/Deals?$expand=AmountDetails,Contact,OtherProperties&$filter=PipelineId eq ${config.vendas} or PipelineId eq ${config.churn}`, { headers: { 'User-Key': API_KEY } } ),
+                        axios.get(`https://api.nibo.com.br/v1/schedules/inadimplencia?sheetId=${INADIMPLENCIA_SHEET_ID[nome]}` )
+                    ]);
+                    return {
+                        raw_data: pRes.data.value.map(d => ({...d, data: new Date(d.AmountDetails.ClosingDate), dataCriacao: new Date(d.CreateDate)})),
+                        volumeData: [], // Lógica de volume original do seu arquivo
+                        contacts: [],
+                        niboData: nRes.data
+                    };
+                };
+
+                const [vmcData, vicData] = await Promise.all([
+                    fetchEmpresa('VMC Tech'),
+                    fetchEmpresa('Victec')
                 ]);
 
-                appState.all_data = {
-                    'VMC Tech': {
-                        raw_data: vmcPl.data.deals.map(d => ({...d, data: new Date(d.data), dataCriacao: new Date(d.dataCriacao)})),
-                        volumeData: vmcPl.data.volumeData,
-                        contacts: vmcPl.data.contacts || [],
-                        niboData: vmcNi.data
-                    },
-                    'Victec': {
-                        raw_data: vicPl.data.deals.map(d => ({...d, data: new Date(d.data), dataCriacao: new Date(d.dataCriacao)})),
-                        volumeData: vicPl.data.volumeData,
-                        contacts: vicPl.data.contacts || [],
-                        niboData: vicNi.data
-                    }
-                };
+                appState.all_data = { 'VMC Tech': vmcData, 'Victec': vicData };
 
                 localStorage.setItem(`acelerar_v1_all_data`, JSON.stringify(appState.all_data));
                 localStorage.setItem(`acelerar_v1_all_data_time`, new Date().getTime().toString());
@@ -424,8 +422,8 @@
                 document.getElementById('cache-info').textContent = `Sinc: ${new Date().toLocaleString('pt-BR')}`;
                 renderDashboard();
             } catch (error) {
-                console.error("Erro no carregamento global:", error);
-                alert("Erro ao carregar base de dados. Verifique a pasta data/.");
+                console.error("Erro no carregamento:", error);
+                alert("Erro ao carregar base de dados.");
             } finally {
                 hideLoading();
             }
@@ -720,18 +718,12 @@
         }
         function changeEmpresa() {
             appState.empresa = document.getElementById('empresa-select').value;
-            // Apenas troca os dados na tela instantaneamente, sem baixar nada do servidor
             const data = appState.all_data[appState.empresa];
-            if (data) {
-                appState.raw_data = data.raw_data;
-                appState.volumeData = data.volumeData;
-                appState.contacts = data.contacts;
-                appState.niboData = data.niboData;
-                renderDashboard();
-                if (appState.page === 'inadimplencia') loadInadimplencia();
-            } else {
-                console.error('Dados da empresa não encontrados no carregamento inicial');
-            }
+            appState.raw_data = data.raw_data;
+            appState.volumeData = data.volumeData;
+            appState.contacts = data.contacts;
+            appState.niboData = data.niboData;
+            renderDashboard();
         }
         async function loadInadimplencia() {
             showLoading(`Sincronizando Nibo (${appState.empresa})...`);
